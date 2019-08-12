@@ -56,7 +56,6 @@ def chat(input_text):
     '八天后：' + predictions_result[9] + '\n' \
     '九天后：' + predictions_result[10] + '\n' \
     '十天后：' + predictions_result[11] + '\n'
-  .
     
   print(output_text)
 
