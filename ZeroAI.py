@@ -44,18 +44,19 @@ def chat(input_text):
     output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如BTCUSD）！"
     return output_text
   
-  output_text = '市场编号:' + alias_result[1] + '\n'
-    + '预测日期：' + predictions_result[1] + '\n'
-    + '一天后：' + predictions_result[2] + '\n'
-    + '两天后：' + predictions_result[3] + '\n'
-    + '三天后：' + predictions_result[4] + '\n'
-    + '四天后：' + predictions_result[5] + '\n'
-    + '五天后：' + predictions_result[6] + '\n'
-    + '六天后：' + predictions_result[7] + '\n'
-    + '七天后：' + predictions_result[8] + '\n'
-    + '八天后：' + predictions_result[9] + '\n'
-    + '九天后：' + predictions_result[10] + '\n'
-    + '十天后：' + predictions_result[11] + '\n'.
+  output_text = '市场编号:' + alias_result[1] + '\n' \
+    '预测日期：' + predictions_result[1] + '\n' \
+    '一天后：' + predictions_result[2] + '\n' \
+    '两天后：' + predictions_result[3] + '\n' \
+    '三天后：' + predictions_result[4] + '\n' \
+    '四天后：' + predictions_result[5] + '\n' \
+    '五天后：' + predictions_result[6] + '\n' \
+    '六天后：' + predictions_result[7] + '\n' \
+    '七天后：' + predictions_result[8] + '\n' \
+    '八天后：' + predictions_result[9] + '\n' \
+    '九天后：' + predictions_result[10] + '\n' \
+    '十天后：' + predictions_result[11] + '\n'
+  .
     
   print(output_text)
 
