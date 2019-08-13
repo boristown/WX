@@ -1,0 +1,2 @@
+python Console.py
+pause
