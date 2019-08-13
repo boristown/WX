@@ -30,7 +30,7 @@ def chat(input_text):
     output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如BTCUSD）！"
     return output_text
   
-  alias_result = mycursor.fetchall()
+  alias_result = mycursor.fetchall()[0]
   
   select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "'"
 
