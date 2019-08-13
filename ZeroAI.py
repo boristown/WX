@@ -45,7 +45,7 @@ def chat(input_text):
   predictions_result = mycursor.fetchall()[0]
   
   output_text = '市场编号:' + alias_result[1] + '\n' \
-    '预测日期：' + predictions_result[1] + '\n' \
+    '预测日期：' + predictions_result[1].strftime('%Y-%m-%d %H:%M:%S') + '\n' \
     '一天后：' + predictions_result[2] + '\n' \
     '两天后：' + predictions_result[3] + '\n' \
     '三天后：' + predictions_result[4] + '\n' \
