@@ -24,25 +24,25 @@ def chat(input_text):
 
   print(select_alias_statment)
 
-  mycursor.execute(select_alias_statment)
-
-  alias_result = mycursor.fetchone()
+  rows_count = mycursor.execute(select_alias_statment)
   
-  if alias_result is None:
+  if rows_count == 0:
     output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如BTCUSD）！"
     return output_text
-    
+  
+  alias_result = mycursor.fetchall()
+  
   select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "'"
 
   print(select_predictions_statment)
 
-  mycursor.execute(select_predictions_statment)
-
-  predictions_result = mycursor.fetchone()
+  rows_count = mycursor.execute(select_predictions_statment)
   
-  if predictions_result is None:
+  if rows_count == 0:
     output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如BTCUSD）！"
     return output_text
+  
+  predictions_result = mycursor.fetchall()[0]
   
   output_text = '市场编号:' + alias_result[1] + '\n' \
     '预测日期：' + predictions_result[1] + '\n' \
