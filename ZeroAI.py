@@ -24,25 +24,29 @@ def chat(input_text):
 
   print(select_alias_statment)
 
-  rows_count = mycursor.execute(select_alias_statment)
+  mycursor.execute(select_alias_statment)
   
-  if rows_count == 0:
+  alias_results = mycursor.fetchall()
+  
+  if len(alias_results) == 0:
     output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如BTCUSD）！"
     return output_text
   
-  alias_result = mycursor.fetchall()[0]
+  alias_result = alias_results[0]
   
   select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "'"
 
   print(select_predictions_statment)
 
-  rows_count = mycursor.execute(select_predictions_statment)
+  mycursor.execute(select_predictions_statment)
   
-  if rows_count == 0:
+  predictions_results = mycursor.fetchall()
+  
+  if len(predictions_results) == 0:
     output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如BTCUSD）！"
     return output_text
   
-  predictions_result = mycursor.fetchall()[0]
+  predictions_result = predictions_results[0]
   
   output_text = '市场编号:' + alias_result[1] + '\n' \
     '预测日期：' + predictions_result[1].strftime('%Y-%m-%d %H:%M') + '\n' \
@@ -64,5 +68,5 @@ def chat(input_text):
 def day_prediction_text(prediction_result):
   prediction_score = ( ( prediction_result * 2 - 1 ) ** 1 ) / 2
   if prediction_score >= 0:
-    return "上涨概率:" + ("%.3f" % (prediction_score+0.5)*100 ) + "%"
-  return "下跌概率:" + ("%.3f" % (0.5-prediction_score)*100 ) + "%"
+    return "上涨概率:" + ("%.3f" % ((prediction_score+0.5)*100) ) + "%"
+  return "下跌概率:" + ("%.3f" % ((0.5-prediction_score)*100) ) + "%"
