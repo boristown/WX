@@ -20,7 +20,7 @@ def chat(input_text):
 
   input_text = input_text.strip().upper()
 
-  select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol = '" + input_text + "'"
+  select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias = '" + input_text + "'"
 
   print(select_alias_statment)
 
