@@ -61,7 +61,7 @@ def chat(input_text):
 
   return output_text
 
-def day_prediction_text(prediction_result)
+def day_prediction_text(prediction_result):
   prediction_score = ( ( prediction * 2 - 1 ) ** 3 ) / 2
   if prediction_score >= 0:
     return "上涨概率:" + str((prediction_score+0.5)*100) + "%"
