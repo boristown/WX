@@ -46,17 +46,23 @@ def chat(input_text):
   
   output_text = '市场编号:' + alias_result[1] + '\n' \
     '预测日期：' + predictions_result[1].strftime('%Y-%m-%d %H:%M:%S') + '\n' \
-    '一天后：' + predictions_result[2] + '\n' \
-    '两天后：' + predictions_result[3] + '\n' \
-    '三天后：' + predictions_result[4] + '\n' \
-    '四天后：' + predictions_result[5] + '\n' \
-    '五天后：' + predictions_result[6] + '\n' \
-    '六天后：' + predictions_result[7] + '\n' \
-    '七天后：' + predictions_result[8] + '\n' \
-    '八天后：' + predictions_result[9] + '\n' \
-    '九天后：' + predictions_result[10] + '\n' \
-    '十天后：' + predictions_result[11] + '\n'
+    '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
+    '两天后：' + day_prediction_text(predictions_result[3]) + '\n' \
+    '三天后：' + day_prediction_text(predictions_result[4]) + '\n' \
+    '四天后：' + day_prediction_text(predictions_result[5]) + '\n' \
+    '五天后：' + day_prediction_text(predictions_result[6]) + '\n' \
+    '六天后：' + day_prediction_text(predictions_result[7]) + '\n' \
+    '七天后：' + day_prediction_text(predictions_result[8]) + '\n' \
+    '八天后：' + day_prediction_text(predictions_result[9]) + '\n' \
+    '九天后：' + day_prediction_text(predictions_result[10]) + '\n' \
+    '十天后：' + day_prediction_text(predictions_result[11]) + '\n'
     
   print(output_text)
 
   return output_text
+
+def day_prediction_text(prediction_result)
+  prediction_score = ( ( prediction * 2 - 1 ) ** 3 ) / 2
+  if prediction_score >= 0:
+    return "上涨概率:" + str((prediction_score+0.5)*100) + "%"
+  return "下跌概率:" + str((0.5-prediction_score)*100) + "%"
