@@ -49,7 +49,7 @@ class Handle(object):
                 toUser = recMsg.FromUserName
                 fromUser = recMsg.ToUserName
                 print (recMsg.Content.decode('utf-8'))
-                content = ZeroAI.Chat(recMsg.Content.decode('utf-8'))
+                content = ZeroAI.chat(recMsg.Content.decode('utf-8'))
                 replyMsg = reply.TextMsg(toUser, fromUser, content)
                 return replyMsg.send()
             else:
