@@ -48,8 +48,9 @@ def chat(input_text):
   
   predictions_result = predictions_results[0]
   
-  output_text = '市场编号:' + alias_result[1] + '\n' \
-    '预测日期：' + predictions_result[1].strftime('%Y-%m-%d %H:%M') + '\n' \
+  output_text = '市场名:' + alias_result[0] + '\n' \
+    '市场类型：' + alias_result[2] + '\n' \
+    '预测时间：' + predictions_result[1].strftime('%Y-%m-%d %H:%M') + '\n' \
     '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
     '两天后：' + day_prediction_text(predictions_result[3]) + '\n' \
     '三天后：' + day_prediction_text(predictions_result[4]) + '\n' \
