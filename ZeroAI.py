@@ -34,7 +34,7 @@ def chat(input_text):
   
   alias_result = alias_results[0]
   
-  select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "'"
+  select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
 
   print(select_predictions_statment)
 
