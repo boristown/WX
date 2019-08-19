@@ -3,6 +3,17 @@
 
 import mysql.connector
 import mypsw
+import time
+import datetime
+
+def utc2local(utc_st):
+    #UTC时间转本地时间（+8:00）
+    now_stamp = time.time()
+    local_time = datetime.datetime.fromtimestamp(now_stamp)
+    utc_time = datetime.datetime.utcfromtimestamp(now_stamp)
+    offset = local_time - utc_time
+    local_st = utc_st + offset
+    return local_st
 
 def chat(input_text):
   
@@ -50,7 +61,7 @@ def chat(input_text):
   
   output_text = '市场名:' + alias_result[0] + '\n' \
     '市场类型：' + alias_result[2] + '\n' \
-    '预测时间：' + predictions_result[1].strftime('%Y-%m-%d %H:%M') + '\n' \
+    '预测时间：' + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + '\n' \
     '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
     '两天后：' + day_prediction_text(predictions_result[3]) + '\n' \
     '三天后：' + day_prediction_text(predictions_result[4]) + '\n' \
