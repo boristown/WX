@@ -29,9 +29,9 @@ def chat(input_text):
 
   mycursor = mydb.cursor()
 
-  input_text = input_text.strip().upper()
+  input_text = input_text.strip().upper().replace("/","%").replace("-","%").replace("*","%")
 
-  select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias = '" + input_text + "'"
+  select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%'"
 
   print(select_alias_statment)
 
