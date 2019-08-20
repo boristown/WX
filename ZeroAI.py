@@ -29,9 +29,9 @@ def chat(input_text):
 
   mycursor = mydb.cursor()
 
-  input_text = input_text.strip().upper().replace("/","%").replace("-","%").replace("*","%")
-
-  select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%'"
+  input_text = input_text.strip().upper()
+  
+  select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias = '" + input_text + "'"
 
   print(select_alias_statment)
 
@@ -40,8 +40,20 @@ def chat(input_text):
   alias_results = mycursor.fetchall()
   
   if len(alias_results) == 0:
-    output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如BTCUSD）！"
-    return output_text
+    
+    input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
+
+    select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%'"
+
+    print(select_alias_statment)
+
+    mycursor.execute(select_alias_statment)
+  
+    alias_results = mycursor.fetchall()
+  
+    if len(alias_results) == 0:
+      output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如BTCUSD）！"
+      return output_text
   
   alias_result = alias_results[0]
   
