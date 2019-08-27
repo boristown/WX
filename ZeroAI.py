@@ -52,7 +52,7 @@ def chat(input_text):
     alias_results = mycursor.fetchall()
   
     if len(alias_results) == 0:
-      output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如BTCUSD）！"
+      output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币）！"
       return output_text
   
   alias_result = alias_results[0]
@@ -66,7 +66,7 @@ def chat(input_text):
   predictions_results = mycursor.fetchall()
   
   if len(predictions_results) == 0:
-    output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如BTCUSD）！"
+    output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币）！"
     return output_text
   
   predictions_result = predictions_results[0]
