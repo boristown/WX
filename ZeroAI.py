@@ -128,7 +128,8 @@ def score(prediction_result):
 
 class Media(object):
     def __init__(self):
-        register_openers()
+        #register_openers()
+        
     #上传图片
     def uplaod(self, accessToken, filePath, mediaType):
         openFile = open(filePath, "rb")
