@@ -78,9 +78,10 @@ def chat(input_text):
   
   predictions_result = predictions_results[0]
   
-  output_text = '市场名:' + alias_result[0] + '\n' \
-    '市场类型：' + alias_result[2] + '\n' \
-    '预测时间：' + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + '\n' \
+  output_text = '' + \
+    #'市场名:' + alias_result[0] + '\n' \
+    #'市场类型：' + alias_result[2] + '\n' \
+    #'预测时间：' + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + '\n' \
     '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
     '两天后：' + day_prediction_text(predictions_result[3]) + '\n' \
     '三天后：' + day_prediction_text(predictions_result[4]) + '\n' \
@@ -104,10 +105,11 @@ def chat(input_text):
   plt.rcParams['axes.unicode_minus']=False
   plt.figure()
   #plt.plot(x,y,"b--",linewidth=3)
-  plt.plot(x,y,"b--",linewidth=3, label='未来十日预测', marker='x')
+  plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
+  plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
   plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）') #X轴标签
   plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
-  plt.title(alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') +"\n微信公众号：AI纪元") #图标题
+  plt.title(alias_result[2] + ":" + alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') +"\n微信公众号：AI纪元") #图标题
   picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
 
