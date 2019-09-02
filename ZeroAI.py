@@ -92,7 +92,8 @@ def chat(input_text):
   y=[0,1]
   plt.figure()
   plt.plot(x,y)
-  plt.savefig("predictions.jpg")
+  picture_name = alias_result[0] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+  plt.savefig(picture_name)
   
   return output_text
 
