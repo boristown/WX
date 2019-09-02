@@ -6,6 +6,7 @@ import mypsw
 import time
 import datetime
 import matplotlib.pyplot as plt
+from basic import Basic
 
 def utc2local(utc_st):
     #UTC时间转本地时间（+8:00）
@@ -103,7 +104,14 @@ def chat(input_text):
   plt.title(alias_result[0]) #图标题
   picture_name = 'Img/' + alias_result[0] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
-  
+
+  myMedia = Media()
+  accessToken = Basic().get_access_token()
+  filePath = picture_name   
+  mediaType = "image"
+  murlResp = Media.uplaod(accessToken, filePath, mediaType)
+  print(murlResp)
+
   return output_text
 
 def day_prediction_text(prediction_result):
