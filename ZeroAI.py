@@ -115,7 +115,8 @@ def chat(input_text):
   murlResp = Media.uplaod(accessToken, filePath, mediaType)
   print(murlResp)
 
-  return output_text
+  #return output_text
+  return murlResp
 
 def day_prediction_text(prediction_result):
   prediction_score = ( ( prediction_result * 2 - 1 ) ** 1 ) / 2
