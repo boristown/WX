@@ -5,6 +5,7 @@ import mysql.connector
 import mypsw
 import time
 import datetime
+import matplotlib.pyplot as plt
 
 def utc2local(utc_st):
     #UTC时间转本地时间（+8:00）
@@ -86,7 +87,13 @@ def chat(input_text):
     '十天后：' + day_prediction_text(predictions_result[11]) + '\n'
     
   print(output_text)
-
+  
+  x=[0,1]
+  y=[0,1]
+  plt.figure()
+  plt.plot(x,y)
+  plt.savefig("predictions.jpg")
+  
   return output_text
 
 def day_prediction_text(prediction_result):
