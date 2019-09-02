@@ -10,6 +10,7 @@ from basic import Basic
 #from poster.streaminghttp import register_openers
 import requests
 from requests.packages.urllib3.filepost import encode_multipart_formdata
+import json
 
 def utc2local(utc_st):
     #UTC时间转本地时间（+8:00）
@@ -142,6 +143,8 @@ class Media(object):
         #request = urllib2.Request(postUrl, postData, postHeaders)
         #urlResp = urllib2.urlopen(request)
         headers = {'Content-Type': content_type}
-        urlResp = requests.post(postUrl, data=postData, headers=headers)
+        files = {'media': open(filePath, "rb")}
+        #urlResp = requests.post(postUrl, data=postData, headers=headers, files=files)
+        urlResp = requests.post(postUrl, files=files)
         print(urlResp.text)
-        return urlResp.text['MediaID']
+        return json.loads(urlResp.text)['MediaID']
