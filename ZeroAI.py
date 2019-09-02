@@ -134,7 +134,7 @@ class Media(object):
     #上传图片
     def uplaod(accessToken, filePath, mediaType):
         openFile = open(filePath, "rb")
-        param = {'media': openFile}
+        param = {'media': openFile.read()}
         #postData, postHeaders = poster.encode.multipart_encode(param)
         postData, content_type = encode_multipart_formdata(param)
 
