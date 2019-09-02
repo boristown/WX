@@ -94,8 +94,8 @@ def chat(input_text):
     
   #print(output_text)
   
-  x=[1,2,3,4,5,6,7,8,9,10]
-  y=[score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
+  x=[0,1,2,3,4,5,6,7,8,9,10]
+  y=[0.0, score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
      score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
      score(predictions_result[8]),score(predictions_result[9]),score(predictions_result[10]),
      score(predictions_result[11])
@@ -105,8 +105,8 @@ def chat(input_text):
   plt.figure()
   #plt.plot(x,y,"b--",linewidth=3)
   plt.plot(x,y,"b--",linewidth=3, label='未来十日预测', marker='x')
-  plt.xlabel(u'天数[1到10]用未来第N个日线收盘价与当前价作对比') #X轴标签
-  plt.ylabel(u'涨跌概率[-1到1]正数/负数分别代表上涨/下跌的概率')  #Y轴标签
+  plt.xlabel(u'天数[0到10]\n未来第N天的价格的涨跌概率') #X轴标签
+  plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
   plt.title(alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') +"\n微信公众号：AI纪元") #图标题
   picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
@@ -128,7 +128,7 @@ def day_prediction_text(prediction_result):
   return "下跌概率:" + ("%.3f" % ((0.5-prediction_score)*100) ) + "%"
 
 def score(prediction_result):
-    return prediction_result * 2 - 1
+    return (prediction_result * 2 - 1) * 100
 
 # 不带声调的(style=pypinyin.NORMAL)
 def pinyin(word):
