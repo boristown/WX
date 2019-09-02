@@ -94,10 +94,12 @@ def chat(input_text):
      predictions_result[8],predictions_result[9],predictions_result[10],
      predictions_result[11]
     ]
+  plt.rcParams['font.sans-serif']=['SimHei']
+  plt.rcParams['axes.unicode_minus']=False
   plt.figure()
   plt.plot(x,y,"b--",linewidth=1)
-  plt.xlabel("天数") #X轴标签
-  plt.ylabel("涨跌概率")  #Y轴标签
+  plt.xlabel(u'天数') #X轴标签
+  plt.ylabel(u'涨跌概率')  #Y轴标签
   plt.title(alias_result[0]) #图标题
   picture_name = alias_result[0] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
