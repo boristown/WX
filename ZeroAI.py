@@ -86,13 +86,13 @@ def chat(input_text):
     '九天后：' + day_prediction_text(predictions_result[10]) + '\n' \
     '十天后：' + day_prediction_text(predictions_result[11]) + '\n'
     
-  print(output_text)
+  #print(output_text)
   
   x=[1,2,3,4,5,6,7,8,9,10]
-  y=[predictions_result[2],predictions_result[3],predictions_result[4],
-     predictions_result[5],predictions_result[6],predictions_result[7],
-     predictions_result[8],predictions_result[9],predictions_result[10],
-     predictions_result[11]
+  y=[score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
+     score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
+     score(predictions_result[8]),score(predictions_result[9]),score(predictions_result[10]),
+     score(predictions_result[11])
     ]
   plt.rcParams['font.sans-serif']=['SimHei']
   plt.rcParams['axes.unicode_minus']=False
@@ -101,7 +101,7 @@ def chat(input_text):
   plt.xlabel(u'天数') #X轴标签
   plt.ylabel(u'涨跌概率')  #Y轴标签
   plt.title(alias_result[0]) #图标题
-  picture_name = alias_result[0] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+  picture_name = 'Img\' + alias_result[0] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
   
   return output_text
@@ -111,3 +111,6 @@ def day_prediction_text(prediction_result):
   if prediction_score >= 0:
     return "上涨概率:" + ("%.3f" % ((prediction_score+0.5)*100) ) + "%"
   return "下跌概率:" + ("%.3f" % ((0.5-prediction_score)*100) ) + "%"
+
+def score(prediction_result):
+    return prediction_result * 2 - 1
