@@ -132,7 +132,7 @@ class Media(object):
         #register_openers()
         
     #上传图片
-    def uplaod(self, accessToken, filePath, mediaType):
+    def uplaod(accessToken, filePath, mediaType):
         openFile = open(filePath, "rb")
         param = {'media': openFile}
         #postData, postHeaders = poster.encode.multipart_encode(param)
