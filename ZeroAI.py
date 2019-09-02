@@ -100,12 +100,26 @@ def chat(input_text):
      score(predictions_result[8]),score(predictions_result[9]),score(predictions_result[10]),
      score(predictions_result[11])
     ]
+
+  maxvalue = max(y)
+  minvalue = min(y)
+  if abs(maxvalue) >= abs(minvalue):
+    bestvalue = maxvalue
+    bestindex = y.index(maxvalue)
+  else:
+    bestvalue = minvalue
+    bestindex = y.index(minvalue)
+    
+  output_text = '最佳操作：' + str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
+  
   plt.rcParams['font.sans-serif']=['SimHei']
   plt.rcParams['axes.unicode_minus']=False
   plt.figure()
   #plt.plot(x,y,"b--",linewidth=3)
   plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
   plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
+  plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dashed")
+  plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
   plt.legend()
   plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）') #X轴标签
   plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
