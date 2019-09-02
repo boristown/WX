@@ -107,7 +107,7 @@ def chat(input_text):
   plt.xlabel(u'天数') #X轴标签
   plt.ylabel(u'涨跌概率')  #Y轴标签
   plt.title(alias_result[0]) #图标题
-  picture_name = 'Img/' + pypinyin.pinyin(alias_result[0], style=pypinyin.NORMAL) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+  picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
 
   myMedia = Media()
@@ -128,6 +128,13 @@ def day_prediction_text(prediction_result):
 
 def score(prediction_result):
     return prediction_result * 2 - 1
+
+# 不带声调的(style=pypinyin.NORMAL)
+def pinyin(word):
+    s = ''
+    for i in pypinyin.pinyin(word, style=pypinyin.NORMAL):
+        s += ''.join(i)
+    return s
 
 class Media(object):
     #def __init__(self):
