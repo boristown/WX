@@ -127,7 +127,7 @@ def score(prediction_result):
     return prediction_result * 2 - 1
 
 class Media(object):
-    def __init__(self):
+    #def __init__(self):
         #register_openers()
         
     #上传图片
