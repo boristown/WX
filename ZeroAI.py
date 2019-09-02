@@ -101,7 +101,7 @@ def chat(input_text):
   plt.xlabel(u'天数') #X轴标签
   plt.ylabel(u'涨跌概率')  #Y轴标签
   plt.title(alias_result[0]) #图标题
-  picture_name = '/Img/' + alias_result[0] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+  picture_name = 'Img/' + alias_result[0] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
   
   return output_text
