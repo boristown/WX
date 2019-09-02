@@ -147,4 +147,4 @@ class Media(object):
         #urlResp = requests.post(postUrl, data=postData, headers=headers, files=files)
         urlResp = requests.post(postUrl, files=files)
         print(urlResp.text)
-        return json.loads(urlResp.text)['MediaID']
+        return json.loads(urlResp.text)['media_id']
