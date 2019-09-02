@@ -7,7 +7,9 @@ import time
 import datetime
 import matplotlib.pyplot as plt
 from basic import Basic
-from poster.streaminghttp import register_openers
+#from poster.streaminghttp import register_openers
+import requests
+from requests.packages.urllib3.filepost import encode_multipart_formdata
 
 def utc2local(utc_st):
     #UTC时间转本地时间（+8:00）
@@ -131,9 +133,12 @@ class Media(object):
     def uplaod(self, accessToken, filePath, mediaType):
         openFile = open(filePath, "rb")
         param = {'media': openFile}
-        postData, postHeaders = poster.encode.multipart_encode(param)
+        #postData, postHeaders = poster.encode.multipart_encode(param)
+        postData, content_type = encode_multipart_formdata(param)
 
         postUrl = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s" % (accessToken, mediaType)
-        request = urllib2.Request(postUrl, postData, postHeaders)
-        urlResp = urllib2.urlopen(request)
+        #request = urllib2.Request(postUrl, postData, postHeaders)
+        #urlResp = urllib2.urlopen(request)
+        headers = {'Content-Type': content_type}
+        urlResp = requests.post(postUrl, data=postData, headers=headers)
         print(urlResp.read()) 
