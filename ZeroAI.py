@@ -88,10 +88,17 @@ def chat(input_text):
     
   print(output_text)
   
-  x=[0,1]
-  y=[0,1]
+  x=[1,2,3,4,5,6,7,8,9,10]
+  y=[predictions_result[2],predictions_result[3],predictions_result[4],
+     predictions_result[5],predictions_result[6],predictions_result[7],
+     predictions_result[8],predictions_result[9],predictions_result[10],
+     predictions_result[11]
+    ]
   plt.figure()
-  plt.plot(x,y)
+  plt.plot(x,y,"b--",linewidth=1)
+  plt.xlabel("天数") #X轴标签
+  plt.ylabel("涨跌概率")  #Y轴标签
+  plt.title(alias_result[0]) #图标题
   picture_name = alias_result[0] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
   
