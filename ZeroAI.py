@@ -110,7 +110,7 @@ def chat(input_text):
     bestvalue = minvalue
     bestindex = y.index(minvalue)
     
-  output_text = '最佳操作：' + str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
+  output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
   plt.rcParams['font.sans-serif']=['SimHei']
   plt.rcParams['axes.unicode_minus']=False
