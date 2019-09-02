@@ -141,4 +141,4 @@ class Media(object):
         #urlResp = urllib2.urlopen(request)
         headers = {'Content-Type': content_type}
         urlResp = requests.post(postUrl, data=postData, headers=headers)
-        print(urlResp.read()) 
+        print(urlResp.text) 
