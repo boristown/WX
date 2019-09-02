@@ -105,7 +105,7 @@ def chat(input_text):
   plt.figure()
   #plt.plot(x,y,"b--",linewidth=3)
   plt.plot(x,y,"b--",linewidth=3, label='未来十日预测', marker='x')
-  plt.xlabel(u'天数[0到10]\n未来第N天的价格的涨跌概率') #X轴标签
+  plt.xlabel(u'未来第N天的价格的涨跌概率，0代表当前时间') #X轴标签
   plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
   plt.title(alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') +"\n微信公众号：AI纪元") #图标题
   picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
