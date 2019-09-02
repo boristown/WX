@@ -78,7 +78,7 @@ def chat(input_text):
   
   predictions_result = predictions_results[0]
   
-  output_text = '' + \
+  output_text =
     #'市场名:' + alias_result[0] + '\n' \
     #'市场类型：' + alias_result[2] + '\n' \
     #'预测时间：' + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + '\n' \
