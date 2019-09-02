@@ -11,7 +11,7 @@ from basic import Basic
 import requests
 from requests.packages.urllib3.filepost import encode_multipart_formdata
 import json
-from xpinyin import Pinyin
+import pypinyin
 
 def utc2local(utc_st):
     #UTC时间转本地时间（+8:00）
@@ -107,8 +107,7 @@ def chat(input_text):
   plt.xlabel(u'天数') #X轴标签
   plt.ylabel(u'涨跌概率')  #Y轴标签
   plt.title(alias_result[0]) #图标题
-  p = Pinyin()
-  picture_name = 'Img/' + p.get_initials(alias_result[0], u'') + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+  picture_name = 'Img/' + pypinyin.pinyin(alias_result[0], style=pypinyin.NORMAL) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
   plt.savefig(picture_name)
 
   myMedia = Media()
