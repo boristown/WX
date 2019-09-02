@@ -50,7 +50,7 @@ class Handle(object):
                 fromUser = recMsg.ToUserName
                 print (recMsg.Content.decode('utf-8'))
                 content = ZeroAI.chat(recMsg.Content.decode('utf-8'))
-                replyMsg = reply.TextMsg(toUser, fromUser, content)
+                replyMsg = reply.ImageMsg(toUser, fromUser, content)
                 return replyMsg.send()
             else:
                 print ("暂且不处理")
