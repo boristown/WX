@@ -135,4 +135,4 @@ class Media(object):
         postUrl = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s" % (accessToken, mediaType)
         request = urllib2.Request(postUrl, postData, postHeaders)
         urlResp = urllib2.urlopen(request)
-        print urlResp.read()
+        print(urlResp.read()) 
