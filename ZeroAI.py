@@ -106,6 +106,7 @@ def chat(input_text):
   #plt.plot(x,y,"b--",linewidth=3)
   plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
   plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
+  plt.legend()
   plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）') #X轴标签
   plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
   plt.title(alias_result[2] + ":" + alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') +"\n微信公众号：AI纪元") #图标题
