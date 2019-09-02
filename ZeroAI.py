@@ -7,6 +7,7 @@ import time
 import datetime
 import matplotlib.pyplot as plt
 from basic import Basic
+from poster.streaminghttp import register_openers
 
 def utc2local(utc_st):
     #UTC时间转本地时间（+8:00）
