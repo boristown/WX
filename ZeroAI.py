@@ -104,7 +104,7 @@ def chat(input_text):
   plt.rcParams['axes.unicode_minus']=False
   plt.figure()
   #plt.plot(x,y,"b--",linewidth=3)
-  plt.plot(x,y,"b--",linewidth=3, label='未来十日预测')
+  plt.plot(x,y,"b--",linewidth=3, label='未来十日预测', marker='x')
   plt.xlabel(u'天数') #X轴标签
   plt.ylabel(u'涨跌概率')  #Y轴标签
   plt.title(alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') +"\n微信公众号：AI纪元") #图标题
