@@ -113,7 +113,7 @@ def chat(input_text):
   output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
   #plt.rcParams['font.sans-serif']=['wqy-microhei']
-  plt.rcParams['axes.unicode_minus']=False
+  #plt.rcParams['axes.unicode_minus']=False
   plt.figure()
   #plt.plot(x,y,"b--",linewidth=3)
   plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
@@ -144,32 +144,31 @@ def day_prediction_text(prediction_result):
   return "下跌概率:" + ("%.3f" % ((0.5-prediction_score)*100) ) + "%"
 
 def score(prediction_result):
-    return (prediction_result * 2 - 1) * 100
+  return (prediction_result * 2 - 1) * 100
 
 # 不带声调的(style=pypinyin.NORMAL)
 def pinyin(word):
-    s = ''
-    for i in pypinyin.pinyin(word, style=pypinyin.NORMAL):
-        s += ''.join(i)
-    return s
+  s = ''
+  for i in pypinyin.pinyin(word, style=pypinyin.NORMAL):
+    s += ''.join(i)
+  return s
 
 class Media(object):
-    #def __init__(self):
-        #register_openers()
-        
-    #上传图片
-    def uplaod(accessToken, filePath, mediaType):
-        openFile = open(filePath, "rb")
-        param = {'media': openFile.read()}
-        #postData, postHeaders = poster.encode.multipart_encode(param)
-        postData, content_type = encode_multipart_formdata(param)
+  #def __init__(self):
+    #register_openers()
+  #上传图片
+  def uplaod(accessToken, filePath, mediaType):
+    openFile = open(filePath, "rb")
+    param = {'media': openFile.read()}
+    #postData, postHeaders = poster.encode.multipart_encode(param)
+    postData, content_type = encode_multipart_formdata(param)
 
-        postUrl = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s" % (accessToken, mediaType)
-        #request = urllib2.Request(postUrl, postData, postHeaders)
-        #urlResp = urllib2.urlopen(request)
-        headers = {'Content-Type': content_type}
-        files = {'media': open(filePath, "rb")}
-        #urlResp = requests.post(postUrl, data=postData, headers=headers, files=files)
-        urlResp = requests.post(postUrl, files=files)
-        print(urlResp.text)
-        return json.loads(urlResp.text)['media_id']
+    postUrl = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s" % (accessToken, mediaType)
+    #request = urllib2.Request(postUrl, postData, postHeaders)
+    #urlResp = urllib2.urlopen(request)
+    headers = {'Content-Type': content_type}
+    files = {'media': open(filePath, "rb")}
+    #urlResp = requests.post(postUrl, data=postData, headers=headers, files=files)
+    urlResp = requests.post(postUrl, files=files)
+    print(urlResp.text)
+    return json.loads(urlResp.text)['media_id']
