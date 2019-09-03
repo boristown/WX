@@ -112,7 +112,7 @@ def chat(input_text):
     
   output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
-  plt.rcParams['font.sans-serif']=['wqy-microhei']
+  #plt.rcParams['font.sans-serif']=['wqy-microhei']
   plt.rcParams['axes.unicode_minus']=False
   plt.figure()
   #plt.plot(x,y,"b--",linewidth=3)
