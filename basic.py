@@ -4,15 +4,16 @@
 import urllib
 import time
 import json
+import mypsw
 
 class Basic:
   def __init__(self):
     self.__accessToken = ''
     self.__leftTime = 0
     
-  def __real_get_access_token(self):        
-    appId = "wx5a0aed50fba86208"
-    appSecret = "022605a3b2658487462bbd432e185e36"
+  def __real_get_access_token(self):
+    appId = mypsw.wechatguest.appId
+    appSecret = mypsw.wechatguest.appSecret
     postUrl = ("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s" % (appId, appSecret))
     urlResp = urllib.request.urlopen(postUrl)
     urlResp = json.loads(urlResp.read())
