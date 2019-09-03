@@ -3,4 +3,5 @@ pip install mysql-connector
 pip install scipy
 pip install matplotlib
 pip install pypinyin
+pip install requests
 pause
