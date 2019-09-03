@@ -8,7 +8,7 @@ def char_in_font(Unicode_char, font):
                 return True
     return False
 
-uni_char =  u"✹"
+uni_char =  u"中"
 # or uni_char = u"\u2739"
 
 font_info = [(f.fname, f.name) for f in mfm.fontManager.ttflist]
