@@ -112,8 +112,8 @@ def chat(input_text):
     
   output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
-  #plt.rcParams['font.sans-serif']=['wqy-microhei']
-  #plt.rcParams['axes.unicode_minus']=False
+  plt.rcParams['font.sans-serif']=['SimHei']
+  plt.rcParams['axes.unicode_minus']=False
   plt.figure()
   #plt.plot(x,y,"b--",linewidth=3)
   plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
