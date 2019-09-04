@@ -48,7 +48,6 @@ def chat(input_text):
   
   if len(alias_results) == 0:
     
-    plt.figure(figsize=(6.4,4.8), dpi=100)
     input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
 
     select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%'"
@@ -85,6 +84,8 @@ def chat(input_text):
   plt.rcParams['axes.unicode_minus']=False
 
   if len(alias_results) == 1:
+    
+    plt.figure(figsize=(6.4,4.8), dpi=100)
     
     alias_result = alias_results[0]
   
@@ -150,7 +151,7 @@ def chat(input_text):
     
   else:
     
-    plt.figure(figsize=(5,15), dpi=100)
+    plt.figure(figsize=(6,14), dpi=100)
     
     market_list = []
     for alias_result in alias_results:
