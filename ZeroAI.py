@@ -79,7 +79,11 @@ def chat(input_text):
       mycursor.execute(select_alias_statment)
   
       alias_results = mycursor.fetchall()
-  
+    
+  plt.rcParams['font.sans-serif']=['SimHei']
+  plt.rcParams['axes.unicode_minus']=False
+  plt.figure()
+
   if len(alias_results) == 1:
     
     alias_result = alias_results[0]
@@ -96,8 +100,7 @@ def chat(input_text):
       output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币）！"
       return output_text
   
-    predictions_result = predictions_results[0]
-  
+    predictions_result = predictions_results[0]  
     output_text = '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
     #'市场名:' + alias_result[0] + '\n' \
     #'市场类型：' + alias_result[2] + '\n' \
@@ -132,9 +135,7 @@ def chat(input_text):
     
     output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
-    plt.rcParams['font.sans-serif']=['SimHei']
-    plt.rcParams['axes.unicode_minus']=False
-    plt.figure()
+    
     #plt.plot(x,y,"b--",linewidth=3)
     plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
     plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
