@@ -147,7 +147,7 @@ def chat(input_text):
     plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签 
     plt.title( alias_result[2] + ":" + alias_result[0] + " " 
               + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') 
-              + "\n预测结果由AI自动生成，不构成投资建议") #图标题
+              + "\n预测结果由AI自动生成，不构成投资建议") #图标题 
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
@@ -197,7 +197,7 @@ def chat(input_text):
     plt.xlabel(u"强弱得分。关注微信公众号:AI纪元，输入:"+input_text)
     plt.ylabel(u"市场名称")
     plt.title(u"市场强弱排名:" + input_text + " " 
-              + utc2local(max([alias_result[1] for alias_result in alias_results])).strftime('%Y-%m-%d %H:%M') 
+              + utc2local( max( [alias_result[1] for alias_result in alias_results] ) ).strftime('%Y-%m-%d %H:%M') 
               + "\n预测结果由AI自动生成，不构成投资建议")
     plt.yticks(y_pos, y_market)
     # Turn on the grid
