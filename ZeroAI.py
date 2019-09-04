@@ -76,7 +76,7 @@ def chat(input_text):
       " inner join predictions on predictions.symbol = symbol_alias.symbol " \
       " inner join (select symbol, max(time) as time from predictions group by symbol) as t1 " \
       " on predictions.symbol = t1.symbol and predictions.time = t1.time " \
-      " WHERE symbol_alias.market_type = '" + input_text + "' AND symbol_alias.market_order > 0 group by symbol ORDER BY time DESC"
+      " WHERE symbol_alias.market_type = '" + alias_results[0][1] + "' AND symbol_alias.market_order > 0 group by symbol ORDER BY time DESC"
       
       print(select_alias_statment)
       
