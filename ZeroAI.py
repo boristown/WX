@@ -48,6 +48,7 @@ def chat(input_text):
   
   if len(alias_results) == 0:
     
+    plt.figure(figsize=(6.4,4.8), dpi=100)
     input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
 
     select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%'"
@@ -82,7 +83,6 @@ def chat(input_text):
     
   plt.rcParams['font.sans-serif']=['SimHei']
   plt.rcParams['axes.unicode_minus']=False
-  plt.figure()
 
   if len(alias_results) == 1:
     
@@ -142,13 +142,16 @@ def chat(input_text):
     plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
     plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
     plt.legend()
-    plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）\n关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
+    plt.xlabel(u'未来10天的趋势。关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
     plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
     plt.title( alias_result[2] + ":" + alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n预测结果由AI自动生成，不构成投资建议") #图标题
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
   else:
+    
+    plt.figure(figsize=(6.4,10), dpi=100)
+    
     market_list = []
     for alias_result in alias_results:
       
@@ -181,7 +184,7 @@ def chat(input_text):
         bestvalue = minvalue
         bestindex = y.index(minvalue)
       
-      market_list.append((alias_result[1], bestvalue))
+      market_list.append((alias_result[0], bestvalue))
       
       #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
     market_list.sort(key=lambda x:x[1], reverse=True)
@@ -190,15 +193,15 @@ def chat(input_text):
     x_score = [market[1] for market in market_list]
     y_pos = [i for i, _ in enumerate(y_market)]
     plt.barh(y_pos, x_score, color='green')
-    plt.xlabel(u"强弱得分\n关注微信公众号:AI纪元，输入:"+input_text)
+    plt.xlabel(u"强弱得分。关注微信公众号:AI纪元，输入:"+input_text)
     plt.ylabel(u"市场名称")
     plt.title(u"市场强弱排名:" + input_text + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n预测结果由AI自动生成，不构成投资建议")
     plt.yticks(y_pos, y_market)
     # Turn on the grid
-    plt.minorticks_on()
-    plt.grid(which='major', linestyle='-', linewidth='0.5', color='black')
+    #plt.minorticks_on()
+    #plt.grid(which='major', linestyle='-', linewidth='0.5', color='black')
     # Customize the minor grid
-    plt.grid(which='minor', linestyle=':', linewidth='0.5', color='gray')
+    #plt.grid(which='minor', linestyle=':', linewidth='0.5', color='gray')
     picture_name = 'Img/' + pinyin(input_text) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
