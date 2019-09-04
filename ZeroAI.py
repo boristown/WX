@@ -151,7 +151,7 @@ def chat(input_text):
     
   else:
     
-    plt.figure(figsize=(6,len(alias_results)*0.135), dpi=100)
+    plt.figure(figsize=(7, 2 + len(alias_results)*0.12), dpi=100)
     
     market_list = []
     for alias_result in alias_results:
