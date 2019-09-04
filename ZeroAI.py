@@ -142,9 +142,9 @@ def chat(input_text):
     plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
     plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
     plt.legend()
-    plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）') #X轴标签
+    plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）\n关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
     plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
-    plt.title( alias_result[2] ":" + alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n关注微信公众号:AI纪元，输入:" + alias_result[0]) #图标题
+    plt.title( alias_result[2] + ":" + alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n预测结果由AI自动生成，不构成投资建议") #图标题
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
@@ -190,9 +190,9 @@ def chat(input_text):
     x_score = [market[1] for market in market_list]
     y_pos = [i for i, _ in enumerate(y_market)]
     plt.barh(y_pos, x_score, color='green')
-    plt.xlabel(u"强弱得分")
+    plt.xlabel(u"强弱得分\n关注微信公众号:AI纪元，输入:"+input_text)
     plt.ylabel(u"市场名称")
-    plt.title(u"市场强弱排名:" + input_text + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n关注微信公众号:AI纪元，输入:"+input_text)
+    plt.title(u"市场强弱排名:" + input_text + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n预测结果由AI自动生成，不构成投资建议")
     plt.yticks(y_pos, y_market)
     # Turn on the grid
     plt.minorticks_on()
