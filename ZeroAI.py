@@ -197,7 +197,7 @@ def chat(input_text):
     plt.xlabel(u"强弱得分。关注微信公众号:AI纪元，输入:"+input_text)
     plt.ylabel(u"市场名称")
     plt.title(u"市场强弱排名:" + input_text + " " 
-              + utc2local([alias_result[1] for alias_result in alias_results].max()).strftime('%Y-%m-%d %H:%M') 
+              + utc2local(max([alias_result[1] for alias_result in alias_results])).strftime('%Y-%m-%d %H:%M') 
               + "\n预测结果由AI自动生成，不构成投资建议")
     plt.yticks(y_pos, y_market)
     # Turn on the grid
