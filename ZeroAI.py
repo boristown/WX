@@ -73,7 +73,7 @@ def chat(input_text):
         output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“加密货币”查询汇总信息！"
         return output_text
     
-      select_alias_statment = "SELECT * FROM symbol_alias WHERE market_type = '" + input_text + "' AND market_order > 0"
+      select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias inner join predictions on predictions.symbol = symbol_alias.symbol WHERE symbol_alias.market_type = '" + input_text + "' AND symbol_alias.market_order > 0 group by symbol ORDER BY time DESC"
       
       print(select_alias_statment)
       
@@ -150,24 +150,22 @@ def chat(input_text):
     
   else:
     
-    plt.figure(figsize=(6.4,10), dpi=100)
+    plt.figure(figsize=(5,15), dpi=100)
     
     market_list = []
     for alias_result in alias_results:
-      
-      select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
 
       #print(select_predictions_statment)
 
-      mycursor.execute(select_predictions_statment)
+      #mycursor.execute(select_predictions_statment)
   
-      predictions_results = mycursor.fetchall()
+      #predictions_results = mycursor.fetchall()
   
-      if len(predictions_results) == 0:
-        continue
+      #if len(predictions_results) == 0:
+      #  continue
   
-      predictions_result = predictions_results[0]
-  
+      #predictions_result = predictions_results[0]
+      predictions_result = alias_result
       x=[0,1,2,3,4,5,6,7,8,9,10]
       y=[0.0, score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
          score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
@@ -184,10 +182,10 @@ def chat(input_text):
         bestvalue = minvalue
         bestindex = y.index(minvalue)
       
-      market_list.append((alias_result[0], bestvalue))
+      market_list.append((predictions_result[12], bestvalue))
       
       #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
-    market_list.sort(key=lambda x:x[1], reverse=True)
+    market_list.sort(key=lambda x:x[1], reverse=False)
     market_index = 0
     y_market = [market[0] for market in market_list]
     x_score = [market[1] for market in market_list]
