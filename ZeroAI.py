@@ -59,77 +59,151 @@ def chat(input_text):
     alias_results = mycursor.fetchall()
   
     if len(alias_results) == 0:
-      output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币）！"
+        
+      select_alias_statment = "SELECT * FROM market_alias WHERE market_alias LIKE '%" + input_text + "%'"
+    
+      print(select_alias_statment)
+      
+      mycursor.execute(select_alias_statment)
+  
+      alias_results = mycursor.fetchall()
+  
+      if len(alias_results) == 0:
+        output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“加密货币”查询汇总信息！"
+        return output_text
+    
+      select_alias_statment = "SELECT * FROM symbol_alias WHERE market_type = '" + alias_results[1] + "' AND market_order > 0"
+      
+      print(select_alias_statment)
+      
+      mycursor.execute(select_alias_statment)
+  
+      alias_results = mycursor.fetchall()
+  
+  if len(alias_results) == 1:
+    
+    alias_result = alias_results[0]
+  
+    select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
+
+    print(select_predictions_statment)
+
+    mycursor.execute(select_predictions_statment)
+  
+    predictions_results = mycursor.fetchall()
+  
+    if len(predictions_results) == 0:
+      output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币）！"
       return output_text
   
-  alias_result = alias_results[0]
+    predictions_result = predictions_results[0]
   
-  select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
+    output_text = '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
+    #'市场名:' + alias_result[0] + '\n' \
+    #'市场类型：' + alias_result[2] + '\n' \
+    #'预测时间：' + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + '\n' \
+    '两天后：' + day_prediction_text(predictions_result[3]) + '\n' \
+    '三天后：' + day_prediction_text(predictions_result[4]) + '\n' \
+    '四天后：' + day_prediction_text(predictions_result[5]) + '\n' \
+    '五天后：' + day_prediction_text(predictions_result[6]) + '\n' \
+    '六天后：' + day_prediction_text(predictions_result[7]) + '\n' \
+    '七天后：' + day_prediction_text(predictions_result[8]) + '\n' \
+    '八天后：' + day_prediction_text(predictions_result[9]) + '\n' \
+    '九天后：' + day_prediction_text(predictions_result[10]) + '\n' \
+    '十天后：' + day_prediction_text(predictions_result[11]) + '\n'
 
-  print(select_predictions_statment)
+    #print(output_text)
+  
+    x=[0,1,2,3,4,5,6,7,8,9,10]
+    y=[0.0, score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
+       score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
+       score(predictions_result[8]),score(predictions_result[9]),score(predictions_result[10]),
+       score(predictions_result[11])
+      ]
 
-  mycursor.execute(select_predictions_statment)
-  
-  predictions_results = mycursor.fetchall()
-  
-  if len(predictions_results) == 0:
-    output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币）！"
-    return output_text
-  
-  predictions_result = predictions_results[0]
-  
-  output_text = '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
-  #'市场名:' + alias_result[0] + '\n' \
-  #'市场类型：' + alias_result[2] + '\n' \
-  #'预测时间：' + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + '\n' \
-  '两天后：' + day_prediction_text(predictions_result[3]) + '\n' \
-  '三天后：' + day_prediction_text(predictions_result[4]) + '\n' \
-  '四天后：' + day_prediction_text(predictions_result[5]) + '\n' \
-  '五天后：' + day_prediction_text(predictions_result[6]) + '\n' \
-  '六天后：' + day_prediction_text(predictions_result[7]) + '\n' \
-  '七天后：' + day_prediction_text(predictions_result[8]) + '\n' \
-  '八天后：' + day_prediction_text(predictions_result[9]) + '\n' \
-  '九天后：' + day_prediction_text(predictions_result[10]) + '\n' \
-  '十天后：' + day_prediction_text(predictions_result[11]) + '\n'
-
-  #print(output_text)
-  
-  x=[0,1,2,3,4,5,6,7,8,9,10]
-  y=[0.0, score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
-     score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
-     score(predictions_result[8]),score(predictions_result[9]),score(predictions_result[10]),
-     score(predictions_result[11])
-    ]
-
-  maxvalue = max(y)
-  minvalue = min(y)
-  if abs(maxvalue) >= abs(minvalue):
-    bestvalue = maxvalue
-    bestindex = y.index(maxvalue)
-  else:
-    bestvalue = minvalue
-    bestindex = y.index(minvalue)
+    maxvalue = max(y)
+    minvalue = min(y)
+    if abs(maxvalue) >= abs(minvalue):
+      bestvalue = maxvalue
+      bestindex = y.index(maxvalue)
+    else:
+      bestvalue = minvalue
+      bestindex = y.index(minvalue)
     
-  output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
+    output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
-  plt.rcParams['font.sans-serif']=['SimHei']
-  plt.rcParams['axes.unicode_minus']=False
-  plt.figure()
-  #plt.plot(x,y,"b--",linewidth=3)
-  plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
-  plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
-  plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
-  plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
-  plt.legend()
-  plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）') #X轴标签
-  plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
-  plt.title(alias_result[2] + ":" + alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') +"\n微信公众号：AI纪元") #图标题
-  picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
-  plt.savefig(picture_name)
+    plt.rcParams['font.sans-serif']=['SimHei']
+    plt.rcParams['axes.unicode_minus']=False
+    plt.figure()
+    #plt.plot(x,y,"b--",linewidth=3)
+    plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
+    plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
+    plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
+    plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
+    plt.legend()
+    plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）') #X轴标签
+    plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
+    plt.title("AI预测:" + alias_result[2] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n关注微信公众号:AI纪元，输入:" + alias_result[0]) #图标题
+    picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    plt.savefig(picture_name)
+    
+  else:
+    market_list = []
+    for alias_result in alias_results:
+      
+      select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
 
+      #print(select_predictions_statment)
+
+      mycursor.execute(select_predictions_statment)
+  
+      predictions_results = mycursor.fetchall()
+  
+      if len(predictions_results) == 0:
+        continue
+  
+      predictions_result = predictions_results[0]
+  
+      x=[0,1,2,3,4,5,6,7,8,9,10]
+      y=[0.0, score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
+         score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
+         score(predictions_result[8]),score(predictions_result[9]),score(predictions_result[10]),
+         score(predictions_result[11])
+        ]
+
+      maxvalue = max(y)
+      minvalue = min(y)
+      if abs(maxvalue) >= abs(minvalue):
+        bestvalue = maxvalue
+        bestindex = y.index(maxvalue)
+      else:
+        bestvalue = minvalue
+        bestindex = y.index(minvalue)
+      
+      market_list.append((alias_result[1], bestvalue))
+      
+      #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
+    market_list.sort(key=lambda x:x[1], reverse=True)
+    market_index = 0
+    y_market = [market[0] for market in market_list]
+    x_score = [market[1] for market in market_list]
+    y_pos = [i for i, _ in enumerate(y_market)]
+    plt.barh(y_pos, x_score, color='green')
+    plt.xlabel(u"强弱得分")
+    plt.ylabel(u"市场名称")
+    plt.title(u"市场强弱排名" + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n关注微信公众号:AI纪元，输入:"+input_text)
+    plt.yticks(y_pos, y_market)
+    # Turn on the grid
+    plt.minorticks_on()
+    plt.grid(which='major', linestyle='-', linewidth='0.5', color='black')
+    # Customize the minor grid
+    plt.grid(which='minor', linestyle=':', linewidth='0.5', color='gray')
+    picture_name = 'Img/' + pinyin(input_text) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    plt.savefig(picture_name)
+    
   myMedia = Media()
   accessToken = Basic().get_access_token()
-  filePath = picture_name   
+  filePath = picture_name
   mediaType = "image"
   murlResp = Media.uplaod(accessToken, filePath, mediaType)
   print(murlResp)
