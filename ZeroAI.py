@@ -72,7 +72,7 @@ def chat(input_text):
         output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“加密货币”查询汇总信息！"
         return output_text
     
-      select_alias_statment = "SELECT * FROM symbol_alias WHERE market_type = '" + alias_results[1] + "' AND market_order > 0"
+      select_alias_statment = "SELECT * FROM symbol_alias WHERE market_type = '" + input_text + "' AND market_order > 0"
       
       print(select_alias_statment)
       
@@ -144,7 +144,7 @@ def chat(input_text):
     plt.legend()
     plt.xlabel(u'未来第N天的收盘涨跌概率（相对于当前价格）') #X轴标签
     plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签
-    plt.title("AI预测:" + alias_result[2] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n关注微信公众号:AI纪元，输入:" + alias_result[0]) #图标题
+    plt.title( alias_result[2] ":" + alias_result[0] + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n关注微信公众号:AI纪元，输入:" + alias_result[0]) #图标题
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
@@ -192,7 +192,7 @@ def chat(input_text):
     plt.barh(y_pos, x_score, color='green')
     plt.xlabel(u"强弱得分")
     plt.ylabel(u"市场名称")
-    plt.title(u"市场强弱排名" + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n关注微信公众号:AI纪元，输入:"+input_text)
+    plt.title(u"市场强弱排名:" + input_text + " " + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + "\n关注微信公众号:AI纪元，输入:"+input_text)
     plt.yticks(y_pos, y_market)
     # Turn on the grid
     plt.minorticks_on()
