@@ -104,8 +104,17 @@ def chat(input_text):
     if len(predictions_results) == 0:
       output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币）！"
       return output_text
+    
+    select_prices_statment = "SELECT * FROM prices WHERE symbol = '" + alias_result[1] + "' "
+
+    print(select_prices_statment)
+
+    mycursor.execute(select_prices_statment)
   
-    predictions_result = predictions_results[0]  
+    prices_results = mycursor.fetchall()
+    
+    predictions_result = predictions_results[0]
+    
     output_text = '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
     #'市场名:' + alias_result[0] + '\n' \
     #'市场类型：' + alias_result[2] + '\n' \
