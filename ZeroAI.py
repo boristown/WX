@@ -155,6 +155,7 @@ def chat(input_text):
     #plt.ylabel(u'历史收盘价\n')  #Y轴标签 
     
     plt.plot(x,y,"green",linewidth=1, label=u"价格")
+    plt.annotate(xy=[125,prices_result[119][2]], s=prices_result[119][2], bbox=bbox_props)
     
     plt.subplot(212)
     x=[0,1,2,3,4,5,6,7,8,9,10]
