@@ -188,7 +188,7 @@ def chat(input_text):
             )
     #plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
     #plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
-    plt.annotate(output_text, xy=(bestindex, bestvalue), xytext=(bestindex, bestvalue / 2.0),
+    plt.annotate(output_text, xy=(bestindex, bestvalue), xytext=(bestindex - 1.8, bestvalue / 4.0),
                  arrowprops=dict(facecolor='black', shrink=0.05),
                 )
     plt.legend()
