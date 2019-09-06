@@ -191,7 +191,7 @@ def chat(input_text):
     plt.annotate(output_text, xy=(bestindex, bestvalue), xytext=(bestindex - 1.8, bestvalue * 3.0 / 4.0),
                  arrowprops=dict(facecolor='black', shrink=0.05),
                 )
-    plt.legend()
+    #plt.legend()
     plt.xlabel(u'关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
     plt.ylabel(u'未来10天涨跌趋势[-100到100]\n')  #Y轴标签 
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
