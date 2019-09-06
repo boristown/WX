@@ -59,7 +59,7 @@ def chat(input_text):
     alias_results = mycursor.fetchall()
   
     if len(alias_results) == 0:
-        
+      
       select_alias_statment = "SELECT * FROM market_alias WHERE market_alias LIKE '%" + input_text + "%'"
     
       print(select_alias_statment)
@@ -105,7 +105,7 @@ def chat(input_text):
       output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币）！"
       return output_text
     
-    select_prices_statment = "SELECT * FROM prices WHERE symbol = '" + alias_result[1] + "' "
+    select_prices_statment = "SELECT * FROM prices WHERE symbol = '" + alias_result[1] + "' ORDER BY DAY_INDEX asc"
 
     print(select_prices_statment)
 
@@ -130,7 +130,15 @@ def chat(input_text):
     '十天后：' + day_prediction_text(predictions_result[11]) + '\n'
 
     #print(output_text)
-  
+    
+    plt.subplot(211)
+    
+    x=[i for i in range(1,121)]
+    y=[prices_result[2] for prices_result in prices_results]
+    
+    plt.plot(x,y,"green",linewidth=1, label=u"价格")
+    
+    plt.subplot(212)
     x=[0,1,2,3,4,5,6,7,8,9,10]
     y=[0.0, score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
        score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
@@ -149,7 +157,6 @@ def chat(input_text):
     
     output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
-    
     #plt.plot(x,y,"b--",linewidth=3)
     plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
     plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
