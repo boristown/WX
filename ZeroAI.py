@@ -180,8 +180,12 @@ def chat(input_text):
     output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
     #plt.plot(x,y,"b--",linewidth=3)
-    #plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
-    #plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
+    plt.plot([0,10],[0,0],"k--",linewidth=1, 
+             #label='当前价格'
+            )
+    plt.plot(x,y,"b-.",linewidth=3, marker='x', 
+             #label=output_text
+            )
     #plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
     #plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
     plt.annotate(output_text, xy=(bestindex, bestvalue), xytext=(bestindex, bestvalue / 2.0),
