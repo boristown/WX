@@ -87,7 +87,7 @@ def chat(input_text):
     elif len(alias_results) > 1:
       
       select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-      " inner join predictions on predictions.symbol = symbol_alias.symbol WHERE symbol_alias LIKE '%" + input_text + "%'"
+      " inner join predictions on predictions.symbol = symbol_alias.symbol WHERE symbol_alias LIKE '%" + input_text + "%' group by symbol"
 
       print(select_alias_statment)
 
