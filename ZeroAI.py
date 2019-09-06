@@ -158,7 +158,7 @@ def chat(input_text):
     
     bbox_props = dict(boxstyle='round',fc='w', ec='k',lw=1)
     
-    plt.annotate(xy=[125,prices_results[119][2]], s=prices_results[119][2], bbox=bbox_props)
+    plt.annotate(xy=[123,prices_results[119][2]], s=prices_results[119][2], bbox=bbox_props)
     
     plt.subplot(212)
     x=[0,1,2,3,4,5,6,7,8,9,10]
