@@ -89,7 +89,7 @@ def chat(input_text):
 
   if len(alias_results) == 1:
     
-    plt.figure(figsize=(6.4,4.8), dpi=100)
+    plt.figure(figsize=(6.4,6.4), dpi=100)
     
     alias_result = alias_results[0]
   
@@ -136,6 +136,13 @@ def chat(input_text):
     x=[i for i in range(1,121)]
     y=[prices_result[2] for prices_result in prices_results]
     
+    plt.title( alias_result[2] + ":" + alias_result[0] + " " 
+              + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') 
+              + "\n预测结果由AI自动生成，不构成投资建议") #图标题 
+    
+    plt.xlabel(u'过去120天' + alias_result[0]) #X轴标签
+    plt.ylabel(u'历史收盘价\n')  #Y轴标签 
+    
     plt.plot(x,y,"green",linewidth=1, label=u"价格")
     
     plt.subplot(212)
@@ -163,11 +170,8 @@ def chat(input_text):
     plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
     plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
     plt.legend()
-    plt.xlabel(u'未来10天的趋势。关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
-    plt.ylabel(u'分数[-100到100]\n绝对值越大代表上涨/下跌概率越高')  #Y轴标签 
-    plt.title( alias_result[2] + ":" + alias_result[0] + " " 
-              + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') 
-              + "\n预测结果由AI自动生成，不构成投资建议") #图标题 
+    plt.xlabel(u'未来10天。关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
+    plt.ylabel(u'涨跌趋势[-100到100]\n')  #Y轴标签 
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
