@@ -158,7 +158,7 @@ def chat(input_text):
     
     bbox_props = dict(boxstyle='round',fc='w', ec='k',lw=1)
     
-    plt.annotate(xy=[123,prices_results[119][2]], s=prices_results[119][2], bbox=bbox_props)
+    plt.annotate(xy=[122,prices_results[119][2]], s=prices_results[119][2], bbox=bbox_props)
     
     plt.subplot(212)
     x=[0,1,2,3,4,5,6,7,8,9,10]
@@ -180,10 +180,13 @@ def chat(input_text):
     output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
     #plt.plot(x,y,"b--",linewidth=3)
-    plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
-    plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
-    plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
-    plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
+    #plt.plot([0,10],[0,0],"k--",linewidth=1, label='当前价格')
+    #plt.plot(x,y,"b-.",linewidth=3, label=output_text, marker='x')
+    #plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
+    #plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
+    plt.annotate(output_text, xy=(bestindex, bestvalue), xytext=(bestindex, bestvalue * / 2),
+                 arrowprops=dict(facecolor='black', shrink=0.05),
+                )
     plt.legend()
     plt.xlabel(u'关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
     plt.ylabel(u'未来10天涨跌趋势[-100到100]\n')  #Y轴标签 
