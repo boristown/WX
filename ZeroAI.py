@@ -140,8 +140,8 @@ def chat(input_text):
               + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') 
               + "\n预测结果由AI自动生成，不构成投资建议") #图标题 
     
-    plt.xlabel(u'过去120天' + alias_result[0]) #X轴标签
-    plt.ylabel(u'历史收盘价\n')  #Y轴标签 
+    plt.xlabel(u'过去120天收盘价') #X轴标签
+    #plt.ylabel(u'历史收盘价\n')  #Y轴标签 
     
     plt.plot(x,y,"green",linewidth=1, label=u"价格")
     
@@ -170,8 +170,8 @@ def chat(input_text):
     plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
     plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
     plt.legend()
-    plt.xlabel(u'未来10天。关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
-    plt.ylabel(u'涨跌趋势[-100到100]\n')  #Y轴标签 
+    plt.xlabel(u'关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
+    plt.ylabel(u'未来10天涨跌趋势[-100到100]\n')  #Y轴标签 
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
