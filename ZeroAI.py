@@ -40,11 +40,11 @@ def chat(input_text):
   
   if input_text == '帮助' or input_text == 'HELP':
     output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
-    '请输入“全球股指”、“商品期货”或“加密货币”，获取实时的市场趋势强弱排名。\n' \
+    '请输入：“全球股指”、“商品期货”或“加密货币”，获取实时的市场趋势强弱排名。\n' \
     '输入具体的市场代码如“上证指数”、“黄金”或“比特币”，获取市场未来十天的涨跌趋势。\n' \
     '请使用分散化与自动化的方式进行交易，并控制每笔交易的风险值小于1%。\n' \
     'Hello! Welcome to the AI Era, I am the guide to the future.\n' \
-    'Please enter the "INDICES", "COMMODITIES" or "CRYPTOCURRENCY" to get real-time market trend rankings.\n' \
+    'Please enter: "INDICES", "COMMODITIES" or "CRYPTOCURRENCY" to get real-time market trend rankings.\n' \
     'Enter specific market codes such as “SSE”, “Gold” or “Bitcoin” to get the market trending in the next 10 days.\n' \
     'Please use a decentralized and automated approach to trading and control the risk value of each transaction to less than 1%.\n'
     return output_text
