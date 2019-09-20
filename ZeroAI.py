@@ -83,17 +83,18 @@ def chat(input_text):
         output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“加密货币”查询汇总信息！"
         return output_text
     
-      select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-      " inner join predictions on predictions.symbol = symbol_alias.symbol " \
-      " inner join (select symbol, max(time) as time from predictions group by symbol) as t1 " \
-      " on predictions.symbol = t1.symbol and predictions.time = t1.time " \
-      " WHERE symbol_alias.market_type = '" + alias_results[0][1] + "' AND symbol_alias.market_order > 0 group by symbol ORDER BY time DESC"
+      if len(alias_results) > 1:
+        select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+        " inner join predictions on predictions.symbol = symbol_alias.symbol " \
+        " inner join (select symbol, max(time) as time from predictions group by symbol) as t1 " \
+        " on predictions.symbol = t1.symbol and predictions.time = t1.time " \
+        " WHERE symbol_alias.market_type = '" + alias_results[0][1] + "' AND symbol_alias.market_order > 0 group by symbol ORDER BY time DESC"
       
-      print(select_alias_statment)
+        print(select_alias_statment)
       
-      mycursor.execute(select_alias_statment)
+        mycursor.execute(select_alias_statment)
   
-      alias_results = mycursor.fetchall()
+        alias_results = mycursor.fetchall()
     
     elif len(alias_results) > 1:
       
