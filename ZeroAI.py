@@ -106,7 +106,11 @@ def chat(input_text):
     
   plt.rcParams['font.sans-serif']=['SimHei']
   plt.rcParams['axes.unicode_minus']=False
-
+    
+  if len(alias_results) == 0:
+    output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“加密货币”查询汇总信息！"
+    return output_text
+    
   if len(alias_results) == 1:
     
     plt.figure(figsize=(6.4,6.4), dpi=100)
