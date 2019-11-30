@@ -4,4 +4,5 @@ pip install scipy
 pip install matplotlib
 pip install pypinyin
 pip install requests
+pip install wordcloud
 pause
