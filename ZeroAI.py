@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # filename: ZeroAI.py
 
+from wordcloud import WordCloud, STOPWORDS
 import mysql.connector
 import mypsw
 import time
@@ -13,6 +14,18 @@ from requests.packages.urllib3.filepost import encode_multipart_formdata
 import json
 import pypinyin
 
+word_in_red = ''
+word_in_green = ''
+
+def color_word(word, *args, **kwargs):
+    if (word == word_in_red):
+        color = '#ff0000' # red
+    if (word == word_in_green):
+        color = '#00ff00' # green
+    else:
+        color = '#000000' # black
+    return color
+    
 def utc2local(utc_st):
     #UTC时间转本地时间（+8:00）
     now_stamp = time.time()
@@ -23,9 +36,7 @@ def utc2local(utc_st):
     return local_st
 
 def chat(input_text):
-  
   output_text = ''
-  
   mydb = mysql.connector.connect(
     host=mypsw.wechatguest.host,
     user=mypsw.wechatguest.user,
@@ -38,6 +49,9 @@ def chat(input_text):
 
   input_text = input_text.strip().upper()
   
+  stopwords = set(STOPWORDS) 
+  comment_words = ''
+
   if input_text == '帮助' or input_text == 'HELP':
     output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
     '请输入：“全球股指”、“商品期货”或“加密货币”，获取实时的市场趋势强弱排名。\n' \
@@ -212,7 +226,8 @@ def chat(input_text):
     
   else:
     
-    plt.figure(figsize=(7 + len(alias_results)*0.05, max(5,2 + len(alias_results)*0.13)), dpi=100)
+    #plt.figure(figsize=(7 + len(alias_results)*0.05, max(5,2 + len(alias_results)*0.13)), dpi=100)
+    plt.figure(figsize=(8, 8), dpi=100)
     
     market_list = []
     for alias_result in alias_results:
@@ -245,13 +260,39 @@ def chat(input_text):
         bestindex = y.index(minvalue)
       
       market_list.append((predictions_result[12], bestvalue))
+      wordcount = int(abs(bestvalue) * 1000)
+      for wordindex in range(wordcount):
+        comment_words = comment_words + ' '  + predictions_result[12]
       
       #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
     market_list.sort(key=lambda x:x[1], reverse=False)
+    
+    word_in_red = ''
+    word_in_green = ''
+    if abs(market_list[0][1]) > abs(market_list[-1][1]):
+        word_in_red = market_list[0][0]
+    else:
+        word_in_green = market_list[0][-1]
+    
     market_index = 0
     y_market = [market[0] for market in market_list]
     x_score = [market[1] for market in market_list]
     y_pos = [i for i, _ in enumerate(y_market)]
+    
+    wordcloud = WordCloud(width = 800, height = 800, 
+                background_color ='white', 
+                #colormap="Oranges_r",
+                color_func=color_word,
+                stopwords = stopwords, 
+                min_font_size = 10).generate(comment_words) 
+    
+    plt.figure(figsize = (8, 8), facecolor = None) 
+    plt.imshow(wordcloud, interpolation="bilinear") 
+    plt.axis("off") 
+    plt.margins(x=0, y=0) 
+    plt.tight_layout(pad = 0) 
+
+    '''
     plt.barh(y_pos, x_score, color='green')
     plt.xlabel(u"强弱得分。关注微信公众号:AI纪元，输入:"+input_text)
     plt.ylabel(u"市场名称")
@@ -259,6 +300,8 @@ def chat(input_text):
               + utc2local( max( [alias_result[1] for alias_result in alias_results] ) ).strftime('%Y-%m-%d %H:%M') 
               + "\n预测结果由AI自动生成，不构成投资建议")
     plt.yticks(y_pos, y_market)
+    '''
+    
     # Turn on the grid
     #plt.minorticks_on()
     #plt.grid(which='major', linestyle='-', linewidth='0.5', color='black')
