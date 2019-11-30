@@ -261,9 +261,9 @@ def chat(input_text):
       
       market_list.append((predictions_result[12], bestvalue))
       wordcount = int(abs(bestvalue) * 1000)
+      print(predictions_result[12] + ' count = ' + str(wordcount))
       for wordindex in range(wordcount):
         comment_words = comment_words + ' '  + predictions_result[12]
-      
       #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
     market_list.sort(key=lambda x:x[1], reverse=False)
     
