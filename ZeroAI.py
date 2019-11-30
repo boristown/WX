@@ -14,17 +14,21 @@ from requests.packages.urllib3.filepost import encode_multipart_formdata
 import json
 import pypinyin
 
-word_in_red = ''
-word_in_green = ''
+class word_in_color(object):
+  word_in_red = ''
+  word_in_green = ''
 
 def color_word(word, *args, **kwargs):
-    if (word == word_in_red):
-        color = '#ff0000' # red
-    if (word == word_in_green):
-        color = '#00ff00' # green
-    else:
-        color = '#000000' # black
-    return color
+  #print("word_in_red:" + word_in_color.word_in_red)
+  #print("word_in_green:" + word_in_color.word_in_green)
+  if (word == word_in_color.word_in_red):
+      color = '#ff0000' # red
+  elif (word == word_in_color.word_in_green):
+      color = '#00ff00' # green
+  else:
+      #print(word + " <> " + word_in_color.word_in_red + word_in_color.word_in_green)
+      color = '#000000' # black
+  return color
     
 def utc2local(utc_st):
     #UTC时间转本地时间（+8:00）
@@ -51,6 +55,9 @@ def chat(input_text):
   
   stopwords = set(STOPWORDS) 
   comment_words = ''
+
+  word_in_color.word_in_red = ''
+  word_in_color.word_in_green = ''
 
   if input_text == '帮助' or input_text == 'HELP':
     output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
@@ -259,21 +266,26 @@ def chat(input_text):
         bestvalue = minvalue
         bestindex = y.index(minvalue)
       
-      market_list.append((predictions_result[12], bestvalue))
-      wordcount = int(abs(bestvalue) * 1000)
-      print(predictions_result[12] + ' count = ' + str(wordcount))
+      word_single = predictions_result[12]
+      if len(word_single) == 1:
+        word_single = input_text + "_" + word_single
+      market_list.append((word_single, bestvalue))
+      wordcount = int(abs(bestvalue))
+      #print(predictions_result[12] + ' count = ' + str(wordcount))
       for wordindex in range(wordcount):
-        comment_words = comment_words + ' '  + predictions_result[12]
+        if comment_words == '':
+          comment_words = word_single
+        else:
+          comment_words = comment_words + " " + word_single
       #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
     market_list.sort(key=lambda x:x[1], reverse=False)
-    
-    word_in_red = ''
-    word_in_green = ''
+    #print(comment_words)
     if abs(market_list[0][1]) > abs(market_list[-1][1]):
-        word_in_red = market_list[0][0]
+        word_in_color.word_in_green = market_list[0][0]
     else:
-        word_in_green = market_list[-1][0]
+        word_in_color.word_in_red = market_list[-1][0]
     
+
     market_index = 0
     y_market = [market[0] for market in market_list]
     x_score = [market[1] for market in market_list]
@@ -284,7 +296,10 @@ def chat(input_text):
                 #colormap="Oranges_r",
                 color_func=color_word,
                 stopwords = stopwords,
-                #min_font_size = 10
+                font_path='simhei.ttf',
+                #min_font_size = 10,
+                #max_words=1,
+                collocations=False
                 ).generate(comment_words)
     
     plt.figure(figsize = (8, 8), facecolor = None) 
