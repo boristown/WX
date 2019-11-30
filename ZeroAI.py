@@ -13,6 +13,7 @@ import requests
 from requests.packages.urllib3.filepost import encode_multipart_formdata
 import json
 import pypinyin
+import glob
 
 class word_in_color(object):
   word_in_red = ''
@@ -41,6 +42,19 @@ def utc2local(utc_st):
 
 def chat(input_text):
   output_text = ''
+
+  picture_path = 'Img/' + pinyin(input_text) + datetime.datetime.now().strftime('%Y%m%d%H') + '*.png'
+  picture_cache = glob.glob(picture_path)
+  if picture_cache:
+    picture_name = picture_cache[0]
+    myMedia = Media()
+    accessToken = Basic().get_access_token()
+    filePath = picture_name
+    mediaType = "image"
+    murlResp = Media.uplaod(accessToken, filePath, mediaType)
+    print(murlResp)
+    return murlResp
+
   mydb = mysql.connector.connect(
     host=mypsw.wechatguest.host,
     user=mypsw.wechatguest.user,
@@ -55,6 +69,7 @@ def chat(input_text):
   
   stopwords = set(STOPWORDS) 
   comment_words = ''
+  word_list = []
 
   word_in_color.word_in_red = ''
   word_in_color.word_in_green = ''
@@ -232,9 +247,9 @@ def chat(input_text):
     plt.savefig(picture_name)
     
   else:
-    
+
     #plt.figure(figsize=(7 + len(alias_results)*0.05, max(5,2 + len(alias_results)*0.13)), dpi=100)
-    plt.figure(figsize=(8, 8), dpi=100)
+    plt.figure(figsize=(6.4, 6.4), dpi=100)
     
     market_list = []
     for alias_result in alias_results:
@@ -272,13 +287,16 @@ def chat(input_text):
       market_list.append((word_single, bestvalue))
       wordcount = int(abs(bestvalue))
       #print(predictions_result[12] + ' count = ' + str(wordcount))
-      for wordindex in range(wordcount):
-        if comment_words == '':
-          comment_words = word_single
-        else:
-          comment_words = comment_words + " " + word_single
+      word_list = word_list + [word_single for wordindex in range(wordcount)]
+      
+      #for wordindex in range(wordcount):
+      #  if comment_words == '':
+      #    comment_words = word_single
+      #  else:
+      #    comment_words = comment_words + " " + word_single
       #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
     market_list.sort(key=lambda x:x[1], reverse=False)
+    comment_words = ' '.join(word_list)
     #print(comment_words)
     if abs(market_list[0][1]) > abs(market_list[-1][1]):
         word_in_color.word_in_green = market_list[0][0]
