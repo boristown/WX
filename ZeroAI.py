@@ -253,7 +253,7 @@ def chat(input_text):
   else:
 
     #plt.figure(figsize=(7 + len(alias_results)*0.05, max(5,2 + len(alias_results)*0.13)), dpi=100)
-    plt.figure(figsize=(6.4, 6.4), dpi=100)
+    #plt.figure(figsize=(6.4, 6.4), dpi=100)
     
     market_list = []
     for alias_result in alias_results:
@@ -321,7 +321,7 @@ def chat(input_text):
     x_score = [market[1] for market in market_list]
     y_pos = [i for i, _ in enumerate(y_market)]
     
-    wordcloud = WordCloud(width = 800, height = 800, 
+    wordcloud = WordCloud(width = 640, height = 640, 
                 background_color ='white', 
                 #colormap="Oranges_r",
                 color_func=color_word,
@@ -332,7 +332,7 @@ def chat(input_text):
                 collocations=False
                 ).generate(comment_words)
     
-    plt.figure(figsize = (8, 8), facecolor = None) 
+    plt.figure(figsize = (6.4, 6.4), facecolor = None) 
     plt.imshow(wordcloud, interpolation="bilinear") 
     plt.axis("off") 
     plt.margins(x=0, y=0) 
