@@ -272,7 +272,7 @@ def chat(input_text):
     if abs(market_list[0][1]) > abs(market_list[-1][1]):
         word_in_red = market_list[0][0]
     else:
-        word_in_green = market_list[0][-1]
+        word_in_green = market_list[-1][0]
     
     market_index = 0
     y_market = [market[0] for market in market_list]
@@ -283,8 +283,9 @@ def chat(input_text):
                 background_color ='white', 
                 #colormap="Oranges_r",
                 color_func=color_word,
-                stopwords = stopwords, 
-                min_font_size = 10).generate(comment_words) 
+                stopwords = stopwords,
+                #min_font_size = 10
+                ).generate(comment_words)
     
     plt.figure(figsize = (8, 8), facecolor = None) 
     plt.imshow(wordcloud, interpolation="bilinear") 
