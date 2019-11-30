@@ -18,6 +18,7 @@ import glob
 class word_in_color(object):
   word_in_red = ''
   word_in_green = ''
+  word_in_grey = []
 
 def color_word(word, *args, **kwargs):
   #print("word_in_red:" + word_in_color.word_in_red)
@@ -26,6 +27,8 @@ def color_word(word, *args, **kwargs):
       color = '#ff0000' # red
   elif (word == word_in_color.word_in_green):
       color = '#00ff00' # green
+  elif (word in word_in_color.word_in_grey):
+      color = '#c0c0c0' # grey
   else:
       #print(word + " <> " + word_in_color.word_in_red + word_in_color.word_in_green)
       color = '#000000' # black
@@ -73,6 +76,7 @@ def chat(input_text):
 
   word_in_color.word_in_red = ''
   word_in_color.word_in_green = ''
+  word_in_color.word_in_grey = []
 
   if input_text == '帮助' or input_text == 'HELP':
     output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
@@ -283,7 +287,7 @@ def chat(input_text):
       
       word_single = predictions_result[12]
       if len(word_single) == 1:
-        word_single = input_text + "_" + word_single
+        word_single = "_" + word_single
       market_list.append((word_single, bestvalue))
       wordcount = int(abs(bestvalue))
       #print(predictions_result[12] + ' count = ' + str(wordcount))
@@ -296,12 +300,20 @@ def chat(input_text):
       #    comment_words = comment_words + " " + word_single
       #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
     market_list.sort(key=lambda x:x[1], reverse=False)
-    comment_words = ' '.join(word_list)
     #print(comment_words)
+    time_str = '时间' + utc2local( max( [alias_result[1] for alias_result in alias_results] ) ).strftime('%Y%m%d%H%M')
     if abs(market_list[0][1]) > abs(market_list[-1][1]):
         word_in_color.word_in_green = market_list[0][0]
+        word_list = word_list + [input_text for wordindex in range(int(abs(market_list[0][1])))]
+        word_list = word_list + [time_str for wordindex in range(int(abs(market_list[0][1] / 2)))]
+        word_list = word_list + ['微信公众号AI纪元' for wordindex in range(int(abs(market_list[0][1] / 2)))]
     else:
         word_in_color.word_in_red = market_list[-1][0]
+        word_list = word_list + [input_text for wordindex in range(int(abs(market_list[-1][1])))]
+        word_list = word_list + [time_str for wordindex in range(int(abs(market_list[-1][1] / 2)))]
+        word_list = word_list + ['微信公众号AI纪元' for wordindex in range(int(abs(market_list[-1][1] / 2)))]
+    word_in_color.word_in_grey = [input_text,time_str,'微信公众号AI纪元']
+    comment_words = ' '.join(word_list)
     
 
     market_index = 0
