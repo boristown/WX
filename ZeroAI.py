@@ -19,16 +19,22 @@ class word_in_color(object):
   word_in_red = ''
   word_in_green = ''
   word_in_grey = []
+  word_in_deepred = []
+  word_in_deepgreen = []
 
 def color_word(word, *args, **kwargs):
   #print("word_in_red:" + word_in_color.word_in_red)
   #print("word_in_green:" + word_in_color.word_in_green)
   if (word == word_in_color.word_in_red):
-      color = '#ff0000' # red
+      color = '#ff1010' # red
   elif (word == word_in_color.word_in_green):
-      color = '#00ff00' # green
+      color = '#10ff10' # green
   elif (word in word_in_color.word_in_grey):
-      color = '#c0c0c0' # grey
+      color = '#808080' # grey
+  elif (word in word_in_color.word_in_deepred):
+      color = '#800808' # deepred
+  elif (word in word_in_color.word_in_deepgreen):
+      color = '#088008' # deepgreen
   else:
       #print(word + " <> " + word_in_color.word_in_red + word_in_color.word_in_green)
       color = '#000000' # black
@@ -77,14 +83,16 @@ def chat(input_text):
   word_in_color.word_in_red = ''
   word_in_color.word_in_green = ''
   word_in_color.word_in_grey = []
+  word_in_color.word_in_deepred = []
+  word_in_color.word_in_deepgreen = []
 
   if input_text == '帮助' or input_text == 'HELP':
     output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
-    '请输入：“全球股指”、“商品期货”或“加密货币”，获取实时的市场趋势强弱排名。\n' \
+    '请输入：“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”，获取实时的市场趋势强弱排名。\n' \
     '输入具体的市场代码如“上证指数”、“黄金”或“比特币”，获取市场未来十天的涨跌趋势。\n' \
     '请使用分散化与自动化的方式进行交易，并控制每笔交易的风险值小于1%。\n' \
     'Hello! Welcome to the AI Era, I am the guide to the future.\n' \
-    'Please enter: "INDICES", "COMMODITIES" or "CRYPTOCURRENCY" to get real-time market trend rankings.\n' \
+    'Please enter: "INDICES", "COMMODITIES", "CURRENCIES", "STOCKS" or "CRYPTOCURRENCY" to get real-time market trend rankings.\n' \
     'Enter specific market codes such as “SSE”, “Gold” or “Bitcoin” to get the market trending in the next 10 days.\n' \
     'Please use a decentralized and automated approach to trading and control the risk value of each transaction to less than 1%.\n'
     return output_text
@@ -120,7 +128,7 @@ def chat(input_text):
       alias_results = mycursor.fetchall()
   
       if len(alias_results) == 0:
-        output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“加密货币”查询汇总信息！"
+        output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
         return output_text
     
       select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
@@ -148,7 +156,7 @@ def chat(input_text):
   plt.rcParams['axes.unicode_minus']=False
     
   if len(alias_results) == 0:
-    output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“加密货币”查询汇总信息！"
+    output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
     return output_text
     
   if len(alias_results) == 1:
@@ -166,7 +174,7 @@ def chat(input_text):
     predictions_results = mycursor.fetchall()
   
     if len(predictions_results) == 0:
-      output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币）！"
+      output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
       return output_text
     
     select_prices_statment = "SELECT * FROM prices WHERE symbol = '" + alias_result[1] + "' ORDER BY DAY_INDEX asc"
@@ -290,6 +298,11 @@ def chat(input_text):
         word_single = "_" + word_single
       market_list.append((word_single, bestvalue))
       wordcount = int(abs(bestvalue))
+      if bestvalue >= 0:
+        word_in_color.word_in_deepred.append(word_single)
+      else:
+        word_in_color.word_in_deepgreen.append(word_single)
+        
       #print(predictions_result[12] + ' count = ' + str(wordcount))
       word_list = word_list + [word_single for wordindex in range(wordcount)]
       
@@ -322,7 +335,7 @@ def chat(input_text):
     y_pos = [i for i, _ in enumerate(y_market)]
     
     wordcloud = WordCloud(width = 640, height = 640, 
-                background_color ='white', 
+                background_color ='black', 
                 #colormap="Oranges_r",
                 color_func=color_word,
                 stopwords = stopwords,
