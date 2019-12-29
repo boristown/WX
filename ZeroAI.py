@@ -262,6 +262,10 @@ def chat(input_text):
     plt.annotate(output_text, xy=(bestindex, bestvalue), xytext=(bestindex - 1.8, bestvalue * 3.0 / 4.0),
                  arrowprops=dict(facecolor='black', shrink=0.05),
                 )
+    
+    plt.annotate(str(y[1]), xy=(1, y[1]), xytext=(0.7, bestvalue),
+                 arrowprops=dict(facecolor='black', shrink=0.05),
+                )
     #plt.legend()
     plt.xlabel(u'关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
     plt.ylabel(u'未来10天涨跌趋势[-100到100]\n')  #Y轴标签 
@@ -287,12 +291,8 @@ def chat(input_text):
   
       #predictions_result = predictions_results[0]
       predictions_result = alias_result
-      x=[0,1,2,3,4,5,6,7,8,9,10]
-      y=[0.0, score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
-         score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
-         score(predictions_result[8]),score(predictions_result[9]),score(predictions_result[10]),
-         score(predictions_result[11])
-        ]
+      x=[0,1]
+      y=[0.0, score(predictions_result[2])]
 
       maxvalue = max(y)
       minvalue = min(y)
@@ -308,7 +308,7 @@ def chat(input_text):
       #  word_single = "_" + word_single
       word_single = "/" + word_single + "/"
       market_list.append((word_single, bestvalue))
-      wordcount = int(abs(bestvalue))
+      wordcount = abs(bestvalue)
       if bestvalue >= 0:
         word_in_color.word_in_deepred.append(word_single)
       else:
@@ -362,16 +362,6 @@ def chat(input_text):
     plt.axis("off") 
     plt.margins(x=0, y=0) 
     plt.tight_layout(pad = 0) 
-
-    '''
-    plt.barh(y_pos, x_score, color='green')
-    plt.xlabel(u"强弱得分。关注微信公众号:AI纪元，输入:"+input_text)
-    plt.ylabel(u"市场名称")
-    plt.title(u"市场强弱排名:" + input_text + " " 
-              + utc2local( max( [alias_result[1] for alias_result in alias_results] ) ).strftime('%Y-%m-%d %H:%M') 
-              + "\n预测结果由AI自动生成，不构成投资建议")
-    plt.yticks(y_pos, y_market)
-    '''
     
     # Turn on the grid
     #plt.minorticks_on()
