@@ -202,7 +202,8 @@ def chat(input_text):
     #           u'\nFollow Wechat Public Account: AI纪元, Input:'+ alias_result[0]
                ) #X轴标签
     
-    plt.plot(x,y,"green",linewidth=1, label=u"价格")
+    #plt.plot(x,y,"green",linewidth=1, label=u"价格")
+    plt.plot(x,y,"black",linewidth=1, label=u"价格")
     
     bbox_props = dict(boxstyle='round',fc='w', ec='k',lw=1)
     
