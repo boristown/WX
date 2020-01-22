@@ -16,32 +16,24 @@ import pypinyin
 import glob
 
 class word_in_color(object):
-  word_in_red = ''
-  word_in_green = ''
-  word_in_grey = []
-  word_in_deepred = []
-  word_in_deepgreen = []
+  word_in_rising_major = ''
+  word_in_falling_major = ''
+  word_in_comments = []
+  word_in_rising_minor = []
+  word_in_falling_minor = []
 
 def color_word(word, *args, **kwargs):
-  #print("word_in_red:" + word_in_color.word_in_red)
-  #print("word_in_green:" + word_in_color.word_in_green)
-  if (word == word_in_color.word_in_red):
-      #color = '#ff1010' # red
+  if (word == word_in_color.word_in_rising_major):
       color = '#ffffff' # red
-  elif (word == word_in_color.word_in_green):
-      #color = '#10ff10' # green
+  elif (word == word_in_color.word_in_falling_major):
       color = '#f44336' # green
-  elif (word in word_in_color.word_in_grey):
-      #color = '#808080' # grey
-      color = '#ffffff' if word_in_color.word_in_red != '' else '#f44336' # grey
-  elif (word in word_in_color.word_in_deepred):
-      #color = '#800808' # deepred
+  elif (word in word_in_color.word_in_comments):
+      color = '#ffffff' if word_in_color.word_in_rising_major != '' else '#f44336' # grey
+  elif (word in word_in_color.word_in_rising_minor):
       color = '#7f7f7f' # deepred
-  elif (word in word_in_color.word_in_deepgreen):
-      #color = '#088008' # deepgreen
+  elif (word in word_in_color.word_in_falling_minor):
       color = '#7a211b' # deepgreen
   else:
-      #print(word + " <> " + word_in_color.word_in_red + word_in_color.word_in_green)
       color = '#000000' # black
   return color
     
@@ -86,11 +78,11 @@ def chat(input_text):
   word_list = []
   word_frequencies = {}
 
-  word_in_color.word_in_red = ''
-  word_in_color.word_in_green = ''
-  word_in_color.word_in_grey = []
-  word_in_color.word_in_deepred = []
-  word_in_color.word_in_deepgreen = []
+  word_in_color.word_in_rising_major = ''
+  word_in_color.word_in_falling_major = ''
+  word_in_color.word_in_comments = []
+  word_in_color.word_in_rising_minor = []
+  word_in_color.word_in_falling_minor = []
 
   if input_text == '帮助' or input_text == 'HELP':
     output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
@@ -156,7 +148,7 @@ def chat(input_text):
 
       mycursor.execute(select_alias_statment)
   
-      alias_results = mycursor.fetchall()
+      alias_results = mycursor.fetchall() 
     
   plt.rcParams['font.sans-serif']=['SimHei']
   plt.rcParams['axes.unicode_minus']=False
@@ -194,41 +186,21 @@ def chat(input_text):
     
     predictions_result = predictions_results[0]
     
-    output_text = '一天后：' + day_prediction_text(predictions_result[2]) + '\n' \
-    #'市场名:' + alias_result[0] + '\n' \
-    #'市场类型：' + alias_result[2] + '\n' \
-    #'预测时间：' + utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') + '\n' \
-    '两天后：' + day_prediction_text(predictions_result[3]) + '\n' \
-    '三天后：' + day_prediction_text(predictions_result[4]) + '\n' \
-    '四天后：' + day_prediction_text(predictions_result[5]) + '\n' \
-    '五天后：' + day_prediction_text(predictions_result[6]) + '\n' \
-    '六天后：' + day_prediction_text(predictions_result[7]) + '\n' \
-    '七天后：' + day_prediction_text(predictions_result[8]) + '\n' \
-    '八天后：' + day_prediction_text(predictions_result[9]) + '\n' \
-    '九天后：' + day_prediction_text(predictions_result[10]) + '\n' \
-    '十天后：' + day_prediction_text(predictions_result[11]) + '\n'
-
-    #print(output_text)
-    
     plt.subplot(211)
     
     x=[i for i in range(1,121)]
-    #y=[prices_result[2] for prices_result in prices_results]
     y=[prices_results[0][121-price_index] for price_index in range(120)]
     
     plt.title( alias_result[2] + ":" + alias_result[0] + " " 
-              #+ utc2local(predictions_result[1]).strftime('%Y-%m-%d %H:%M') 
               + predictions_result[1].strftime('%Y-%m-%d %H:%M') 
               + " UTC\n预测结果由AI自动生成，不构成投资建议") #图标题 
     
     plt.xlabel(u'过去120天收盘价') #X轴标签
-    #plt.ylabel(u'历史收盘价\n')  #Y轴标签 
     
     plt.plot(x,y,"green",linewidth=1, label=u"价格")
     
     bbox_props = dict(boxstyle='round',fc='w', ec='k',lw=1)
     
-    #plt.annotate(xy=[122,prices_results[119][2]], s=prices_results[119][2], bbox=bbox_props)
     plt.annotate(xy=[122,prices_results[0][2]], s=prices_results[0][2], bbox=bbox_props)
     
     plt.subplot(212)
@@ -249,48 +221,26 @@ def chat(input_text):
       bestindex = y.index(minvalue)
     
     output_text = '1天后：' + day_prediction_text(predictions_result[2])
-    output_text = output_text + '\n' + str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
+    #output_text = output_text + '\n' + str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
   
-    #plt.plot(x,y,"b--",linewidth=3)
     plt.plot([0,10],[0,0],"k--",linewidth=1, 
-             #label='当前价格'
             )
     plt.plot(x,y,"b-.",linewidth=3, marker='x', 
-             #label=output_text
             )
-    #plt.hlines(bestvalue, 0, 10, colors = "c", linestyles = "dotted")
-    #plt.vlines(bestindex, minvalue, maxvalue, colors = "c", linestyles = "dotted")
     plt.annotate(output_text, xy=(bestindex, bestvalue), xytext=(bestindex - 1.8, bestvalue * 2.0 / 4.0),
                  arrowprops=dict(facecolor='black', shrink=0.05),
                 )
     
-    #plt.annotate(str(y[1]), xy=(1, y[1]), xytext=(0.7, bestvalue),
-    #             arrowprops=dict(facecolor='black', shrink=0.05),
-    #            )
-    #plt.legend()
     plt.xlabel(u'关注微信公众号:AI纪元，输入:' + alias_result[0]) #X轴标签
     plt.ylabel(u'未来10天涨跌趋势[-100到100]\n')  #Y轴标签 
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
   else:
-
-    #plt.figure(figsize=(7 + len(alias_results)*0.05, max(5,2 + len(alias_results)*0.13)), dpi=100)
-    #plt.figure(figsize=(6.4, 6.4), dpi=100)
     
     market_list = []
     for alias_result in alias_results:
 
-      #print(select_predictions_statment)
-
-      #mycursor.execute(select_predictions_statment)
-  
-      #predictions_results = mycursor.fetchall()
-  
-      #if len(predictions_results) == 0:
-      #  continue
-  
-      #predictions_result = predictions_results[0]
       predictions_result = alias_result
       x=[0,1]
       y=[0.0, score(predictions_result[2])]
@@ -305,41 +255,28 @@ def chat(input_text):
         bestindex = y.index(minvalue)
       
       word_single = predictions_result[12]
-      #if len(word_single) == 1:
-      #  word_single = "_" + word_single
       word_single = "/" + word_single + "/"
       market_list.append((word_single, bestvalue))
       wordcount = abs(bestvalue)
       if bestvalue >= 0:
-        word_in_color.word_in_deepred.append(word_single)
+        word_in_color.word_in_rising_minor.append(word_single)
       else:
-        word_in_color.word_in_deepgreen.append(word_single)
+        word_in_color.word_in_falling_minor.append(word_single)
       
         
-      #print(predictions_result[12] + ' count = ' + str(wordcount))
-      #word_list = word_list + [word_single for wordindex in range(wordcount)]
       word_frequencies[word_single] = wordcount
-      #for wordindex in range(wordcount):
-      #  if comment_words == '':
-      #    comment_words = word_single
-      #  else:
-      #    comment_words = comment_words + " " + word_single
-      #output_text = str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
     market_list.sort(key=lambda x:x[1], reverse=False)
-    #print(comment_words)
-    #time_str = 'UTC时间:' + utc2local( max( [alias_result[1] for alias_result in alias_results] ) ).strftime('%Y%m%d%H%M')
     time_str = "Time:"+max( [alias_result[1] for alias_result in alias_results] ).strftime('%Y-%m-%d_%H:%M') + "_UTC"
     if abs(market_list[0][1]) > abs(market_list[-1][1]):
-      word_in_color.word_in_green = market_list[0][0]
+      word_in_color.word_in_falling_major = market_list[0][0]
       comment_frequency = int(abs(market_list[0][1]))
     else:
-      word_in_color.word_in_red = market_list[-1][0]
+      word_in_color.word_in_rising_major = market_list[-1][0]
       comment_frequency = int(abs(market_list[-1][1]))
-    word_in_color.word_in_grey = ['输入：'+input_text,time_str,'微信公众号：AI纪元']
-    word_frequencies[word_in_color.word_in_grey[0]] = comment_frequency
-    word_frequencies[word_in_color.word_in_grey[1]] = comment_frequency
-    word_frequencies[word_in_color.word_in_grey[2]] = comment_frequency
-    #comment_words = ' '.join(word_list)
+    word_in_color.word_in_comments = ['输入：'+input_text,time_str,'微信公众号：AI纪元']
+    word_frequencies[word_in_color.word_in_comments[0]] = comment_frequency
+    word_frequencies[word_in_color.word_in_comments[1]] = comment_frequency
+    word_frequencies[word_in_color.word_in_comments[2]] = comment_frequency
     
 
     market_index = 0
@@ -349,12 +286,9 @@ def chat(input_text):
     
     wordcloud = WordCloud(width = 700, height = 700, 
                 background_color ='black', 
-                #colormap="Oranges_r",
                 color_func=color_word,
                 stopwords = stopwords,
                 font_path='simhei.ttf',
-                #min_font_size = 10,
-                #max_words=1,
                 collocations=False
                 ).generate_from_frequencies(word_frequencies)
     
@@ -364,11 +298,6 @@ def chat(input_text):
     plt.margins(x=0, y=0) 
     plt.tight_layout(pad = 0) 
     
-    # Turn on the grid
-    #plt.minorticks_on()
-    #plt.grid(which='major', linestyle='-', linewidth='0.5', color='black')
-    # Customize the minor grid
-    #plt.grid(which='minor', linestyle=':', linewidth='0.5', color='gray')
     picture_name = 'Img/' + pinyin(input_text) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     
@@ -379,7 +308,6 @@ def chat(input_text):
   murlResp = Media.uplaod(accessToken, filePath, mediaType)
   print(murlResp)
 
-  #return output_text
   return murlResp
 
 def day_prediction_text(prediction_result):
@@ -405,15 +333,11 @@ class Media(object):
   def uplaod(accessToken, filePath, mediaType):
     openFile = open(filePath, "rb")
     param = {'media': openFile.read()}
-    #postData, postHeaders = poster.encode.multipart_encode(param)
     postData, content_type = encode_multipart_formdata(param)
 
     postUrl = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=%s&type=%s" % (accessToken, mediaType)
-    #request = urllib2.Request(postUrl, postData, postHeaders)
-    #urlResp = urllib2.urlopen(request)
     headers = {'Content-Type': content_type}
     files = {'media': open(filePath, "rb")}
-    #urlResp = requests.post(postUrl, data=postData, headers=headers, files=files)
     urlResp = requests.post(postUrl, files=files)
     print(urlResp.text)
     return json.loads(urlResp.text)['media_id']
