@@ -203,11 +203,13 @@ def chat(input_text):
                ) #X轴标签
     
     #plt.plot(x,y,"green",linewidth=1, label=u"价格")
-    plt.plot(x,y,"black",linewidth=1, label=u"价格")
+    plt.plot(x,y,"black",linewidth=1, label="ATR："+ str(float(prices_results[0][122])*100) + "%" )
     
     bbox_props = dict(boxstyle='round',fc='w', ec='k',lw=1)
     
     plt.annotate(xy=[122,prices_results[0][2]], s=prices_results[0][2], bbox=bbox_props)
+    
+    plt.legend(loc = 2)
     
     '''
     plt.subplot(212)
