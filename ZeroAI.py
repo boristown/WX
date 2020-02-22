@@ -54,36 +54,11 @@ def chat(input_text):
   picture_cache = glob.glob(picture_path)
   if picture_cache:
     picture_name = picture_cache[0]
-    myMedia = Media()
-    accessToken = Basic().get_access_token()
-    filePath = picture_name
-    mediaType = "image"
-    murlResp = Media.uplaod(accessToken, filePath, mediaType)
-    print(murlResp)
-    return murlResp
-
-  mydb = mysql.connector.connect(
-    host=mypsw.wechatguest.host,
-    user=mypsw.wechatguest.user,
-    passwd=mypsw.wechatguest.passwd,
-    database=mypsw.wechatguest.database,
-    auth_plugin='mysql_native_password'
-    )
-
-  mycursor = mydb.cursor()
+    return picture_url(picture_name)
+  
+  mycursor = init_mycursor()
 
   input_text = input_text.strip().upper()
-  
-  stopwords = set(STOPWORDS) 
-  comment_words = ''
-  word_list = []
-  word_frequencies = {}
-
-  word_in_color.word_in_rising_major = ''
-  word_in_color.word_in_falling_major = ''
-  word_in_color.word_in_comments = []
-  word_in_color.word_in_rising_minor = []
-  word_in_color.word_in_falling_minor = []
 
   if input_text == '帮助' or input_text == 'HELP':
     return help_text()
@@ -180,14 +155,7 @@ def chat(input_text):
   else:
     picture_name = draw_tag(alias_results)
     
-  myMedia = Media()
-  accessToken = Basic().get_access_token()
-  filePath = picture_name
-  mediaType = "image"
-  murlResp = Media.uplaod(accessToken, filePath, mediaType)
-  print(murlResp)
-
-  return murlResp
+  return picture_url(picture_name)
 
 def day_prediction_text(prediction_result, price, atr):
   if prediction_result == 1:
@@ -212,6 +180,31 @@ def help_text():
     'Enter specific market codes such as “SSE”, “Gold” or “Bitcoin” to get the market trending in the next 10 days.\n' \
     'Please use a decentralized and automated approach to trading and control the risk value of each transaction to less than 1%.\n'
     return output_text 
+
+def init_mycursor():
+    word_in_color.word_in_rising_major = ''
+    word_in_color.word_in_falling_major = ''
+    word_in_color.word_in_comments = []
+    word_in_color.word_in_rising_minor = []
+    word_in_color.word_in_falling_minor = []
+    mydb = mysql.connector.connect(
+      host=mypsw.wechatguest.host,
+      user=mypsw.wechatguest.user,
+      passwd=mypsw.wechatguest.passwd,
+      database=mypsw.wechatguest.database,
+      auth_plugin='mysql_native_password'
+      )
+    mycursor = mydb.cursor()
+    return mycursor
+
+def picture_url(picture_name):
+    myMedia = Media()
+    accessToken = Basic().get_access_token()
+    filePath = picture_name
+    mediaType = "image"
+    murlResp = Media.uplaod(accessToken, filePath, mediaType)
+    print(murlResp)
+    return murlResp
 
 def draw_market(alias_result, prices_results, predictions_results):
     plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
@@ -261,6 +254,8 @@ def draw_market(alias_result, prices_results, predictions_results):
     return picture_name
 
 def draw_tag(alias_results):
+    stopwords = set(STOPWORDS) 
+    word_frequencies = {}
     market_list = []
     for alias_result in alias_results:
       predictions_result = alias_result
