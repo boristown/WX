@@ -56,7 +56,7 @@ def chat(input_text):
     picture_name = picture_cache[0]
     return picture_url(picture_name)
   
-  mycursor = init_mycursor()
+  mydb, mycursor = init_mycursor()
 
   input_text = input_text.strip().upper()
 
@@ -195,7 +195,7 @@ def init_mycursor():
       auth_plugin='mysql_native_password'
       )
     mycursor = mydb.cursor()
-    return mycursor
+    return mydb, mycursor
 
 def picture_url(picture_name):
     myMedia = Media()
