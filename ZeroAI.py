@@ -86,15 +86,7 @@ def chat(input_text):
   word_in_color.word_in_falling_minor = []
 
   if input_text == '帮助' or input_text == 'HELP':
-    output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
-    '请输入：“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”，获取实时的市场趋势强弱排名。\n' \
-    '输入具体的市场代码如“上证指数”、“黄金”或“比特币”，获取市场未来十天的涨跌趋势。\n' \
-    '请使用分散化与自动化的方式进行交易，并控制每笔交易的风险值小于1%。\n' \
-    'Hello! Welcome to the AI Era, I am the guide to the future.\n' \
-    'Please enter: "INDICES", "COMMODITIES", "CURRENCIES", "STOCKS" or "CRYPTOCURRENCY" to get real-time market trend rankings.\n' \
-    'Enter specific market codes such as “SSE”, “Gold” or “Bitcoin” to get the market trending in the next 10 days.\n' \
-    'Please use a decentralized and automated approach to trading and control the risk value of each transaction to less than 1%.\n'
-    return output_text
+    return help_text()
 
   select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias = '" + input_text + "'"
 
@@ -160,8 +152,6 @@ def chat(input_text):
     
   if len(alias_results) == 1:
     
-    plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
-    
     alias_result = alias_results[0]
   
     select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
@@ -185,6 +175,47 @@ def chat(input_text):
   
     prices_results = mycursor.fetchall()
     
+    picture_name = draw_market(alias_result, prices_results, predictions_results)
+
+  else:
+    picture_name = draw_tag(alias_results)
+    
+  myMedia = Media()
+  accessToken = Basic().get_access_token()
+  filePath = picture_name
+  mediaType = "image"
+  murlResp = Media.uplaod(accessToken, filePath, mediaType)
+  print(murlResp)
+
+  return murlResp
+
+def day_prediction_text(prediction_result, price, atr):
+  if prediction_result == 1:
+    prediction_result = 0.99999
+  if prediction_result == 0:
+    prediction_result = 0.00001
+  prediction_score = ( ( prediction_result * 2 - 1 ) ** 1 ) / 2 * math.pi 
+  if prediction_score >= 0:
+    nextprice = price * ( ( 1 + atr ) ** math.tan(prediction_score) )
+  else:
+    nextprice = price * ( ( 1 - atr ) ** abs(math.tan(prediction_score)) )
+    
+  return "明日价格Tomorrow price:" + str(nextprice), nextprice
+
+def help_text():
+    output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
+    '请输入：“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”，获取实时的市场趋势强弱排名。\n' \
+    '输入具体的市场代码如“上证指数”、“黄金”或“比特币”，获取市场未来十天的涨跌趋势。\n' \
+    '请使用分散化与自动化的方式进行交易，并控制每笔交易的风险值小于1%。\n' \
+    'Hello! Welcome to the AI Era, I am the guide to the future.\n' \
+    'Please enter: "INDICES", "COMMODITIES", "CURRENCIES", "STOCKS" or "CRYPTOCURRENCY" to get real-time market trend rankings.\n' \
+    'Enter specific market codes such as “SSE”, “Gold” or “Bitcoin” to get the market trending in the next 10 days.\n' \
+    'Please use a decentralized and automated approach to trading and control the risk value of each transaction to less than 1%.\n'
+    return output_text 
+
+def draw_market(alias_result, prices_results, predictions_results):
+    plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
+
     predictions_result = predictions_results[0]
     
     #plt.subplot(211)
@@ -200,11 +231,7 @@ def chat(input_text):
     
     #plt.xlabel(u'过去120天收盘价') #X轴标签
     prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( prediction_text
-    #           +u'\n关注微信公众号AI纪元，输入Input:' + 
-    #           alias_result[0] + 
-    #           u'\nFollow Wechat Public Account: AI纪元, Input:'+ alias_result[0]
-               ) #X轴标签
+    plt.xlabel( prediction_text ) #X轴标签
     
     #plt.plot(x,y,"green",linewidth=1, label=u"价格")
     y.append(nextprice)
@@ -227,48 +254,15 @@ def chat(input_text):
       bbox_props = dict(boxstyle='round',fc='red', ec='k',lw=1)
       plt.annotate(xy=[122,nextprice], s=nextprice, color='red', bbox=None)
     
-    
     plt.legend(loc = 2)
     
-    '''
-    plt.subplot(212)
-    x=[0,1,2,3,4,5,6,7,8,9,10]
-    y=[0.0, score(predictions_result[2]),score(predictions_result[3]),score(predictions_result[4]),
-       score(predictions_result[5]),score(predictions_result[6]),score(predictions_result[7]),
-       score(predictions_result[8]),score(predictions_result[9]),score(predictions_result[10]),
-       score(predictions_result[11])
-      ]
-    maxvalue = max(y)
-    minvalue = min(y)
-    if abs(maxvalue) >= abs(minvalue):
-      bestvalue = maxvalue
-      bestindex = y.index(maxvalue)
-    else:
-      bestvalue = minvalue
-      bestindex = y.index(minvalue)
-    
-    output_text, nextprice = day_prediction_text(predictions_result[2])
-    #output_text = output_text + '\n' + str(bestindex) + '天后：' + day_prediction_text(predictions_result[bestindex+1])
-  
-    plt.plot([0,10],[0,0],"k--",linewidth=1, 
-            )
-    plt.plot(x,y,"b-.",linewidth=3, marker='x', 
-            )
-    plt.annotate(output_text, xy=(bestindex, bestvalue), xytext=(bestindex - 1.8, bestvalue * 2.0 / 4.0),
-                 arrowprops=dict(facecolor='black', shrink=0.05),
-                )
-    
-    plt.xlabel(u'关注微信公众号Wechat Public Account:AI纪元，输入Input:' + alias_result[0]) #X轴标签
-    plt.ylabel(u'未来10天涨跌趋势[-100到100]\n')  #Y轴标签 
-    '''
     picture_name = 'Img/' + pinyin(alias_result[0]) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name, facecolor='black')
-    
-  else:
-    
+    return picture_name
+
+def draw_tag(alias_results):
     market_list = []
     for alias_result in alias_results:
-
       predictions_result = alias_result
       x=[0,1]
       y=[0.0, score(predictions_result[2])]
@@ -306,7 +300,6 @@ def chat(input_text):
     word_frequencies[word_in_color.word_in_comments[1]] = comment_frequency
     word_frequencies[word_in_color.word_in_comments[2]] = comment_frequency
     
-
     market_index = 0
     y_market = [market[0] for market in market_list]
     x_score = [market[1] for market in market_list]
@@ -328,31 +321,7 @@ def chat(input_text):
     
     picture_name = 'Img/' + pinyin(input_text) + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
-    
-  myMedia = Media()
-  accessToken = Basic().get_access_token()
-  filePath = picture_name
-  mediaType = "image"
-  murlResp = Media.uplaod(accessToken, filePath, mediaType)
-  print(murlResp)
-
-  return murlResp
-
-def day_prediction_text(prediction_result, price, atr):
-  if prediction_result == 1:
-    prediction_result = 0.99999
-  if prediction_result == 0:
-    prediction_result = 0.00001
-  prediction_score = ( ( prediction_result * 2 - 1 ) ** 1 ) / 2 * math.pi 
-  if prediction_score >= 0:
-    nextprice = price * ( ( 1 + atr ) ** math.tan(prediction_score) )
-  else:
-    nextprice = price * ( ( 1 - atr ) ** abs(math.tan(prediction_score)) )
-    
-  return "明日价格Tomorrow price:" + str(nextprice), nextprice
-  #if prediction_score >= 0:
-  #  return "上涨概率Rising Probability:" + ("%.3f" % ((prediction_score+0.5)*100) ) + "%"
-  #return "下跌概率Falling Probability:" + ("%.3f" % ((0.5-prediction_score)*100) ) + "%"
+    return picture_name
 
 def score(prediction_result):
   return (prediction_result * 2 - 1) * 100
