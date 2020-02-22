@@ -110,7 +110,7 @@ def chat(input_text):
     picture_name = draw_market(alias_result, prices_results, predictions_results)
 
   else:
-    picture_name = draw_tag(alias_results)
+    picture_name = draw_tag(input_text, alias_results)
     
   return picture_url(picture_name)
 
@@ -258,7 +258,7 @@ def draw_market(alias_result, prices_results, predictions_results):
     plt.savefig(picture_name, facecolor='black')
     return picture_name
 
-def draw_tag(alias_results):
+def draw_tag(input_text, alias_results):
     stopwords = set(STOPWORDS) 
     word_frequencies = {}
     market_list = []
