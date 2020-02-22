@@ -138,7 +138,45 @@ def help_text():
     'Please use a decentralized and automated approach to trading and control the risk value of each transaction to less than 1%.\n'
     return output_text 
 
+def get_subtags(tagname, mycursor):
+    subtags = []
+    select_subtags_statment = "select * from subtags where tag = '" + tagname + "' and tag <> subtag"
+    print(select_subtags_statment)
+    mycursor.execute(select_subtags_statment)
+    subtags_results = mycursor.fetchall()
+    for subtags_result in subtags_results:
+        subtags.append(subtags_result[1])
+    return subtags
+
+def get_markets_from_endtags(endtags, mycursor):
+    markets = []
+    select_tags_statment = 'select * from tags where tag in (%s) ' % ','.join(['%s']*len(endtags))
+    print(select_tags_statment)
+    mycursor.execute(select_tags_statment, endtags)
+    tags_results = mycursor.fetchall()
+    for tags_result in tags_results:
+        markets.append(tags_result[1])
+    return markets
+
+def get_markets_from_tag(tagname, mycursor):
+      nextsubtags = []
+      endtags = []
+      subtags = get_subtags(tagname, mycursor)
+      if len(subtags) == 0:
+          endtags.append(tagname)
+      while len(subtags) > 0:
+          for subtag in subtags:
+              nextsubtag = get_subtags(subtag, mycursor)
+              if len(nextsubtag) == 0:
+                  endtags.append(subtag)
+              else:
+                  nextsubtags.extend(nextsubtag)
+          subtags = nextsubtags
+      markets = get_markets_from_endtags(endtags, mycursor)
+      return markets
+
 def fetch_tag(input_text, mycursor):
+
     input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
 
     select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%' group by symbol"
@@ -151,25 +189,21 @@ def fetch_tag(input_text, mycursor):
   
     if len(alias_results) == 0:
       
-      select_alias_statment = "SELECT * FROM market_alias WHERE market_alias LIKE '%" + input_text + "%'"
-    
-      print(select_alias_statment)
-      
-      mycursor.execute(select_alias_statment)
+      tagname = input_text
+
+      markets = get_markets_from_tag(tagname, mycursor)
   
-      alias_results = mycursor.fetchall()
-  
-      if len(alias_results) == 0:
+      if len(markets) == 0:
         output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
         return output_text, None
     
       select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
       " inner join predictions on predictions.symbol = symbol_alias.symbol " \
-      " WHERE symbol_alias.market_type = '" + alias_results[0][1] + "' AND symbol_alias.market_order > 0 ORDER BY symbol ASC, time DESC"
+      " WHERE symbol_alias.symbol in (%s) ORDER BY symbol ASC, time DESC" % ','.join(['%s']*len(markets))
       
       print(select_alias_statment)
       
-      mycursor.execute(select_alias_statment)
+      mycursor.execute(select_alias_statment, markets)
   
       alias_results = mycursor.fetchall()
     
