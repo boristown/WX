@@ -72,7 +72,7 @@ def chat(input_text):
   alias_results = mycursor.fetchall()
   
   if len(alias_results) == 0:
-    output_text, alias_results = fetch_tag(input_text)
+    output_text, alias_results = fetch_tag(input_text, mycursor)
     if alias_results == None:
         return output_text
     
@@ -138,7 +138,7 @@ def help_text():
     'Please use a decentralized and automated approach to trading and control the risk value of each transaction to less than 1%.\n'
     return output_text 
 
-def fetch_tag(input_text):
+def fetch_tag(input_text, mycursor):
     input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
 
     select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%' group by symbol"
