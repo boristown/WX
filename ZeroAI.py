@@ -177,46 +177,46 @@ def get_markets_from_tag(tagname, mycursor):
 
 def fetch_tag(input_text, mycursor):
 
-    input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
+    tagname = input_text
 
-    select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%' group by symbol"
-
+    markets = get_markets_from_tag(tagname, mycursor)
+  
+    if len(markets) == 0:
+      output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
+      return output_text, None
+    
+    select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+    " inner join predictions on predictions.symbol = symbol_alias.symbol " \
+    " WHERE symbol_alias.symbol in (%s) ORDER BY symbol ASC, time DESC" % ','.join(['%s']*len(markets))
+      
     print(select_alias_statment)
-
-    mycursor.execute(select_alias_statment)
+      
+    mycursor.execute(select_alias_statment, markets)
   
     alias_results = mycursor.fetchall()
-  
+    
     if len(alias_results) == 0:
       
-      tagname = input_text
+      input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
 
-      markets = get_markets_from_tag(tagname, mycursor)
-  
-      if len(markets) == 0:
-        output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
-        return output_text, None
-    
-      select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-      " inner join predictions on predictions.symbol = symbol_alias.symbol " \
-      " WHERE symbol_alias.symbol in (%s) ORDER BY symbol ASC, time DESC" % ','.join(['%s']*len(markets))
-      
-      print(select_alias_statment)
-      
-      mycursor.execute(select_alias_statment, markets)
-  
-      alias_results = mycursor.fetchall()
-    
-    elif len(alias_results) > 1:
-      
-      select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-      " inner join predictions on predictions.symbol = symbol_alias.symbol WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
+      select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%' group by symbol"
 
       print(select_alias_statment)
 
       mycursor.execute(select_alias_statment)
   
-      alias_results = mycursor.fetchall() 
+      alias_results = mycursor.fetchall()
+    
+      if len(alias_results) > 1:
+      
+        select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+        " inner join predictions on predictions.symbol = symbol_alias.symbol WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
+
+        print(select_alias_statment)
+
+        mycursor.execute(select_alias_statment)
+  
+        alias_results = mycursor.fetchall() 
     
     return "", alias_results
 
