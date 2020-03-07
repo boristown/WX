@@ -14,58 +14,63 @@ def get_version(input_text):
         return input_text.replace("V2", "").strip(), "V2"
     return input_text.strip(), "V1"
 
-def draw_single_v2(aiera_version, input_text, alias_results, mycursor):
+def draw_single_v2(input_text, alias_results, mycursor):
     output_text = ""
     alias_result = alias_results[0]
-    select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
+    select_predictions_statment = "SELECT * FROM pricehistory WHERE symbol = '" + alias_result[1] + "' ORDER BY date DESC limit 0, 120"
     print(select_predictions_statment)
     mycursor.execute(select_predictions_statment)
+    print("Fetching price history")
     predictions_results = mycursor.fetchall()
+    print("price history len = " + len(predictions_results))
     if len(predictions_results) == 0:
-      output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
+      output_text = text_no_market(input_text)
       return None, output_text
-    select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
-    print(select_prices_statment)
-    mycursor.execute(select_prices_statment)
-    prices_results = mycursor.fetchall()
-    picture_name = draw_market(aiera_version, alias_result, prices_results, predictions_results)
+    #select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
+    #print(select_prices_statment)
+    #mycursor.execute(select_prices_statment)
+    #prices_results = mycursor.fetchall()
+    picture_name = draw_market_v2(alias_result, predictions_results)
     return picture_name, output_text
 
-def draw_market(aiera_version, alias_result, prices_results, predictions_results):
+def draw_market_v2(alias_result, predictions_results):
     plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
     predictions_result = predictions_results[0]
-    #plt.subplot(211)
     plt.style.use('dark_background')
-    x=[i for i in range(1,122)]
-    y=[prices_results[0][121-price_index] for price_index in range(120)]
-    plt.title( alias_result[2] + ":" + alias_result[0] + " " 
-              + predictions_result[1].strftime('%Y-%m-%d %H:%M') 
-              + "UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era " + aiera_version) #图标题 
-    prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( prediction_text )
-    y.append(nextprice)
-    currentprice = prices_results[0][2]
-    if nextprice >= currentprice:
-      plt.plot(x,y,"white",label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
-      plt.fill_between(x,min(y),y,facecolor="white",alpha=0.3)
-      plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
-    else:
-      plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
-      plt.fill_between(x,min(y),y,facecolor="red",alpha=0.3)
-      plt.plot(x,[currentprice] * 121, "r--", label="Price:"+str(currentprice))
-  
-    plt.annotate(xy=[122,currentprice], s=currentprice, bbox=None)
+    x=predictions_results[:,1][-1::-1]
+    y=predictions_results[:,5][-1::-1]
+    plt.title( alias_result[2] + ":" + alias_result[0] + " "
+              + predictions_result[8].strftime('%Y-%m-%d %H:%M')
+              + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V2" ) #图标题 
+    #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
+    #plt.xlabel( prediction_text )
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+    #y.append(nextprice)
+    #currentprice = prices_results[0][2]
+    #if nextprice >= currentprice:
+    atr = 0.0
+    plt.plot(x,y,"white",label="ATR:"+ str(atr) + "%" )
+    plt.fill_between(x,min(y),y,facecolor="white",alpha=0.3)
+    #plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
 
-    if nextprice >= currentprice:
-      bbox_props = dict(boxstyle='round',fc='white', ec='k',lw=1)
-      plt.annotate(xy=[122,nextprice], s=nextprice, color='white', bbox=None)
-    else:
-      bbox_props = dict(boxstyle='round',fc='red', ec='k',lw=1)
-      plt.annotate(xy=[122,nextprice], s=nextprice, color='red', bbox=None)
+    #else:
+    #  plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
+    #  plt.fill_between(x,min(y),y,facecolor="red",alpha=0.3)
+    #  plt.plot(x,[currentprice] * 121, "r--", label="Price:"+str(currentprice))
+  
+    #plt.annotate(xy=[122,currentprice], s=currentprice, bbox=None)
+
+    #if nextprice >= currentprice:
+    #  bbox_props = dict(boxstyle='round',fc='white', ec='k',lw=1)
+    #  plt.annotate(xy=[122,nextprice], s=nextprice, color='white', bbox=None)
+    #else:
+    #  bbox_props = dict(boxstyle='round',fc='red', ec='k',lw=1)
+    #  plt.annotate(xy=[122,nextprice], s=nextprice, color='red', bbox=None)
     
     plt.legend(loc = 2)
     
-    picture_name = 'Img/' + pinyin(alias_result[0]) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    picture_name = 'Img/' + pinyin(alias_result[0]) + "_V2" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name, facecolor='black')
     return picture_name
 
@@ -87,3 +92,6 @@ def pinyin(word):
   for i in pypinyin.pinyin(word, style=pypinyin.NORMAL):
     s += ''.join(i)
   return s
+
+def text_no_market(input_text):
+    return "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"

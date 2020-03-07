@@ -13,7 +13,6 @@ import requests
 from requests.packages.urllib3.filepost import encode_multipart_formdata
 import json
 import glob
-import math
 import forcastline
 
 class word_in_color(object):
@@ -82,7 +81,7 @@ def chat(input_text):
   plt.rcParams['axes.unicode_minus']=False
     
   if len(alias_results) == 0:
-    output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
+    output_text = forcastline.text_no_market(input_text)
     return output_text
     
   if len(alias_results) == 1:
@@ -96,11 +95,11 @@ def chat(input_text):
 
 def draw_single(aiera_version, input_text, alias_results, mycursor):
     if aiera_version == "V1":
-        return draw_single_v1(aiera_version, input_text, alias_results, mycursor)
+        return draw_single_v1(input_text, alias_results, mycursor)
     if aiera_version == "V2":
-        return forcastline.draw_single_v2(aiera_version, input_text, alias_results, mycursor)
+        return forcastline.draw_single_v2(input_text, alias_results, mycursor)
 
-def draw_single_v1(aiera_version, input_text, alias_results, mycursor):
+def draw_single_v1(input_text, alias_results, mycursor):
     output_text = ""
     alias_result = alias_results[0]
     select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
@@ -108,13 +107,13 @@ def draw_single_v1(aiera_version, input_text, alias_results, mycursor):
     mycursor.execute(select_predictions_statment)
     predictions_results = mycursor.fetchall()
     if len(predictions_results) == 0:
-      output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
+      output_text = forcastline.text_no_market(input_text)
       return None, output_text
     select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
     print(select_prices_statment)
     mycursor.execute(select_prices_statment)
     prices_results = mycursor.fetchall()
-    picture_name = draw_market(aiera_version, alias_result, prices_results, predictions_results)
+    picture_name = draw_market_v1(alias_result, prices_results, predictions_results)
     return picture_name, output_text
 
 def help_text():
@@ -172,7 +171,7 @@ def fetch_tag(input_text, mycursor):
     markets = get_markets_from_tag(tagname, mycursor)
   
     if len(markets) == 0:
-      output_text = "市场'" + input_text + "'不存在！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
+      output_text = forcastline.text_no_market(input_text)
       return output_text, None
     
     select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
@@ -235,7 +234,7 @@ def picture_url(picture_name):
     print(murlResp)
     return murlResp
 
-def draw_market(aiera_version, alias_result, prices_results, predictions_results):
+def draw_market_v1(alias_result, prices_results, predictions_results):
     plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
 
     predictions_result = predictions_results[0]
@@ -249,7 +248,7 @@ def draw_market(aiera_version, alias_result, prices_results, predictions_results
     
     plt.title( alias_result[2] + ":" + alias_result[0] + " " 
               + predictions_result[1].strftime('%Y-%m-%d %H:%M') 
-              + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era " + aiera_version) #图标题 
+              + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V1") #图标题 
     
     #plt.xlabel(u'过去120天收盘价') #X轴标签
     prediction_text, nextprice = forcastline.day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
@@ -259,11 +258,11 @@ def draw_market(aiera_version, alias_result, prices_results, predictions_results
     y.append(nextprice)
     currentprice = prices_results[0][2]
     if nextprice >= currentprice:
-      plt.plot(x,y,"white",label="ATR："+ str(float(prices_results[0][122])*100) + "%" )
+      plt.plot(x,y,"white",label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
       plt.fill_between(x,min(y),y,facecolor="white",alpha=0.3)
       plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
     else:
-      plt.plot(x,y,"red", label="ATR："+ str(float(prices_results[0][122])*100) + "%" )
+      plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
       plt.fill_between(x,min(y),y,facecolor="red",alpha=0.3)
       plt.plot(x,[currentprice] * 121, "r--", label="Price:"+str(currentprice))
   
@@ -278,7 +277,7 @@ def draw_market(aiera_version, alias_result, prices_results, predictions_results
     
     plt.legend(loc = 2)
     
-    picture_name = 'Img/' + forcastline.pinyin(alias_result[0]) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    picture_name = 'Img/' + forcastline.pinyin(alias_result[0]) + "_V1" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name, facecolor='black')
     return picture_name
 
