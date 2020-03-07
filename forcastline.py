@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# filename: forcastline.py
+
 import time
 import datetime
 import matplotlib.pyplot as plt
