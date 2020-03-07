@@ -87,7 +87,18 @@ def chat(input_text):
     return output_text
     
   if len(alias_results) == 1:
+    picture_name, output_text = draw_single(aiera_version, input_text, alias_results)
+    if picture_name == None:
+        return output_text
+  else:
+    picture_name = draw_tag(aiera_version, input_text, alias_results)
     
+  return picture_url(picture_name)
+
+def draw_single(aiera_version, input_text, alias_results):
+
+    output_text = ""
+
     alias_result = alias_results[0]
   
     select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
@@ -100,7 +111,7 @@ def chat(input_text):
   
     if len(predictions_results) == 0:
       output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
-      return output_text
+      return None, output_text
     
     select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
 
@@ -112,10 +123,7 @@ def chat(input_text):
     
     picture_name = draw_market(aiera_version, alias_result, prices_results, predictions_results)
 
-  else:
-    picture_name = draw_tag(aiera_version, input_text, alias_results)
-    
-  return picture_url(picture_name)
+    return picture_name, output_text
 
 def day_prediction_text(prediction_result, price, atr):
   if prediction_result == 1:
