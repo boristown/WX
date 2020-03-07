@@ -262,7 +262,7 @@ def draw_market(aiera_version, alias_result, prices_results, predictions_results
     
     plt.title( alias_result[2] + ":" + alias_result[0] + " " 
               + predictions_result[1].strftime('%Y-%m-%d %H:%M') 
-              + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era") #图标题 
+              + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era " + aiera_version) #图标题 
     
     #plt.xlabel(u'过去120天收盘价') #X轴标签
     prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
