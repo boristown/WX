@@ -22,7 +22,7 @@ def draw_single_v2(input_text, alias_results, mycursor):
     mycursor.execute(select_predictions_statment)
     print("Fetching price history")
     predictions_results = mycursor.fetchall()
-    print("price history len = " + len(predictions_results))
+    print("price history len = " + str(len(predictions_results)))
     if len(predictions_results) == 0:
       output_text = text_no_market(input_text)
       return None, output_text
