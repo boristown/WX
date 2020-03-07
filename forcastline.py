@@ -38,8 +38,13 @@ def draw_market_v2(alias_result, predictions_results):
     prediction_count = len(predictions_results)
     predictions_result = predictions_results[0]
     plt.style.use('dark_background')
-    x=[predictions_results[n, 1] for n in range(prediction_count - 1, -1, -1)]
-    y=[predictions_results[n, 5] for n in range(prediction_count - 1, -1, -1)]
+    x = []
+    y = []
+    for predictions_result in predictions_results:
+        x.append(predictions_result[1])
+        y.append(predictions_result[5])
+    x = x[-1::-1]
+    y = y[-1::-1]
     plt.title( alias_result[2] + ":" + alias_result[0] + " "
               + predictions_result[8].strftime('%Y-%m-%d %H:%M')
               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V2" ) #图标题 
