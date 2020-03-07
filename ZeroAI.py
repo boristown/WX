@@ -15,6 +15,7 @@ import json
 import pypinyin
 import glob
 import math
+import forcastline
 
 class word_in_color(object):
   word_in_rising_major = ''
