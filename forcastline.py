@@ -5,6 +5,7 @@ import time
 import datetime
 import matplotlib.pyplot as plt
 import pypinyin
+import math
 
 def get_version(input_text):
     if 'V1' in input_text:
