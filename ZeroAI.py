@@ -12,7 +12,6 @@ from basic import Basic
 import requests
 from requests.packages.urllib3.filepost import encode_multipart_formdata
 import json
-import pypinyin
 import glob
 import math
 import forcastline
@@ -87,7 +86,7 @@ def chat(input_text):
     return output_text
     
   if len(alias_results) == 1:
-    picture_name, output_text = draw_single(aiera_version, input_text, alias_results)
+    picture_name, output_text = draw_single(aiera_version, input_text, alias_results, mycursor)
     if picture_name == None:
         return output_text
   else:
@@ -95,13 +94,13 @@ def chat(input_text):
     
   return picture_url(picture_name)
 
-def draw_single(aiera_version, input_text, alias_results):
+def draw_single(aiera_version, input_text, alias_results, mycursor):
     if aiera_version == "V1":
-        return draw_single_v1(aiera_version, input_text, alias_results)
+        return draw_single_v1(aiera_version, input_text, alias_results, mycursor)
     if aiera_version == "V2":
-        return forcastline.draw_single_v2(aiera_version, input_text, alias_results)
+        return forcastline.draw_single_v2(aiera_version, input_text, alias_results, mycursor)
 
-def draw_single_v1(aiera_version, input_text, alias_results):
+def draw_single_v1(aiera_version, input_text, alias_results, mycursor):
     output_text = ""
     alias_result = alias_results[0]
     select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"

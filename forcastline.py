@@ -13,7 +13,7 @@ def get_version(input_text):
         return input_text.replace("V2", "").strip(), "V2"
     return input_text.strip(), "V1"
 
-def draw_single_v2(aiera_version, input_text, alias_results):
+def draw_single_v2(aiera_version, input_text, alias_results, mycursor):
     output_text = ""
     alias_result = alias_results[0]
     select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
