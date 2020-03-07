@@ -55,7 +55,7 @@ def chat(input_text):
   input_text, aiera_version = forcastline.get_version(input_text)
   output_text = ''
 
-  picture_path = 'Img/' + pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H') + '*.png'
+  picture_path = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H') + '*.png'
   picture_cache = glob.glob(picture_path)
   if picture_cache:
     picture_name = picture_cache[0]
@@ -96,47 +96,27 @@ def chat(input_text):
   return picture_url(picture_name)
 
 def draw_single(aiera_version, input_text, alias_results):
+    if aiera_version == "V1":
+        return draw_single_v1(aiera_version, input_text, alias_results)
+    if aiera_version == "V2":
+        return forcastline.draw_single_v2(aiera_version, input_text, alias_results)
 
+def draw_single_v1(aiera_version, input_text, alias_results):
     output_text = ""
-
     alias_result = alias_results[0]
-  
     select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
-
     print(select_predictions_statment)
-
     mycursor.execute(select_predictions_statment)
-  
     predictions_results = mycursor.fetchall()
-  
     if len(predictions_results) == 0:
       output_text = "很抱歉，未找到市场'" + input_text + "'的预测信息！请尝试查询其它市场（如上证指数、黄金、比特币），可输入“全球股指”、“商品期货”、“外汇”、“个股”或“加密货币”查询汇总信息！"
       return None, output_text
-    
     select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
-
     print(select_prices_statment)
-
     mycursor.execute(select_prices_statment)
-  
     prices_results = mycursor.fetchall()
-    
     picture_name = draw_market(aiera_version, alias_result, prices_results, predictions_results)
-
     return picture_name, output_text
-
-def day_prediction_text(prediction_result, price, atr):
-  if prediction_result == 1:
-    prediction_result = 0.99999
-  if prediction_result == 0:
-    prediction_result = 0.00001
-  prediction_score = ( ( prediction_result * 2 - 1 ) ** 1 ) / 2 * math.pi 
-  if prediction_score >= 0:
-    nextprice = price * ( ( 1 + atr ) ** math.tan(prediction_score) )
-  else:
-    nextprice = price * ( ( 1 - atr ) ** abs(math.tan(prediction_score)) )
-    
-  return "明日价格Tomorrow price:" + str(nextprice), nextprice
 
 def help_text():
     output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
@@ -273,7 +253,7 @@ def draw_market(aiera_version, alias_result, prices_results, predictions_results
               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era " + aiera_version) #图标题 
     
     #plt.xlabel(u'过去120天收盘价') #X轴标签
-    prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
+    prediction_text, nextprice = forcastline.day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
     plt.xlabel( prediction_text ) #X轴标签
     
     #plt.plot(x,y,"green",linewidth=1, label=u"价格")
@@ -299,7 +279,7 @@ def draw_market(aiera_version, alias_result, prices_results, predictions_results
     
     plt.legend(loc = 2)
     
-    picture_name = 'Img/' + pinyin(alias_result[0]) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    picture_name = 'Img/' + forcastline.pinyin(alias_result[0]) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name, facecolor='black')
     return picture_name
 
@@ -364,19 +344,12 @@ def draw_tag(aiera_version, input_text, alias_results):
     plt.margins(x=0, y=0) 
     plt.tight_layout(pad = 0) 
     
-    picture_name = 'Img/' + pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    picture_name = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name)
     return picture_name
 
 def score(prediction_result):
   return (prediction_result * 2 - 1) * 100
-
-# 不带声调的(style=pypinyin.NORMAL)
-def pinyin(word):
-  s = ''
-  for i in pypinyin.pinyin(word, style=pypinyin.NORMAL):
-    s += ''.join(i)
-  return s
 
 class Media(object):
   #def __init__(self):
