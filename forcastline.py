@@ -20,7 +20,7 @@ def draw_single_v2(aiera_version, input_text, alias_results):
     mycursor.execute(select_predictions_statment)
     predictions_results = mycursor.fetchall()
     if len(predictions_results) == 0:
-      output_text = "ºÜ±§Ç¸£¬Î´ÕÒµ½ÊÐ³¡'" + input_text + "'µÄÔ¤²âÐÅÏ¢£¡Çë³¢ÊÔ²éÑ¯ÆäËüÊÐ³¡£¨ÈçÉÏÖ¤Ö¸Êý¡¢»Æ½ð¡¢±ÈÌØ±Ò£©£¬¿ÉÊäÈë¡°È«Çò¹ÉÖ¸¡±¡¢¡°ÉÌÆ·ÆÚ»õ¡±¡¢¡°Íâ»ã¡±¡¢¡°¸ö¹É¡±»ò¡°¼ÓÃÜ»õ±Ò¡±²éÑ¯»ã×ÜÐÅÏ¢£¡"
+      output_text = "å¾ˆæŠ±æ­‰ï¼Œæœªæ‰¾åˆ°å¸‚åœº'" + input_text + "'çš„é¢„æµ‹ä¿¡æ¯ï¼è¯·å°è¯•æŸ¥è¯¢å…¶å®ƒå¸‚åœºï¼ˆå¦‚ä¸Šè¯æŒ‡æ•°ã€é»„é‡‘ã€æ¯”ç‰¹å¸ï¼‰ï¼Œå¯è¾“å…¥â€œå…¨çƒè‚¡æŒ‡â€ã€â€œå•†å“æœŸè´§â€ã€â€œå¤–æ±‡â€ã€â€œä¸ªè‚¡â€æˆ–â€œåŠ å¯†è´§å¸â€æŸ¥è¯¢æ±‡æ€»ä¿¡æ¯ï¼"
       return None, output_text
     select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
     print(select_prices_statment)
@@ -38,19 +38,17 @@ def draw_market(aiera_version, alias_result, prices_results, predictions_results
     y=[prices_results[0][121-price_index] for price_index in range(120)]
     plt.title( alias_result[2] + ":" + alias_result[0] + " " 
               + predictions_result[1].strftime('%Y-%m-%d %H:%M') 
-              + " UTC\nÎ¢ÐÅ¹«ÖÚºÅ£ºAI¼ÍÔª WeChat Public Account: AI Era " + aiera_version) #Í¼±êÌâ 
-    #plt.xlabel(u'¹ýÈ¥120ÌìÊÕÅÌ¼Û') #XÖá±êÇ©
+              + "UTC\nå¾®ä¿¡å…¬ä¼—å·ï¼šAIçºªå…ƒ WeChat Public Account: AI Era " + aiera_version) #å›¾æ ‡é¢˜ 
     prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( prediction_text ) #XÖá±êÇ©
-    #plt.plot(x,y,"green",linewidth=1, label=u"¼Û¸ñ")
+    plt.xlabel( prediction_text )
     y.append(nextprice)
     currentprice = prices_results[0][2]
     if nextprice >= currentprice:
-      plt.plot(x,y,"white",label="ATR£º"+ str(float(prices_results[0][122])*100) + "%" )
+      plt.plot(x,y,"white",label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
       plt.fill_between(x,min(y),y,facecolor="white",alpha=0.3)
       plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
     else:
-      plt.plot(x,y,"red", label="ATR£º"+ str(float(prices_results[0][122])*100) + "%" )
+      plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
       plt.fill_between(x,min(y),y,facecolor="red",alpha=0.3)
       plt.plot(x,[currentprice] * 121, "r--", label="Price:"+str(currentprice))
   
@@ -80,9 +78,8 @@ def day_prediction_text(prediction_result, price, atr):
   else:
     nextprice = price * ( ( 1 - atr ) ** abs(math.tan(prediction_score)) )
     
-  return "Ã÷ÈÕ¼Û¸ñTomorrow price:" + str(nextprice), nextprice
+  return "Tomorrow price:" + str(nextprice), nextprice
 
-# ²»´øÉùµ÷µÄ(style=pypinyin.NORMAL)
 def pinyin(word):
   s = ''
   for i in pypinyin.pinyin(word, style=pypinyin.NORMAL):
