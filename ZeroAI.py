@@ -176,7 +176,8 @@ def fetch_tag(input_text, mycursor):
     
     select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
     " inner join predictions on predictions.symbol = symbol_alias.symbol " \
-    " WHERE symbol_alias.symbol in (%s) ORDER BY symbol ASC, time DESC" % ','.join(['%s']*len(markets))
+    " WHERE symbol_alias.symbol in (%s) and DATEDIFF(predictions.TIME,utc_timestamp())<=0 AND DATEDIFF(predictions.TIME,utc_timestamp())>-3 "\
+    "ORDER BY symbol ASC, time DESC" % ','.join(['%s']*len(markets))
       
     print(select_alias_statment)
       
