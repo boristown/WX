@@ -70,19 +70,19 @@ def draw_market_v2(alias_result, predictions_results):
     #plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     #plt.gca().xaxis.set_major_locator(mdates.DayLocator(bymonthday=None, interval=14, tz=None))
     #y.append(nextprice)
-    #currentprice = prices_results[0][2]
+    currentprice = predictions_results[0][5]
     #if nextprice >= currentprice:
     atr = 0.0
     #plt.plot(date,o,"yellow",label="Open")
-    plt.plot(date,h,"white",label="High")
-    plt.plot(date,c,"yellow",label="Close")
-    plt.plot(date,l,"white",label="Low")
+    plt.plot(date,h,"yellow",label="High")
+    plt.plot(date,c,"white",label="Close")
+    plt.plot(date,l,"yellow",label="Low")
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
     #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
     plt.fill_between(date,l,h,facecolor="white",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
-    #plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
+    plt.plot(date,[currentprice] * 120, "w--", label="Current Price:"+str(currentprice))
 
     #else:
     #  plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
