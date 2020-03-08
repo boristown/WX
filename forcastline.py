@@ -39,13 +39,25 @@ def draw_market_v2(alias_result, predictions_results):
     prediction_count = len(predictions_results)
     predictions_result = predictions_results[0]
     plt.style.use('dark_background')
-    x = []
-    y = []
+    o = []
+    h = []
+    l = []
+    c = []
+    v = []
+    date = []
     for predictions_result in predictions_results:
-        x.append(predictions_result[1])
-        y.append(predictions_result[5])
-    x = x[-1::-1]
-    y = y[-1::-1]
+        date.append(predictions_result[1])
+        o.append(predictions_result[2])
+        h.append(predictions_result[3])
+        l.append(predictions_result[4])
+        c.append(predictions_result[5])
+        v.append(predictions_result[6])
+    o = o[-1::-1]
+    h = h[-1::-1]
+    l = l[-1::-1]
+    c = c[-1::-1]
+    v = v[-1::-1]
+    date = date[-1::-1]
     plt.title( alias_result[2] + ":" + alias_result[0] + " "
               + predictions_result[8].strftime('%Y-%m-%d %H:%M')
               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V2" ) #图标题 
@@ -61,9 +73,15 @@ def draw_market_v2(alias_result, predictions_results):
     #currentprice = prices_results[0][2]
     #if nextprice >= currentprice:
     atr = 0.0
-    plt.plot(x,y,"white",label="ATR:"+ str(atr) + "%" )
-    plt.gcf().autofmt_xdate()
-    plt.fill_between(x,min(y),y,facecolor="white",alpha=0.3)
+    #plt.plot(date,o,"yellow",label="Open")
+    plt.plot(date,h,"white",label="High")
+    plt.plot(date,l,"white",label="Low")
+    plt.plot(date,c,"yellow",label="Close")
+    #plt.plot(date,v,"white",label="Volume")
+    #plt.gcf().autofmt_xdate()
+    #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
+    plt.fill_between(date,l,h,facecolor="white",alpha=0.3)
+    #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
     #plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
 
     #else:
