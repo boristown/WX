@@ -51,8 +51,12 @@ def draw_market_v2(alias_result, predictions_results):
               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V2" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
     #plt.xlabel( prediction_text )
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    plt.gca().xaxis.set_major_locator(mdates.DayLocator(bymonthday=None, interval=14, tz=None))
+    locator = mdates.AutoDateLocator()
+    formatter = mdates.ConciseDateFormatter(locator)
+    plt.gca().xaxis.set_major_locator(locator)
+    plt.gca().xaxis.set_major_formatter(formatter)
+    #plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    #plt.gca().xaxis.set_major_locator(mdates.DayLocator(bymonthday=None, interval=14, tz=None))
     #y.append(nextprice)
     #currentprice = prices_results[0][2]
     #if nextprice >= currentprice:
