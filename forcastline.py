@@ -96,13 +96,14 @@ def draw_market_v2(alias_result, predictions_results):
     plt.plot(date,h,"white",label="High")
     plt.plot(date,c,"yellow",label="Close")
     plt.plot(date,l,"white",label="Low")
-    plt.plot(date_predict,forcast_price_list,"purple",label="ForcastLine")
+    plt.plot(date_predict,forcast_price_list,"blue",label="ForcastLine")
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
     #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
     plt.fill_between(date,l,h,facecolor="white",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
-    plt.plot(date,[currentprice] * 120, "y--", label="Current Price:"+str(currentprice))
+    plt.plot(date,[currentprice] * 120, "y--", label="Current:"+str(currentprice))
+    plt.plot(date_predict,[forcast_price_list[-1]] * 120, "b--", label="Forcast:"+str(forcast_price_list[-1]))
 
     #else:
     #  plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
