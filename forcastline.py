@@ -81,7 +81,7 @@ def draw_market_v2(alias_result, predictions_results):
               + predictions_results[0][8].strftime('%Y-%m-%d %H:%M')
               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V2" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( "ATR:" + str(atr) )
+    plt.xlabel( "ATR:" + str(atr * 100) + "%")
     locator = mdates.AutoDateLocator()
     formatter = mdates.ConciseDateFormatter(locator)
     plt.gca().xaxis.set_major_locator(locator)
