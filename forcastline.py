@@ -82,7 +82,7 @@ def draw_market_v2(alias_result, predictions_results):
               + predictions_results[0][8].strftime('%Y-%m-%d %H:%M')
               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V2" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( "ATR:" + str(atr * 100) + "%")
+    plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "%")
     locator = mdates.AutoDateLocator()
     formatter = mdates.ConciseDateFormatter(locator)
     plt.gca().xaxis.set_major_locator(locator)
@@ -93,17 +93,17 @@ def draw_market_v2(alias_result, predictions_results):
     currentprice = predictions_results[0][5]
     #if nextprice >= currentprice:
     #plt.plot(date,o,"yellow",label="Open")
-    plt.plot(date,h,"gray",label="High")
-    plt.plot(date,c,"white",label="Close")
-    plt.plot(date,l,"gray",label="Low")
-    plt.plot(date_predict,forcast_price_list,"blue",label="ForcastLine")
+    plt.plot(date,h,"gray",label="最高价High")
+    plt.plot(date,c,"white",label="收盘价Close")
+    plt.plot(date,l,"gray",label="最低价Low")
+    plt.plot(date_predict,forcast_price_list,"blue",label="预测线ForcastLine")
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
     #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
     plt.fill_between(date,l,h,facecolor="gray",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
-    plt.plot(date,[currentprice] * 120, "w--", label="Current:"+str(currentprice))
-    plt.plot(date_predict,[forcast_price_list[-1]] * 120, "b--", label="Forcast:"+str(forcast_price_list[-1]))
+    plt.plot(date,[currentprice] * 120, "w--", label="当前价Current:"+str(currentprice))
+    plt.plot(date_predict,[forcast_price_list[-1]] * 120, "b--", label="预测价Forcast:"+str(forcast_price_list[-1]))
     plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="blue",alpha=0.3)
 
     #else:
