@@ -44,6 +44,7 @@ def draw_market_v2(alias_result, predictions_results):
     l = []
     c = []
     v = []
+    f = []
     date = []
     date_predict = []
     for predictions_result in predictions_results:
