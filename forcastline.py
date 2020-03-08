@@ -45,19 +45,37 @@ def draw_market_v2(alias_result, predictions_results):
     c = []
     v = []
     date = []
+    date_predict = []
     for predictions_result in predictions_results:
         date.append(predictions_result[1])
+        date_predict.append(predictions_result[1]+datetime.timedelta(days=1))
         o.append(predictions_result[2])
         h.append(predictions_result[3])
         l.append(predictions_result[4])
         c.append(predictions_result[5])
         v.append(predictions_result[6])
+        f.append(predictions_result[7])
     o = o[-1::-1]
     h = h[-1::-1]
     l = l[-1::-1]
     c = c[-1::-1]
     v = v[-1::-1]
+    f = f[-1::-1]
     date = date[-1::-1]
+    date_predict = date_predict[-1::-1]
+    lastclose = o[0]
+    trsum = 0.0
+    for priceIndex in range(len(c)):
+        maxp = max(lastclose, o[priceIndex], h[priceIndex], l[priceIndex], c[priceIndex])
+        minp = mim(lastclose, o[priceIndex], h[priceIndex], l[priceIndex], c[priceIndex])
+        tr = maxp - minp
+        if tr > 0 and minp > 0:
+          tr = tr / minp
+        else:
+          tr = 0
+        trsum += tr
+    atr = trsum / (len(c) * 1.0)
+    forcast_price_list = [forcast_price(f[n],c[n],atr) for n in range(len(c))]
     plt.title( alias_result[2] + ":" + alias_result[0] + " "
               + predictions_results[0][8].strftime('%Y-%m-%d %H:%M')
               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V2" ) #图标题 
@@ -74,15 +92,16 @@ def draw_market_v2(alias_result, predictions_results):
     #if nextprice >= currentprice:
     atr = 0.0
     #plt.plot(date,o,"yellow",label="Open")
-    plt.plot(date,h,"yellow",label="High")
-    plt.plot(date,c,"white",label="Close")
-    plt.plot(date,l,"yellow",label="Low")
+    plt.plot(date,h,"white",label="High")
+    plt.plot(date,c,"yellow",label="Close")
+    plt.plot(date,l,"white",label="Low")
+    plt.plot(date_predict,forcast_price_list,"purple",label="ForcastLine")
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
     #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
     plt.fill_between(date,l,h,facecolor="white",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
-    plt.plot(date,[currentprice] * 120, "w--", label="Current Price:"+str(currentprice))
+    plt.plot(date,[currentprice] * 120, "y--", label="Current Price:"+str(currentprice))
 
     #else:
     #  plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
@@ -116,6 +135,18 @@ def day_prediction_text(prediction_result, price, atr):
     nextprice = price * ( ( 1 - atr ) ** abs(math.tan(prediction_score)) )
     
   return "Tomorrow price:" + str(nextprice), nextprice
+
+def forcast_price(prediction_result, price, atr):
+  if prediction_result == 1:
+    prediction_result = 0.99999
+  if prediction_result == 0:
+    prediction_result = 0.00001
+  prediction_score = ( ( prediction_result * 2 - 1 ) ** 1 ) / 2 * math.pi 
+  if prediction_score >= 0:
+    nextprice = price * ( ( 1 + atr ) ** math.tan(prediction_score) )
+  else:
+    nextprice = price * ( ( 1 - atr ) ** abs(math.tan(prediction_score)) )
+  return nextprice
 
 def pinyin(word):
   s = ''
