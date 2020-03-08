@@ -68,7 +68,7 @@ def draw_market_v2(alias_result, predictions_results):
     trsum = 0.0
     for priceIndex in range(len(c)):
         maxp = max(lastclose, o[priceIndex], h[priceIndex], l[priceIndex], c[priceIndex])
-        minp = mim(lastclose, o[priceIndex], h[priceIndex], l[priceIndex], c[priceIndex])
+        minp = min(lastclose, o[priceIndex], h[priceIndex], l[priceIndex], c[priceIndex])
         tr = maxp - minp
         if tr > 0 and minp > 0:
           tr = tr / minp
