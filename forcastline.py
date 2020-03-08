@@ -52,12 +52,13 @@ def draw_market_v2(alias_result, predictions_results):
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
     #plt.xlabel( prediction_text )
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(30))
     #y.append(nextprice)
     #currentprice = prices_results[0][2]
     #if nextprice >= currentprice:
     atr = 0.0
     plt.plot(x,y,"white",label="ATR:"+ str(atr) + "%" )
+    plt.gcf().autofmt_xdate()
     plt.fill_between(x,min(y),y,facecolor="white",alpha=0.3)
     #plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
 
