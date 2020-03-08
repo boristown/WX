@@ -75,6 +75,7 @@ def draw_market_v2(alias_result, predictions_results):
         else:
           tr = 0
         trsum += tr
+        lastclose = c[priceIndex]
     atr = trsum / (len(c) * 1.0)
     forcast_price_list = [forcast_price(f[n],c[n],atr) for n in range(len(c))]
     plt.title( alias_result[2] + ":" + alias_result[0] + " "
