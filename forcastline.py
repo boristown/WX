@@ -59,7 +59,7 @@ def draw_market_v2(alias_result, predictions_results):
     v = v[-1::-1]
     date = date[-1::-1]
     plt.title( alias_result[2] + ":" + alias_result[0] + " "
-              + predictions_result[8].strftime('%Y-%m-%d %H:%M')
+              + predictions_results[0][8].strftime('%Y-%m-%d %H:%M')
               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V2" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
     #plt.xlabel( prediction_text )
@@ -75,8 +75,8 @@ def draw_market_v2(alias_result, predictions_results):
     atr = 0.0
     #plt.plot(date,o,"yellow",label="Open")
     plt.plot(date,h,"white",label="High")
-    plt.plot(date,l,"white",label="Low")
     plt.plot(date,c,"yellow",label="Close")
+    plt.plot(date,l,"white",label="Low")
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
     #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
