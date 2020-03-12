@@ -13,7 +13,7 @@ def get_version(input_text):
         return input_text.replace("V1", "").strip(), "V1"
     if 'V2' in input_text:
         return input_text.replace("V2", "").strip(), "V2"
-    return input_text.strip(), "V1"
+    return input_text.strip(), "V2"
 
 def draw_single_v2(input_text, alias_results, mycursor):
     output_text = ""
