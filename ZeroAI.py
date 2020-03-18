@@ -174,10 +174,19 @@ def fetch_tag(input_text, mycursor):
       output_text = forcastline.text_no_market(input_text)
       return output_text, None
     
+
+    today_str = time.strftime("%Y-%m-%d", datetime.datetime.utcnow()+datetime.timedelta(hours=-1))
+
+    '''
     select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
     " inner join predictions on predictions.symbol = symbol_alias.symbol " \
     " WHERE symbol_alias.symbol in (%s) and DATEDIFF(predictions.TIME,utc_timestamp())<=0 AND DATEDIFF(predictions.TIME,utc_timestamp())>-3 "\
     "ORDER BY symbol ASC, time DESC" % ','.join(['%s']*len(markets))
+    '''
+    select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+    " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' " \
+    " WHERE symbol_alias.symbol in (%s) "\
+    " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
       
     print(select_alias_statment)
       
@@ -198,9 +207,14 @@ def fetch_tag(input_text, mycursor):
       alias_results = mycursor.fetchall()
     
       if len(alias_results) > 1:
-      
+        '''
         select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
         " inner join predictions on predictions.symbol = symbol_alias.symbol WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
+        '''
+
+        select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' " \
+        " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
 
         print(select_alias_statment)
 
@@ -300,7 +314,7 @@ def draw_tag(aiera_version, input_text, alias_results):
         bestvalue = minvalue
         bestindex = y.index(minvalue)
       
-      word_single = predictions_result[12]
+      word_single = predictions_result[3]
       word_single = "/" + word_single + "/"
       market_list.append((word_single, bestvalue))
       wordcount = abs(bestvalue)
