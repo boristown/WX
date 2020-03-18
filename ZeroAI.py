@@ -184,7 +184,7 @@ def fetch_tag(input_text, mycursor):
     "ORDER BY symbol ASC, time DESC" % ','.join(['%s']*len(markets))
     '''
     select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-    " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' " \
+    " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' and pricehistory.predicttime is not null " \
     " WHERE symbol_alias.symbol in (%s) "\
     " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
       
@@ -213,7 +213,7 @@ def fetch_tag(input_text, mycursor):
         '''
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' " \
+        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "'  and pricehistory.predicttime is not null " \
         " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
 
         print(select_alias_statment)
