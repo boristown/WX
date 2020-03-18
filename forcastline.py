@@ -127,10 +127,10 @@ def draw_market_v2(alias_result, predictions_results):
     return picture_name
 
 def day_prediction_text(prediction_result, price, atr):
-  if prediction_result == 1:
-    prediction_result = 0.99999
-  if prediction_result == 0:
-    prediction_result = 0.00001
+  if prediction_result > 0.99:
+    prediction_result = 0.99
+  if prediction_result < 0.01:
+    prediction_result = 0.01
   prediction_score = ( ( prediction_result * 2 - 1 ) ** 1 ) / 2 * math.pi 
   if prediction_score >= 0:
     nextprice = price * ( ( 1 + atr ) ** math.tan(prediction_score) )
