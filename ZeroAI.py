@@ -174,8 +174,8 @@ def fetch_tag(input_text, mycursor):
       output_text = forcastline.text_no_market(input_text)
       return output_text, None
     
-
-    today_str = time.strftime("%Y-%m-%d", datetime.datetime.utcnow()+datetime.timedelta(hours=-1))
+    utc_today = datetime.datetime.utcnow()+datetime.timedelta(hours=-1)
+    today_str = utc_today.strftime("%Y-%m-%d")
 
     '''
     select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
