@@ -170,32 +170,23 @@ def fetch_tag(input_text, mycursor):
 
     markets = get_markets_from_tag(tagname, mycursor)
   
-    if len(markets) == 0:
-      output_text = forcastline.text_no_market(input_text)
-      return output_text, None
-    
-    utc_today = datetime.datetime.utcnow()+datetime.timedelta(hours=-1)
-    today_str = utc_today.strftime("%Y-%m-%d")
+    if len(markets) > 0:
 
-    '''
-    select_alias_statment = "SELECT predictions.*, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-    " inner join predictions on predictions.symbol = symbol_alias.symbol " \
-    " WHERE symbol_alias.symbol in (%s) and DATEDIFF(predictions.TIME,utc_timestamp())<=0 AND DATEDIFF(predictions.TIME,utc_timestamp())>-3 "\
-    "ORDER BY symbol ASC, time DESC" % ','.join(['%s']*len(markets))
-    '''
+        utc_today = datetime.datetime.utcnow()+datetime.timedelta(hours=-1)
+        today_str = utc_today.strftime("%Y-%m-%d")
 
-    select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-    " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' and pricehistory.predicttime is not null and pricehistory.h <> pricehistory.l" \
-    " WHERE symbol_alias.symbol in (%s) "\
-    " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
+        select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' and pricehistory.predicttime is not null and pricehistory.h <> pricehistory.l" \
+        " WHERE symbol_alias.symbol in (%s) "\
+        " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
       
-    print(select_alias_statment)
+        print(select_alias_statment)
       
-    mycursor.execute(select_alias_statment, markets)
+        mycursor.execute(select_alias_statment, markets)
   
-    alias_results = mycursor.fetchall()
+        alias_results = mycursor.fetchall()
     
-    if len(alias_results) == 0:
+    else:
       
       input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
 
