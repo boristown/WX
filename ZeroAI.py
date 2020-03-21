@@ -170,10 +170,11 @@ def fetch_tag(input_text, mycursor):
 
     markets = get_markets_from_tag(tagname, mycursor)
   
+    utc_today = datetime.datetime.utcnow()+datetime.timedelta(hours=-1)
+    today_str = utc_today.strftime("%Y-%m-%d")
+
     if len(markets) > 0:
 
-        utc_today = datetime.datetime.utcnow()+datetime.timedelta(hours=-1)
-        today_str = utc_today.strftime("%Y-%m-%d")
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' and pricehistory.predicttime is not null and pricehistory.h <> pricehistory.l" \
