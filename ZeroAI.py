@@ -170,7 +170,7 @@ def fetch_tag(input_text, mycursor):
 
     markets = get_markets_from_tag(tagname, mycursor)
   
-    utc_today = datetime.datetime.utcnow()+datetime.timedelta(hours=-1)
+    utc_today = datetime.datetime.utcnow()+datetime.timedelta(hours=-12)
     today_str = utc_today.strftime("%Y-%m-%d")
 
     if len(markets) > 0:
