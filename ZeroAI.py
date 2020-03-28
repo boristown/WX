@@ -170,7 +170,7 @@ def fetch_tag(input_text, mycursor):
 
     markets = get_markets_from_tag(tagname, mycursor)
   
-    utc_today = datetime.datetime.utcnow()+datetime.timedelta(hours=-12)
+    utc_today = datetime.datetime.utcnow()+datetime.timedelta(days=-5)
     today_str = utc_today.strftime("%Y-%m-%d")
 
     if len(markets) > 0:
@@ -178,7 +178,7 @@ def fetch_tag(input_text, mycursor):
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol " \
-        " and pricehistory.date = '" + today_str + "' and pricehistory.c > 0 and pricehistory.l > 0 and pricehistory.predicttime >= '" + today_str + "' and pricehistory.h <> pricehistory.l" \
+        " and pricehistory.date >= '" + today_str + "' and pricehistory.c > 0 and pricehistory.l > 0 and pricehistory.predicttime >= '" + today_str + "' and pricehistory.h <> pricehistory.l" \
         " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
         " WHERE symbol_alias.symbol in (%s) "\
         " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
@@ -208,7 +208,7 @@ def fetch_tag(input_text, mycursor):
         '''
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = '" + today_str + "' and pricehistory.c > 0 and pricehistory.l > 0 and pricehistory.predicttime >= '" + today_str + "' and pricehistory.h <> pricehistory.l " \
+        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date >= '" + today_str + "' and pricehistory.c > 0 and pricehistory.l > 0 and pricehistory.predicttime >= '" + today_str + "' and pricehistory.h <> pricehistory.l " \
         " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
         " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
 
