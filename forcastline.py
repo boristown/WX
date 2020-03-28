@@ -106,7 +106,7 @@ def draw_market_v2(alias_result, predictions_results):
     plt.plot(date,[currentprice] * 120, "w--", label="当前价Current:"+str(currentprice))
     plt.plot(date_predict,[forcast_price_list[-1]] * 120, color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
-    plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
+    #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
 
     #else:
     #  plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
