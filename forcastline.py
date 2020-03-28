@@ -102,7 +102,7 @@ def draw_market_v2(alias_result, predictions_results):
             changerate = max(c[priceIndex],c[priceIndex + 1]) / min(c[priceIndex],c[priceIndex + 1])
             changeatr = math.log(changerate, 1 + atr)
             alpha = math.atan(changeatr * 1.5) * 2 / math.pi 
-            linewidth = changeatr
+            linewidth = 1
             if c[priceIndex + 1] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[priceIndex + 1] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
                 color = "green"
             else:
