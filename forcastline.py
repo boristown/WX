@@ -35,7 +35,8 @@ def draw_single_v2(input_text, alias_results, mycursor):
     return picture_name, output_text
 
 def draw_market_v2(alias_result, predictions_results):
-    plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
+    #plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
+    plt.figure(figsize=(8,8), dpi=150, facecolor='black')
     prediction_count = len(predictions_results)
     predictions_result = predictions_results[0]
     plt.style.use('dark_background')
@@ -94,17 +95,18 @@ def draw_market_v2(alias_result, predictions_results):
     #if nextprice >= currentprice:
     #plt.plot(date,o,"yellow",label="Open")
     plt.plot(date,h,"gray",label="最高价High")
-    plt.plot(date,c,"white",label="收盘价Close")
+    plt.plot(date,c,"white",label="收盘价Close", marker = ".")
     plt.plot(date,l,"gray",label="最低价Low")
-    plt.plot(date_predict,forcast_price_list,"blue",label="预测线ForcastLine")
+    plt.plot(date_predict,forcast_price_list, color = "darkviolet",label="预测线ForcastLine", marker = ".")
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
     #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
     plt.fill_between(date,l,h,facecolor="gray",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
     plt.plot(date,[currentprice] * 120, "w--", label="当前价Current:"+str(currentprice))
-    plt.plot(date_predict,[forcast_price_list[-1]] * 120, "b--", label="预测价Forcast:"+str(forcast_price_list[-1]))
-    plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="blue",alpha=0.3)
+    plt.plot(date_predict,[forcast_price_list[-1]] * 120, color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
+    #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
+    plt.fill_between(date_predict[:-1], c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
 
     #else:
     #  plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
