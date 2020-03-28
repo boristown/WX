@@ -106,7 +106,7 @@ def draw_market_v2(alias_result, predictions_results):
             if c[priceIndex + 1] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[priceIndex + 1] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
                 color = "limegreen"
             else:
-                color = "orangered"
+                color = "crimson"
         else:
             color = "darkviolet"
             alpha = 1
