@@ -97,7 +97,20 @@ def draw_market_v2(alias_result, predictions_results):
     plt.plot(date,h,"gray",label="最高价High")
     plt.plot(date,c,"white",label="收盘价Close", marker = ".")
     plt.plot(date,l,"gray",label="最低价Low")
-    plt.plot(date_predict,forcast_price_list, color = "darkviolet",label="预测线ForcastLine", marker = ".")
+    for priceIndex in range(len(c)):
+        if priceIndex < (len(c) -1):
+            changerate = max(c[priceIndex],c[priceIndex + 1]) / min(c[priceIndex],c[priceIndex + 1])
+            changeatr = math.log(changerate, 1 + atr)
+            alpha = math.atan(changeatr) * 2 / math.pi 
+            if c[priceIndex + 1] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[priceIndex + 1] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
+                color = "green"
+            else:
+                color = "red"
+        else:
+            color = "darkviolet"
+            alpha = 1
+        plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = ".", alpha = alpha)
+
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
     #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
