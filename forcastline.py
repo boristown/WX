@@ -104,9 +104,9 @@ def draw_market_v2(alias_result, predictions_results):
             alpha = math.atan(changeatr * 1.5) * 2 / math.pi 
             linewidth = 1.5
             if c[priceIndex + 1] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[priceIndex + 1] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
-                color = "green"
+                color = "limegreen"
             else:
-                color = "red"
+                color = "orangered"
         else:
             color = "darkviolet"
             alpha = 1
