@@ -64,7 +64,9 @@ def chat(input_text):
   if input_text == '帮助' or input_text == 'HELP':
     return help_text()
 
-  select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias = '" + input_text + "'"
+  select_alias_statment = "SELECT symbol_alias.* FROM symbol_alias " \
+    " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
+    " WHERE symbol_alias.symbol_alias = '" + input_text + "'"
 
   print(select_alias_statment)
 
