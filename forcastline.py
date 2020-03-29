@@ -113,7 +113,8 @@ def draw_market_v2(alias_result, predictions_results):
             color = "darkviolet"
             alpha = 1
             linewidth = 1
-        plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = ".", alpha = alpha, linewidth = linewidth)
+        #plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = ".", alpha = alpha, linewidth = linewidth, markevery=[1])
+        plt.arrow(date[priceIndex], c[priceIndex], 1, forcast_price_list[priceIndex]-c[priceIndex], length_includes_head=True, head_width=linewidth*2, head_length=linewidth*2, color = color,  lw = linewidth, alpha = alpha)
 
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
