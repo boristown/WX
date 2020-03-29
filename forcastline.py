@@ -18,7 +18,9 @@ def get_version(input_text):
 def draw_single_v2(input_text, alias_results, mycursor):
     output_text = ""
     alias_result = alias_results[0]
-    select_predictions_statment = "SELECT * FROM pricehistory WHERE symbol = '" + alias_result[1] + "' ORDER BY date DESC limit 0, 120"
+    select_predictions_statment = "SELECT pricehistory.* FROM pricehistory " \
+    " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
+    " WHERE symbol = '" + alias_result[1] + "' ORDER BY date DESC limit 0, 120"
     print(select_predictions_statment)
     mycursor.execute(select_predictions_statment)
     print("Fetching price history")
