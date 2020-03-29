@@ -104,7 +104,7 @@ def draw_market_v2(alias_result, predictions_results):
             changerate = max(c[priceIndex],c[priceIndex + 1]) / min(c[priceIndex],c[priceIndex + 1])
             changeatr = math.log(changerate, 1 + atr)
             alpha = math.atan(changeatr * 1.5) * 2 / math.pi 
-            linewidth = 1.5
+            linewidth = 2
             if c[priceIndex + 1] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[priceIndex + 1] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
                 color = "limegreen"
             else:
@@ -113,8 +113,8 @@ def draw_market_v2(alias_result, predictions_results):
             color = "darkviolet"
             alpha = 1
             linewidth = 1
-        #plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = ".", alpha = alpha, linewidth = linewidth, markevery=[1])
-        plt.arrow(date[priceIndex], c[priceIndex], 1, forcast_price_list[priceIndex]-c[priceIndex], length_includes_head=True, head_width=linewidth*2, head_length=linewidth*2, color = color,  lw = linewidth, alpha = alpha)
+        plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
+        #plt.arrow(date[priceIndex], c[priceIndex], 1, forcast_price_list[priceIndex]-c[priceIndex], fc=color, ec=color, head_width=4, head_length=6)
 
     #plt.plot(date,v,"white",label="Volume")
     #plt.gcf().autofmt_xdate()
