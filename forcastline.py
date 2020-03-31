@@ -106,6 +106,7 @@ def draw_market_v2(alias_result, predictions_results):
             else:
                 changerate = 1.0
             if changerate > 0 and 1 + atr > 0:
+                print(changerate, 1 + atr)
                 changeatr = math.log(changerate, 1 + atr)
             else:
                 changeatr = 0
