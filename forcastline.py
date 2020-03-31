@@ -20,7 +20,7 @@ def draw_single_v2(input_text, alias_results, mycursor):
     alias_result = alias_results[0]
     select_predictions_statment = "SELECT pricehistory.* FROM pricehistory " \
     " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
-    " WHERE pricehistory.l > 0 and pricehistory.c > 0 and pricehistory.symbol = '" + alias_result[1] + "' ORDER BY pricehistory.date DESC limit 0, 120"
+    " WHERE pricehistory.l > 0 and pricehistory.c > 0 and pricehistory.f <> 0.5 and pricehistory.symbol = '" + alias_result[1] + "' ORDER BY pricehistory.date DESC limit 0, 120"
     print(select_predictions_statment)
     mycursor.execute(select_predictions_statment)
     print("Fetching price history")
@@ -85,7 +85,7 @@ def draw_market_v2(alias_result, predictions_results):
               + predictions_results[0][8].strftime('%Y-%m-%d %H:%M')
               + " UTC\n预测模型：海龟二号" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "%")
+    plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "%\n红色是错误的预测，绿色是正确的预测，暗色是不重要的预测。")
     locator = mdates.AutoDateLocator()
     formatter = mdates.ConciseDateFormatter(locator)
     plt.gca().xaxis.set_major_locator(locator)
