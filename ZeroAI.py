@@ -179,10 +179,8 @@ def fetch_tag(input_text, mycursor):
 
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join (select symbol, max(date) as date from pricehistory where c > 0 and l > 0 and l <> h and f <> 0.5 group by symbol) pricehistorydate on pricehistorydate.symbol = symbol_alias.symbol " \
-        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = pricehistorydate.date " \
-        " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
-        " WHERE symbol_alias.symbol in (%s) "\
+        " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' and symbol in (%s)  " \
+        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate " \
         " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
       
         print(select_alias_statment)
@@ -210,9 +208,8 @@ def fetch_tag(input_text, mycursor):
         '''
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join (select symbol, max(date) as date from pricehistory where c > 0 and l > 0 and l <> h and f <> 0.5 group by symbol) pricehistorydate on pricehistorydate.symbol = symbol_alias.symbol " \
-        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = pricehistorydate.date " \
-        " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
+        " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' and symbol in (%s)  " \
+        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate " \
         " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
 
         print(select_alias_statment)
