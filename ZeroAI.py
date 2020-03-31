@@ -179,8 +179,8 @@ def fetch_tag(input_text, mycursor):
 
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol " \
-        " and pricehistory.date >= '" + today_str + "' and pricehistory.c > 0 and pricehistory.l > 0 and pricehistory.predicttime >= '" + today_str + "' and pricehistory.h <> pricehistory.l" \
+        " inner join (select symbol, max(date) as date from pricehistory where c > 0 and l > 0 and l <> h and f <> 0.5 group by symbol) pricehistorydate on pricehistorydate.symbol = symbol_alias.symbol " \
+        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = pricehistorydate.date " \
         " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
         " WHERE symbol_alias.symbol in (%s) "\
         " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
@@ -193,7 +193,7 @@ def fetch_tag(input_text, mycursor):
     
     else:
       
-      input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%")
+      input_text = input_text.replace("/","%").replace("-","%").replace("*","%").replace(" ","%").replace("?","%").replace("=","%")
 
       select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%' group by symbol"
 
@@ -210,7 +210,8 @@ def fetch_tag(input_text, mycursor):
         '''
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date >= '" + today_str + "' and pricehistory.c > 0 and pricehistory.l > 0 and pricehistory.predicttime >= '" + today_str + "' and pricehistory.h <> pricehistory.l " \
+        " inner join (select symbol, max(date) as date from pricehistory where c > 0 and l > 0 and l <> h and f <> 0.5 group by symbol) pricehistorydate on pricehistorydate.symbol = symbol_alias.symbol " \
+        " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = pricehistorydate.date " \
         " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
         " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
 
