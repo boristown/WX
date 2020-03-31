@@ -178,7 +178,7 @@ def fetch_tag(input_text, mycursor):
     if len(markets) > 0:
 
 
-        select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+        select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.date pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
         " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' and predictlog.symbol in (%s)  " \
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate " \
         " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
@@ -207,7 +207,7 @@ def fetch_tag(input_text, mycursor):
         " inner join predictions on predictions.symbol = symbol_alias.symbol WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY symbol ASC"
         '''
 
-        select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.PREDICTTIME, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+        select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.date, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
         " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' and symbol in (%s)  " \
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate " \
         " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY pricehistory.symbol ASC"
@@ -322,7 +322,7 @@ def draw_tag(aiera_version, input_text, alias_results):
         
       word_frequencies[word_single] = wordcount
     market_list.sort(key=lambda x:x[1], reverse=False)
-    time_str = "Time:"+max( [alias_result[1] for alias_result in alias_results] ).strftime('%Y-%m-%d_%H:%M') + "_UTC"
+    time_str = "Time:"+max( [alias_result[1] for alias_result in alias_results] ).strftime('%Y-%m-%d') + "_UTC"
     if abs(market_list[0][1]) > abs(market_list[-1][1]):
       word_in_color.word_in_falling_major = market_list[0][0]
       comment_frequency = int(abs(market_list[0][1]))
