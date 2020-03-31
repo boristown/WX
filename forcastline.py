@@ -104,8 +104,11 @@ def draw_market_v2(alias_result, predictions_results):
             if c[priceIndex] > 0 and c[priceIndex + 1] > 0:
                 changerate = max(c[priceIndex],c[priceIndex + 1]) / min(c[priceIndex],c[priceIndex + 1])
             else:
-                changerate = 1
-            changeatr = math.log(changerate, 1 + atr)
+                changerate = 1.0
+            if changerate > 0 and 1 + atr > 0:
+                changeatr = math.log(changerate, 1 + atr)
+            else:
+                changeatr = 0
             alpha = math.atan(changeatr * 1.5) * 2 / math.pi 
             linewidth = 2
             if c[priceIndex + 1] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[priceIndex + 1] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
