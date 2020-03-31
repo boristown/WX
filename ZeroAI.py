@@ -178,7 +178,7 @@ def fetch_tag(input_text, mycursor):
     if len(markets) > 0:
 
 
-        select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.date pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
+        select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.date, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
         " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' and predictlog.symbol in (%s)  " \
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate " \
         " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
