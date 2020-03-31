@@ -85,7 +85,16 @@ def draw_market_v2(alias_result, predictions_results):
               + predictions_results[0][8].strftime('%Y-%m-%d %H:%M')
               + " UTC\n预测模型：海龟二号" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "%\n红色是错误的预测，绿色是正确的预测，暗色是不重要的预测。")
+    plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "%\n红色是错误的预测，绿色是正确的预测，紫色是对未来的预测。")
+    #fig = plt.figure()
+    #ax = fig.add_axes([0, 0, 1, 1])
+    plt.text(0.5, 0.5, '红色',
+        horizontalalignment='center',
+        verticalalignment='center',
+        fontsize=20, color='red',
+        #transform=ax.transAxes
+        )
+    #ax.set_axis_off()
     locator = mdates.AutoDateLocator()
     formatter = mdates.ConciseDateFormatter(locator)
     plt.gca().xaxis.set_major_locator(locator)
