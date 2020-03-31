@@ -101,7 +101,10 @@ def draw_market_v2(alias_result, predictions_results):
     plt.plot(date,l,"gray",label="最低价Low")
     for priceIndex in range(len(c)):
         if priceIndex < (len(c) -1):
-            changerate = max(c[priceIndex],c[priceIndex + 1]) / min(c[priceIndex],c[priceIndex + 1])
+            if c[priceIndex] > 0 and c[priceIndex + 1] > 0:
+                changerate = max(c[priceIndex],c[priceIndex + 1]) / min(c[priceIndex],c[priceIndex + 1])
+            else:
+                changerate = 1
             changeatr = math.log(changerate, 1 + atr)
             alpha = math.atan(changeatr * 1.5) * 2 / math.pi 
             linewidth = 2
