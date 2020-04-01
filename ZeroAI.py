@@ -208,7 +208,7 @@ def fetch_tag(input_text, mycursor):
         '''
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.date, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' and symbol in (%s)  " \
+        " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate " \
         " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY pricehistory.symbol ASC"
 
