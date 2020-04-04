@@ -117,7 +117,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     date_predict = []
     for predictions_result in predictions_results:
         date.append(predictions_result[1])
-        date_predict.append(predictions_result[1]+datetime.timedelta(days=1))
+        #date_predict.append(predictions_result[1]+datetime.timedelta(days=1))
         o.append(predictions_result[2])
         h.append(predictions_result[3])
         l.append(predictions_result[4])
@@ -134,6 +134,8 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     date_predict = date_predict[-1::-1]
     lastclose = o[0]
     trsum = 0.0
+    date_predict = date[1:]
+    date_predict.append(date[-1]+datetime.timedelta(days=1))
     for priceIndex in range(len(c)):
         maxp = max(lastclose, o[priceIndex], h[priceIndex], l[priceIndex], c[priceIndex])
         minp = min(lastclose, o[priceIndex], h[priceIndex], l[priceIndex], c[priceIndex])
@@ -209,7 +211,8 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
     correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, c, forcast_price_list)
-    plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='limegreen' if correctflag else 'crimson', shrink=0.05), bbox=dict(boxstyle="round,pad=0.5", fc='limegreen' if correctflag else 'crimson', ec='white', lw=1, alpha = 0.3))
+    plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='limegreen' if correctflag else 'crimson', shrink=0.05, alpha = 0.3), 
+                 bbox=dict(boxstyle="round,pad=0.5", fc='limegreen' if correctflag else 'crimson', ec='white', lw=1, alpha = 0.3))
 
     #else:
     #  plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
@@ -270,7 +273,7 @@ def getpredicttext(date, c, forcast_price_list):
     else:
         textx = int(maxindex + 0.1 * len(c))
     #y position
-    if forcast_price_list[maxindex] > ymiddle:
+    if forcast_price_list[maxindex-1] > ymiddle:
         texty = forcast_price_list[maxindex-1] - 0.25 *  yrange
     else:
         texty = forcast_price_list[maxindex-1] + 0.1 *  yrange
