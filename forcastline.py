@@ -254,9 +254,9 @@ def getpredicttext(date, c, forcast_price_list):
                         correctflag = True
                     else:
                         correctflag = False
-    yrange = max(c) - min(c)
-    ymiddle =max(c) / 2 + min(c) / 2 
-    datetext = date[maxindex].strftime("%Y-%m-%d")
+    yrange = max(max(c),max(forcast_price_list)) - min(min(c),min(forcast_price_list))
+    ymiddle =max(max(c),max(forcast_price_list)) / 2 + min(min(c),min(forcast_price_list)) / 2 
+    datetext = date[maxindex].strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
     if correctflag:
         correcttext = "成功预测到"
     else:
