@@ -85,7 +85,7 @@ def draw_single_v2(input_text, alias_results, mycursor, params):
     " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
     " WHERE pricehistory.l > 0 and pricehistory.c > 0 and pricehistory.symbol = '" + alias_result[1] + "' and pricehistory.date <= '" + params["DATE"] + "' " \
     " ORDER BY pricehistory.date "  \
-    " DESC limit "  + abs(int(params["OFFSET"])) + " , " + abs(int(params["LEN"]))
+    " DESC limit "  + str(abs(int(params["OFFSET"]))) + " , " + str(abs(int(params["LEN"])))
     print(select_predictions_statment)
     mycursor.execute(select_predictions_statment)
     print("Fetching price history")
