@@ -78,7 +78,7 @@ def command(input):
     params["DATE"] = params["DATE"].strftime("%Y-%m-%d")
     return symbol, params
 
-def draw_single_v2(input_text, alias_results, mycursor, params):
+def draw_single_v2(input_text, alias_results, mycursor, params, origin_input):
     output_text = ""
     alias_result = alias_results[0]
     select_predictions_statment = "SELECT pricehistory.* FROM pricehistory " \
@@ -98,10 +98,10 @@ def draw_single_v2(input_text, alias_results, mycursor, params):
     #print(select_prices_statment)
     #mycursor.execute(select_prices_statment)
     #prices_results = mycursor.fetchall()
-    picture_name = draw_market_v2(alias_result, predictions_results, params)
+    picture_name = draw_market_v2(alias_result, predictions_results, params, origin_input)
     return picture_name, output_text
 
-def draw_market_v2(alias_result, predictions_results, params):
+def draw_market_v2(alias_result, predictions_results, params, origin_input):
     #plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
     plt.figure(figsize=(8,8), dpi=150, facecolor='black')
     prediction_count = len(predictions_results)
@@ -146,7 +146,8 @@ def draw_market_v2(alias_result, predictions_results, params):
         lastclose = c[priceIndex]
     atr = trsum / (len(c) * 1.0)
     forcast_price_list = [forcast_price(f[n],c[n],atr) for n in range(len(c))]
-    plt.title( alias_result[2] + ":" + alias_result[0] + " "
+    #plt.title( alias_result[2] + ":" + alias_result[0] + " "
+    plt.title( alias_result[2] + ":" + origin_input + " "
               + predictions_results[0][1].strftime('%Y-%m-%d')
               + " UTC\n预测模型：海龟二号" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
