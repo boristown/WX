@@ -147,7 +147,7 @@ def draw_market_v2(alias_result, predictions_results, params):
     atr = trsum / (len(c) * 1.0)
     forcast_price_list = [forcast_price(f[n],c[n],atr) for n in range(len(c))]
     plt.title( alias_result[2] + ":" + alias_result[0] + " "
-              + predictions_results[0][8].strftime('%Y-%m-%d %H:%M')
+              + predictions_results[0][1].strftime('%Y-%m-%d')
               + " UTC\n预测模型：海龟二号" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
     plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "%\n红色是错误的预测，绿色是正确的预测，紫色是对未来的预测。")
