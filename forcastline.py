@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pypinyin
 import math
+import re
 
 def get_version(input_text):
     if 'V1' in input_text:
@@ -15,12 +16,76 @@ def get_version(input_text):
         return input_text.replace("V2", "").strip(), "V2"
     return input_text.strip(), "V2"
 
-def draw_single_v2(input_text, alias_results, mycursor):
+def dateoffset(inputstr):
+    keystr = ""
+    valuedata = ""
+    try:
+        valuedata =  datetime.datetime.strptime(inputstr, '%Y-%m-%d')
+        keystr = "DATE"
+    except :
+        try:
+            valuedata = datetime.datetime.strptime(inputstr, '%Y/%m/%d')
+            keystr = "DATE"
+        except Exception as e:
+            try:
+                valuedata = datetime.datetime.strptime(inputstr, '%Y%m%d')
+                keystr = "DATE"
+            except Exception as e:
+                try:
+                    valuedata = int(inputstr)
+                    keystr = "OFFSET"
+                except Exception as e:
+                    pass
+    return keystr, valuedata
+
+def command(input):
+    symbol = input
+    params = {}
+    params["LEN"] = 120
+    params["OFFSET"] = 0
+    params["DATE"] = datetime.datetime.utcnow()+datetime.timedelta(days=0)
+
+    #startdate = ""
+    #len = 0
+    pattern = r'([^-=\[\]\s]+)'
+    matchs = re.finditer(pattern,input,re.S)
+    for cell_matchs in matchs:
+        symbol = str(cell_matchs.group(1))
+        break
+    
+    pattern = r'\[([^:\[\]]*)\]'
+    matchs = re.finditer(pattern,input,re.S)
+    for cell_matchs in matchs:
+        if str(cell_matchs.group(1)):
+            keystr, valuedata = dateoffset(str(cell_matchs.group(1)))
+            if keystr:
+                params[keystr] = valuedata
+
+    pattern = r'\[([^:\[\]]*):([^:\[\]]*)\]'
+    matchs = re.finditer(pattern,input,re.S)
+    for cell_matchs in matchs:
+        if str(cell_matchs.group(1)):
+            keystr, valuedata = dateoffset(str(cell_matchs.group(1)))
+            if keystr:
+                params[keystr] = valuedata
+        if str(cell_matchs.group(2)):
+            params["LEN"] = str(cell_matchs.group(2))
+    #pattern = r'(.+?)\s+?-([^-=]+)=([^-=]+)\s+?-([^-=]+)=([^-=]+)'
+    pattern = r'-([^-=\s]+)=([^-=\s]+)'
+    matchs = re.finditer(pattern,input,re.S)
+    for cell_matchs in matchs:
+        params[str(cell_matchs.group(1))] = str(cell_matchs.group(2))
+    params["DATE"] = params["DATE"].strftime("%Y-%m-%d")
+    return symbol, params
+
+def draw_single_v2(input_text, alias_results, mycursor, params):
     output_text = ""
     alias_result = alias_results[0]
     select_predictions_statment = "SELECT pricehistory.* FROM pricehistory " \
     " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
-    " WHERE pricehistory.l > 0 and pricehistory.c > 0 and pricehistory.symbol = '" + alias_result[1] + "' ORDER BY pricehistory.date DESC limit 0, 120"
+    " WHERE pricehistory.l > 0 and pricehistory.c > 0 and pricehistory.symbol = '" + alias_result[1] + "' and pricehistory.date <= '" + params["DATE"] + "' " \
+    " ORDER BY pricehistory.date "  \
+    " DESC limit "  + abs(int(params["OFFSET"])) + " , " + abs(int(params["LEN"]))
     print(select_predictions_statment)
     mycursor.execute(select_predictions_statment)
     print("Fetching price history")
@@ -138,8 +203,8 @@ def draw_market_v2(alias_result, predictions_results):
     #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
     plt.fill_between(date,l,h,facecolor="gray",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
-    plt.plot(date,[currentprice] * 120, "w--", label="当前价Current:"+str(currentprice))
-    plt.plot(date_predict,[forcast_price_list[-1]] * 120, color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
+    plt.plot(date,[currentprice] * int(params["LEN"]), "w--", label="当前价Current:"+str(currentprice))
+    plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
 

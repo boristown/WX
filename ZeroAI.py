@@ -51,6 +51,9 @@ def chat(input_text):
   input_text = input_text.strip().upper()
 
   input_text, aiera_version = forcastline.get_version(input_text)
+
+  input_text, params = forcastline.command(input_text)
+
   output_text = ''
 
   picture_path = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H') + '*.png'
@@ -87,7 +90,7 @@ def chat(input_text):
     return output_text
     
   if len(alias_results) == 1:
-    picture_name, output_text = draw_single(aiera_version, input_text, alias_results, mycursor)
+    picture_name, output_text = draw_single(aiera_version, input_text, alias_results, mycursor, params)
     if picture_name == None:
         return output_text
   else:
@@ -95,11 +98,11 @@ def chat(input_text):
     
   return picture_url(picture_name)
 
-def draw_single(aiera_version, input_text, alias_results, mycursor):
+def draw_single(aiera_version, input_text, alias_results, mycursor, params):
     if aiera_version == "V1":
         return draw_single_v1(input_text, alias_results, mycursor)
     if aiera_version == "V2":
-        return forcastline.draw_single_v2(input_text, alias_results, mycursor)
+        return forcastline.draw_single_v2(input_text, alias_results, mycursor, params)
 
 def draw_single_v1(input_text, alias_results, mycursor):
     output_text = ""
