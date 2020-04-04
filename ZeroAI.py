@@ -50,7 +50,7 @@ def chat(origin_input):
 
   origin_input = origin_input.strip().upper()
 
-  origin_input, aiera_version = forcastline.get_version(input_text)
+  origin_input, aiera_version = forcastline.get_version(origin_input)
   
   input_text, params = forcastline.command(origin_input)
 
