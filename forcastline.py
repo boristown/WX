@@ -182,7 +182,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                 else:
                     changerate = 1.0
                 if changerate > 0 and 1 + atr > 0:
-                    print(changerate, 1 + atr)
+                    #print(changerate, 1 + atr)
                     changeatr = math.log(changerate, 1 + atr)
                 else:
                     changeatr = 0
@@ -195,7 +195,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
             else:
                 color = "darkviolet"
                 alpha = 1
-                linewidth = 1
+                linewidth = 2
             plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
         #plt.arrow(date[priceIndex], c[priceIndex], 1, forcast_price_list[priceIndex]-c[priceIndex], fc=color, ec=color, head_width=4, head_length=6)
 
@@ -208,6 +208,8 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
+    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, c, forcast_price_list)
+    plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='limegreen' if correctflag else 'crimson', shrink=0.05), bbox=dict(boxstyle="round,pad=0.5", fc='limegreen' if correctflag else 'crimson', ec='white', lw=1, alpha = 0.3))
 
     #else:
     #  plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
@@ -228,6 +230,53 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     picture_name = 'Img/' + pinyin(alias_result[0]) + "_V2" + "_" + str(params["OFFSET"]) + "_" + str(params["LEN"]) + "_" + str(params["DATE"]) + "_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name, facecolor='black')
     return picture_name
+
+def getpredicttext(date, c, forcast_price_list):
+    predicttext = ""
+    maxratio = 0.0
+    maxindex = 0
+    riseorfall = ""
+    for priceindex in range(len(c)):
+        if priceindex > 0:
+            ratio = max(c[priceindex], c[priceindex-1]) / min(c[priceindex], c[priceindex-1])
+            if ratio > maxratio:
+                maxratio = ratio
+                maxindex = priceindex
+                if c[priceindex] >= c[priceindex-1]:
+                    riseorfall = "暴涨"
+                    if forcast_price_list[priceindex-1] >= c[priceindex-1]:
+                        correctflag = True
+                    else:
+                        correctflag = False
+                else:
+                    riseorfall = "暴跌"
+                    if forcast_price_list[priceindex-1] < c[priceindex-1]:
+                        correctflag = True
+                    else:
+                        correctflag = False
+    yrange = max(c) - min(c)
+    ymiddle =max(c) / 2 + min(c) / 2 
+    datetext = date[maxindex].strftime("%Y-%m-%d")
+    if correctflag:
+        correcttext = "成功预测到"
+    else:
+        correcttext = "未能预测到"
+    predicttext = datetext + "，\nAI" + correcttext + "\n市场价格" +  riseorfall
+
+    predictxy = (date[maxindex],forcast_price_list[maxindex-1])
+    #x position
+    if (maxindex + 1) / len(c) > 0.5:
+        textx = int(maxindex - 0.25 * len(c))
+    else:
+        textx = int(maxindex + 0.1 * len(c))
+    #y position
+    if forcast_price_list[maxindex] > ymiddle:
+        texty = forcast_price_list[maxindex-1] - 0.25 *  yrange
+    else:
+        texty = forcast_price_list[maxindex-1] + 0.1 *  yrange
+    predicttextxy = (date[textx],texty)
+
+    return correctflag, predicttext, predictxy, predicttextxy
 
 def day_prediction_text(prediction_result, price, atr):
   if prediction_result > 0.95:
