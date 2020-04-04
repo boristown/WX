@@ -56,7 +56,7 @@ def chat(input_text):
 
   output_text = ''
 
-  picture_path = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H') + '*.png'
+  picture_path = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + "_" + params["OFFSET"] + "_" + params["LEN"] + "_" + params["DATE"] + "_" + datetime.datetime.now().strftime('%Y%m%d%H') + '*.png'
   picture_cache = glob.glob(picture_path)
   if picture_cache:
     picture_name = picture_cache[0]

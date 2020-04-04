@@ -98,10 +98,10 @@ def draw_single_v2(input_text, alias_results, mycursor, params):
     #print(select_prices_statment)
     #mycursor.execute(select_prices_statment)
     #prices_results = mycursor.fetchall()
-    picture_name = draw_market_v2(alias_result, predictions_results)
+    picture_name = draw_market_v2(alias_result, predictions_results, params)
     return picture_name, output_text
 
-def draw_market_v2(alias_result, predictions_results):
+def draw_market_v2(alias_result, predictions_results, params):
     #plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
     plt.figure(figsize=(8,8), dpi=150, facecolor='black')
     prediction_count = len(predictions_results)
@@ -224,7 +224,7 @@ def draw_market_v2(alias_result, predictions_results):
     
     plt.legend(loc = 2)
     
-    picture_name = 'Img/' + pinyin(alias_result[0]) + "_V2" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    picture_name = 'Img/' + pinyin(alias_result[0]) + "_V2" + "_" + params["OFFSET"] + "_" + params["LEN"] + "_" + params["DATE"] + "_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
     plt.savefig(picture_name, facecolor='black')
     return picture_name
 
