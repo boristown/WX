@@ -246,13 +246,13 @@ def getpredicttext(date, c, forcast_price_list):
                 maxratio = ratio
                 maxindex = priceindex
                 if c[priceindex] >= c[priceindex-1]:
-                    riseorfall = "暴涨"+(c[priceindex]/c[priceindex-1]-1)*100+"%"
+                    riseorfall = "暴涨"+ str(round((c[priceindex]/c[priceindex-1]-1)*100,2))+"%"
                     if forcast_price_list[priceindex-1] >= c[priceindex-1]:
                         correctflag = True
                     else:
                         correctflag = False
                 else:
-                    riseorfall = "暴跌"+(1-c[priceindex]/c[priceindex-1])*100+"%"
+                    riseorfall = "暴跌"+str(round((1-c[priceindex]/c[priceindex-1])*100,2))+"%"
                     if forcast_price_list[priceindex-1] < c[priceindex-1]:
                         correctflag = True
                     else:
