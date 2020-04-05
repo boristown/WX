@@ -211,7 +211,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
     correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, c, forcast_price_list)
-    plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='limegreen' if correctflag else 'crimson', shrink=0.05, alpha = 0.3), 
+    plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='white', shrink=0.05, alpha = 0.3), 
                  bbox=dict(boxstyle="round,pad=0.5", fc='limegreen' if correctflag else 'crimson', ec='white', lw=1, alpha = 0.3))
 
     #else:
