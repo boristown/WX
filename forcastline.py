@@ -246,13 +246,13 @@ def getpredicttext(date, c, forcast_price_list):
                 maxratio = ratio
                 maxindex = priceindex
                 if c[priceindex] >= c[priceindex-1]:
-                    riseorfall = "暴涨"
+                    riseorfall = "暴涨"+(c[priceindex]/c[priceindex-1]-1)*100+"%"
                     if forcast_price_list[priceindex-1] >= c[priceindex-1]:
                         correctflag = True
                     else:
                         correctflag = False
                 else:
-                    riseorfall = "暴跌"
+                    riseorfall = "暴跌"+(1-c[priceindex]/c[priceindex-1])*100+"%"
                     if forcast_price_list[priceindex-1] < c[priceindex-1]:
                         correctflag = True
                     else:
@@ -261,10 +261,10 @@ def getpredicttext(date, c, forcast_price_list):
     ymiddle =max(max(c),max(forcast_price_list)) / 2 + min(min(c),min(forcast_price_list)) / 2 
     datetext = date[maxindex].strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
     if correctflag:
-        correcttext = "成功预测到"
+        correcttext = "预测正确"
     else:
-        correcttext = "未能预测到"
-    predicttext = datetext + "，\nAI" + correcttext + "\n市场价格" +  riseorfall
+        correcttext = "预测错误"
+    predicttext = datetext + "\n"+  riseorfall + "\n" + correcttext 
 
     predictxy = (date[maxindex],forcast_price_list[maxindex-1])
     #x position
