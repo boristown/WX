@@ -283,13 +283,13 @@ def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
             maxratio = ratio
             maxindex = stopindex
             if c[stopindex] >= c[priceindex]:
-                riseorfall = str(dayscouns) + "天暴涨"+ str(round((c[stopindex]/c[priceindex]-1)*100,2))+"%"
+                riseorfall = str(dayscount) + "天暴涨"+ str(round((c[stopindex]/c[priceindex]-1)*100,2))+"%"
                 if forcast_price_list[priceindex] >= c[priceindex]:
                     correctflag = True
                 else:
                     correctflag = False
             else:
-                riseorfall = str(dayscouns) + "天暴跌"+str(round((1-c[stopindex]/c[priceindex])*100,2))+"%"
+                riseorfall = str(dayscount) + "天暴跌"+str(round((1-c[stopindex]/c[priceindex])*100,2))+"%"
                 if forcast_price_list[priceindex] < c[priceindex]:
                     correctflag = True
                 else:
