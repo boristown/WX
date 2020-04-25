@@ -206,7 +206,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                     changeatr = math.log(changerate, 1 + atr)
                 else:
                     changeatr = 0
-                alpha = math.atan(changeatr * 1.5) * 2 / math.pi 
+                alpha = math.atan(changeatr) * 2 / math.pi 
                 linewidth = 2
                 if c[stopindex] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[stopindex] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
                     color = "limegreen"
@@ -256,7 +256,8 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
 def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
     predicttext = ""
     maxratio = 0.0
-    maxindex = 0
+    maxindex1 = 0
+    maxindex2 = 0
     riseorfall = ""
     dayscount = 0
     for priceindex in range(len(c)):
@@ -264,6 +265,7 @@ def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
         highprice = c[priceindex]
         lowprice = c[priceindex]
         stopindex = priceindex
+        stopprice = c[priceindex]
         while stopindex < len(c) - 1:
             dayscount += 1
             stopindex += 1
@@ -272,48 +274,51 @@ def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
             #buying
             if forcast_price_list[priceindex] >= c[priceindex]: 
                 if highprice / l[stopindex] > atrratio: #Stop buying loss
+                    stopprice = highprice / atrratio
                     break
             #selling
             else:
                 if h[stopindex] / lowprice > atrratio: #Stop buying loss
+                    stopprice = lowprice * atrratio
                     break
 
-        ratio = max(c[stopindex], c[priceindex]) / min(c[stopindex], c[priceindex])
+        ratio = max(stopprice, c[priceindex]) / min(c[stopindex], stopprice)
         if ratio > maxratio:
             maxratio = ratio
-            maxindex = stopindex
-            if c[stopindex] >= c[priceindex]:
-                riseorfall = str(dayscount) + "天暴涨"+ str(round((c[stopindex]/c[priceindex]-1)*100,2))+"%"
+            maxindex1 = priceindex
+            maxindex2 = stopindex
+            if stopprice >= c[priceindex]:
+                riseorfall = str(dayscount) + "天暴涨"+ str(round((stopprice/c[priceindex]-1)*100,2))+"%"
                 if forcast_price_list[priceindex] >= c[priceindex]:
                     correctflag = True
                 else:
                     correctflag = False
             else:
-                riseorfall = str(dayscount) + "天暴跌"+str(round((1-c[stopindex]/c[priceindex])*100,2))+"%"
+                riseorfall = str(dayscount) + "天暴跌"+str(round((1-stopprice/c[priceindex])*100,2))+"%"
                 if forcast_price_list[priceindex] < c[priceindex]:
                     correctflag = True
                 else:
                     correctflag = False
     yrange = max(max(c),max(forcast_price_list)) - min(min(c),min(forcast_price_list))
     ymiddle =max(max(c),max(forcast_price_list)) / 2 + min(min(c),min(forcast_price_list)) / 2 
-    datetext = date[maxindex].strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
+    datetext = date[maxindex2].strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
     if correctflag:
         correcttext = "预测正确"
     else:
         correcttext = "预测错误"
     predicttext = datetext + "\n"+  riseorfall + "\n" + correcttext 
 
-    predictxy = (date[maxindex],forcast_price_list[maxindex-1])
+    predictxy = (date[maxindex2],forcast_price_list[maxindex1])
     #x position
-    if (maxindex + 1) / len(c) > 0.5:
-        textx = int(maxindex - 0.25 * len(c))
+    if (maxindex2 + 1) / len(c) > 0.5:
+        textx = int(maxindex2 - 0.25 * len(c))
     else:
-        textx = int(maxindex + 0.1 * len(c))
+        textx = int(maxindex2 + 0.1 * len(c))
     #y position
-    if forcast_price_list[maxindex-1] > ymiddle:
-        texty = forcast_price_list[maxindex-1] - 0.25 *  yrange
+    if forcast_price_list[maxindex1] > ymiddle:
+        texty = forcast_price_list[maxindex1] - 0.25 *  yrange
     else:
-        texty = forcast_price_list[maxindex-1] + 0.1 *  yrange
+        texty = forcast_price_list[maxindex1] + 0.1 *  yrange
     predicttextxy = (date[textx],texty)
 
     return correctflag, predicttext, predictxy, predicttextxy
