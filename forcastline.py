@@ -151,7 +151,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     #plt.title( alias_result[2] + ":" + alias_result[0] + " "
     plt.title( alias_result[2] + ":" + origin_input + " "
               + predictions_results[0][1].strftime('%Y-%m-%d')
-              + " UTC\n预测模型：海龟三号（预测线载入中……）" ) #图标题 
+              + " UTC\n预测模型：海龟三号" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
     plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "%\n红色是错误的预测，绿色是正确的预测，紫色是对未来的预测。")
     #fig = plt.figure()
@@ -176,11 +176,29 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     plt.plot(date,h,"gray",label="最高价High："+str(predictions_results[0][3]))
     plt.plot(date,c,"white",label="收盘价Close："+str(predictions_results[0][5]), marker = ".")
     plt.plot(date,l,"gray",label="最低价Low："+str(predictions_results[0][4]))
-    if atr > 0:
+    if atr > 0 and atr < 10:
         for priceIndex in range(len(c)):
             if priceIndex < (len(c) -1):
-                if c[priceIndex] > 0 and c[priceIndex + 1] > 0:
-                    changerate = max(c[priceIndex],c[priceIndex + 1]) / min(c[priceIndex],c[priceIndex + 1])
+                dayscount = 0
+                highprice = c[priceindex]
+                lowprice = c[priceindex]
+                stopindex = priceindex
+                while stopindex < len(c) - 1:
+                    dayscount += 1
+                    stopindex += 1
+                    highprice = max(highprice, h[stopindex])
+                    lowprice = min(lowprice, l[stopindex])
+                    #buying
+                    if forcast_price_list[priceindex] >= c[priceindex]: 
+                        if highprice / l[stopindex] > atrratio: #Stop buying loss
+                            break
+                    #selling
+                    else:
+                        if h[stopindex] / lowprice > atrratio: #Stop buying loss
+                            break
+
+                if c[priceIndex] > 0 and c[stopindex] > 0:
+                    changerate = max(c[priceIndex],c[stopindex]) / min(c[priceIndex],c[stopindex])
                 else:
                     changerate = 1.0
                 if changerate > 0 and 1 + atr > 0:
@@ -190,15 +208,16 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                     changeatr = 0
                 alpha = math.atan(changeatr * 1.5) * 2 / math.pi 
                 linewidth = 2
-                if c[priceIndex + 1] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[priceIndex + 1] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
+                if c[stopindex] >= c[priceIndex] and forcast_price_list[priceIndex] >= c[priceIndex] or c[stopindex] <= c[priceIndex] and forcast_price_list[priceIndex] <= c[priceIndex]:
                     color = "limegreen"
                 else:
                     color = "crimson"
+                plt.plot([date[priceIndex], date_predict[stopindex-1]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
             else:
                 color = "darkviolet"
                 alpha = 1
                 linewidth = 2
-            plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
+                plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
         #plt.arrow(date[priceIndex], c[priceIndex], 1, forcast_price_list[priceIndex]-c[priceIndex], fc=color, ec=color, head_width=4, head_length=6)
 
     #plt.plot(date,v,"white",label="Volume")
@@ -210,7 +229,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
-    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, c, forcast_price_list)
+    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, h, l, c, forcast_price_list, 1+atr)
     plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='white', shrink=0.05, alpha = 0.3), 
                  bbox=dict(boxstyle="round,pad=0.5", fc='limegreen' if correctflag else 'crimson', ec='white', lw=1, alpha = 0.3))
 
@@ -234,29 +253,47 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     plt.savefig(picture_name, facecolor='black')
     return picture_name
 
-def getpredicttext(date, c, forcast_price_list):
+def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
     predicttext = ""
     maxratio = 0.0
     maxindex = 0
     riseorfall = ""
+    dayscount = 0
     for priceindex in range(len(c)):
-        if priceindex > 0:
-            ratio = max(c[priceindex], c[priceindex-1]) / min(c[priceindex], c[priceindex-1])
-            if ratio > maxratio:
-                maxratio = ratio
-                maxindex = priceindex
-                if c[priceindex] >= c[priceindex-1]:
-                    riseorfall = "暴涨"+ str(round((c[priceindex]/c[priceindex-1]-1)*100,2))+"%"
-                    if forcast_price_list[priceindex-1] >= c[priceindex-1]:
-                        correctflag = True
-                    else:
-                        correctflag = False
+        dayscount = 0
+        highprice = c[priceindex]
+        lowprice = c[priceindex]
+        stopindex = priceindex
+        while stopindex < len(c) - 1:
+            dayscount += 1
+            stopindex += 1
+            highprice = max(highprice, h[stopindex])
+            lowprice = min(lowprice, l[stopindex])
+            #buying
+            if forcast_price_list[priceindex] >= c[priceindex]: 
+                if highprice / l[stopindex] > atrratio: #Stop buying loss
+                    break
+            #selling
+            else:
+                if h[stopindex] / lowprice > atrratio: #Stop buying loss
+                    break
+
+        ratio = max(c[stopindex], c[priceindex]) / min(c[stopindex], c[priceindex])
+        if ratio > maxratio:
+            maxratio = ratio
+            maxindex = stopindex
+            if c[stopindex] >= c[priceindex]:
+                riseorfall = str(dayscouns) + "天暴涨"+ str(round((c[stopindex]/c[priceindex]-1)*100,2))+"%"
+                if forcast_price_list[priceindex] >= c[priceindex]:
+                    correctflag = True
                 else:
-                    riseorfall = "暴跌"+str(round((1-c[priceindex]/c[priceindex-1])*100,2))+"%"
-                    if forcast_price_list[priceindex-1] < c[priceindex-1]:
-                        correctflag = True
-                    else:
-                        correctflag = False
+                    correctflag = False
+            else:
+                riseorfall = str(dayscouns) + "天暴跌"+str(round((1-c[stopindex]/c[priceindex])*100,2))+"%"
+                if forcast_price_list[priceindex] < c[priceindex]:
+                    correctflag = True
+                else:
+                    correctflag = False
     yrange = max(max(c),max(forcast_price_list)) - min(min(c),min(forcast_price_list))
     ymiddle =max(max(c),max(forcast_price_list)) / 2 + min(min(c),min(forcast_price_list)) / 2 
     datetext = date[maxindex].strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
