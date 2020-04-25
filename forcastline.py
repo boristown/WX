@@ -180,16 +180,16 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
         for priceIndex in range(len(c)):
             if priceIndex < (len(c) -1):
                 dayscount = 0
-                highprice = c[priceindex]
-                lowprice = c[priceindex]
-                stopindex = priceindex
+                highprice = c[priceIndex]
+                lowprice = c[priceIndex]
+                stopindex = priceIndex
                 while stopindex < len(c) - 1:
                     dayscount += 1
                     stopindex += 1
                     highprice = max(highprice, h[stopindex])
                     lowprice = min(lowprice, l[stopindex])
                     #buying
-                    if forcast_price_list[priceindex] >= c[priceindex]: 
+                    if forcast_price_list[priceIndex] >= c[priceIndex]: 
                         if highprice / l[stopindex] > atrratio: #Stop buying loss
                             break
                     #selling
