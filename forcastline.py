@@ -173,9 +173,9 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     currentprice = predictions_results[0][5]
     #if nextprice >= currentprice:
     #plt.plot(date,o,"yellow",label="Open")
-    plt.plot(date,h,"gray",label="最高价High")
-    plt.plot(date,c,"white",label="收盘价Close", marker = ".")
-    plt.plot(date,l,"gray",label="最低价Low")
+    plt.plot(date,h,"gray",label="最高价High："+str(predictions_results[0][3]))
+    plt.plot(date,c,"white",label="收盘价Close："+str(predictions_results[0][5]), marker = ".")
+    plt.plot(date,l,"gray",label="最低价Low："+str(predictions_results[0][4]))
     if atr > 0:
         for priceIndex in range(len(c)):
             if priceIndex < (len(c) -1):
