@@ -190,11 +190,11 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                     lowprice = min(lowprice, l[stopindex])
                     #buying
                     if forcast_price_list[priceIndex] >= c[priceIndex]: 
-                        if highprice / l[stopindex] > atrratio: #Stop buying loss
+                        if highprice / l[stopindex] - 1 > atr: #Stop buying loss
                             break
                     #selling
                     else:
-                        if h[stopindex] / lowprice > atrratio: #Stop buying loss
+                        if h[stopindex] / lowprice -1 > atr: #Stop buying loss
                             break
 
                 if c[priceIndex] > 0 and c[stopindex] > 0:
