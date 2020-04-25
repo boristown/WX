@@ -186,8 +186,6 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                 while stopindex < len(c) - 1:
                     dayscount += 1
                     stopindex += 1
-                    highprice = max(highprice, h[stopindex])
-                    lowprice = min(lowprice, l[stopindex])
                     #buying
                     if forcast_price_list[priceIndex] >= c[priceIndex]: 
                         if highprice / l[stopindex] - 1 > atr: #Stop buying loss
@@ -196,6 +194,8 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                     else:
                         if h[stopindex] / lowprice -1 > atr: #Stop buying loss
                             break
+                    highprice = max(highprice, h[stopindex])
+                    lowprice = min(lowprice, l[stopindex])
 
                 if c[priceIndex] > 0 and c[stopindex] > 0:
                     changerate = max(c[priceIndex],c[stopindex]) / min(c[priceIndex],c[stopindex])
@@ -269,8 +269,6 @@ def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
         while stopindex < len(c) - 1:
             dayscount += 1
             stopindex += 1
-            highprice = max(highprice, h[stopindex])
-            lowprice = min(lowprice, l[stopindex])
             #buying
             if forcast_price_list[priceindex] >= c[priceindex]: 
                 if highprice / l[stopindex] > atrratio: #Stop buying loss
@@ -281,8 +279,10 @@ def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
                 if h[stopindex] / lowprice > atrratio: #Stop buying loss
                     stopprice = lowprice * atrratio
                     break
+            highprice = max(highprice, h[stopindex])
+            lowprice = min(lowprice, l[stopindex])
 
-        ratio = max(stopprice, c[priceindex]) / min(c[stopindex], stopprice)
+        ratio = max(stopprice, c[priceindex]) / min(stopprice, c[priceindex])
         if ratio > maxratio:
             maxratio = ratio
             maxindex1 = priceindex
