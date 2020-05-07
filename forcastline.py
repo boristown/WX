@@ -82,7 +82,7 @@ def draw_single_v2(input_text, alias_results, mycursor, params, origin_input):
     output_text = ""
     alias_result = alias_results[0]
     select_predictions_statment = "SELECT pricehistory.* FROM pricehistory " \
-    " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
+    " inner join predictlog on pricehistory.symbol = predictlog.symbol and predictlog.LOADINGDATE > '1950-1-1' " \
     " WHERE pricehistory.l > 0 and pricehistory.c > 0 and pricehistory.symbol = '" + alias_result[1] + "' and pricehistory.date <= '" + str(params["DATE"]) + "' " \
     " ORDER BY pricehistory.date "  \
     " DESC limit "  + str(abs(int(params["OFFSET"]))) + " , " + str(abs(int(params["LEN"])))
@@ -153,7 +153,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
               + predictions_results[0][1].strftime('%Y-%m-%d')
               + " UTC\n预测模型：海龟四号" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "% 评分Score:" + str(f[-1]*2-1) + "\n红色是错误的预测，绿色是正确的预测，紫色是对未来的预测。")
+    plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "% 评分Score:" + str((f[-1]*2-1)*100) + "\n红色是错误的预测，绿色是正确的预测，紫色是对未来的预测。")
     #fig = plt.figure()
     #ax = fig.add_axes([0, 0, 1, 1])
     plt.text(0.5, 0.5, '红色',
