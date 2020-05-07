@@ -249,7 +249,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     
     plt.legend(loc = 2)
     
-    picture_name = 'Img/' + pinyin(alias_result[0]) + "_V2" + "_" + str(params["OFFSET"]) + "_" + str(params["LEN"]) + "_" + str(params["DATE"]) + "_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    picture_name = 'Img/' + pinyin(alias_result[0]) + "_V2" + "_" + str(params["OFFSET"]) + "_" + str(params["LEN"]) + "_" + str(params["DATE"]) + "_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.jpg'
     plt.savefig(picture_name, facecolor='black')
     return picture_name
 
