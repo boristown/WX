@@ -188,11 +188,11 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                     stopindex += 1
                     #buying
                     if forcast_price_list[priceIndex] >= c[priceIndex]: 
-                        if highprice / l[stopindex] - 1 > atr: #Stop buying loss
+                        if highprice / l[stopindex] - 1 > 2 * atr: #Stop buying loss
                             break
                     #selling
                     else:
-                        if h[stopindex] / lowprice -1 > atr: #Stop buying loss
+                        if h[stopindex] / lowprice -1 > 2 * atr: #Stop buying loss
                             break
                     highprice = max(highprice, h[stopindex])
                     lowprice = min(lowprice, l[stopindex])
@@ -271,12 +271,12 @@ def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
             stopindex += 1
             #buying
             if forcast_price_list[priceindex] >= c[priceindex]: 
-                if highprice / l[stopindex] > atrratio: #Stop buying loss
+                if highprice / l[stopindex] > 2 * atrratio: #Stop buying loss
                     stopprice = highprice / atrratio
                     break
             #selling
             else:
-                if h[stopindex] / lowprice > atrratio: #Stop buying loss
+                if h[stopindex] / lowprice > 2 * atrratio: #Stop buying loss
                     stopprice = lowprice * atrratio
                     break
             highprice = max(highprice, h[stopindex])
