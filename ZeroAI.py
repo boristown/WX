@@ -68,7 +68,7 @@ def chat(origin_input):
     return help_text()
 
   select_alias_statment = "SELECT symbol_alias.* FROM symbol_alias " \
-    " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
+    " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.LOADINGDATE > '1950-1-1' " \
     " WHERE symbol_alias.symbol_alias = '" + input_text + "'"
 
   print(select_alias_statment)
@@ -182,7 +182,7 @@ def fetch_tag(input_text, mycursor):
 
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.date, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' and predictlog.MAXDATE >= '"+today_str+"' and predictlog.symbol in (%s)  " \
+        " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.LOADINGDATE > '1950-1-1' and predictlog.MAXDATE >= '"+today_str+"' and predictlog.symbol in (%s)  " \
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate and pricehistory.l <> pricehistory.h and pricehistory.c > 0 " \
         " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
       
@@ -211,7 +211,7 @@ def fetch_tag(input_text, mycursor):
         '''
 
         select_alias_statment = "SELECT pricehistory.SYMBOL, pricehistory.date, pricehistory.F, symbol_alias.SYMBOL_ALIAS FROM symbol_alias " \
-        " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.PREDICTDATE > '1950-1-1' " \
+        " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.LOADINGDATE > '1950-1-1' " \
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate  and pricehistory.l <> pricehistory.h and pricehistory.c > 0 " \
         " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY pricehistory.symbol ASC"
 
