@@ -56,7 +56,7 @@ def chat(origin_input):
 
   output_text = ''
 
-  picture_path = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + "_" + str(params["OFFSET"]) + "_" + str(params["LEN"]) + "_" + str(params["DATE"]) + "_" + datetime.datetime.now().strftime('%Y%m%d%H') + '*.png'
+  picture_path = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + "_" + str(params["OFFSET"]) + "_" + str(params["LEN"]) + "_" + str(params["DATE"]) + "_" + datetime.datetime.now().strftime('%Y%m%d%H') + '*.jpg'
   picture_cache = glob.glob(picture_path)
   if picture_cache:
     picture_name = picture_cache[0]
@@ -291,7 +291,7 @@ def draw_market_v1(alias_result, prices_results, predictions_results):
     
     plt.legend(loc = 2)
     
-    picture_name = 'Img/' + forcastline.pinyin(alias_result[0]) + "_V1" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    picture_name = 'Img/' + forcastline.pinyin(alias_result[0]) + "_V1" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.jpg'
     plt.savefig(picture_name, facecolor='black')
     return picture_name
 
@@ -356,7 +356,7 @@ def draw_tag(aiera_version, input_text, alias_results):
     plt.margins(x=0, y=0) 
     plt.tight_layout(pad = 0) 
     
-    picture_name = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.png'
+    picture_name = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.jpg'
     plt.savefig(picture_name)
     return picture_name
 
