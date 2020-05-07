@@ -229,7 +229,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
-    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, h, l, c, forcast_price_list, 1+atr)
+    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, h, l, c, forcast_price_list, 1+2*atr)
     plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='white', shrink=0.05, alpha = 0.3), 
                  bbox=dict(boxstyle="round,pad=0.5", fc='limegreen' if correctflag else 'crimson', ec='white', lw=1, alpha = 0.3))
 
@@ -271,12 +271,12 @@ def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
             stopindex += 1
             #buying
             if forcast_price_list[priceindex] >= c[priceindex]: 
-                if highprice / l[stopindex] > 2 * atrratio: #Stop buying loss
+                if highprice / l[stopindex] > atrratio: #Stop buying loss
                     stopprice = highprice / atrratio
                     break
             #selling
             else:
-                if h[stopindex] / lowprice > 2 * atrratio: #Stop buying loss
+                if h[stopindex] / lowprice > atrratio: #Stop buying loss
                     stopprice = lowprice * atrratio
                     break
             highprice = max(highprice, h[stopindex])
