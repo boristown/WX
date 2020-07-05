@@ -10,7 +10,7 @@ urls = (
 
 class hello:
     def GET(self):
-        raiseweb.seeother('https://www.forcastline.com')
+        raise web.seeother('https://www.forcastline.com')
 
 if __name__ == '__main__':
     app = web.application(urls, globals())
