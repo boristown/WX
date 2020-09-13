@@ -77,7 +77,9 @@ def chat(origin_input):
   
   alias_results = mycursor.fetchall()
   
+  tag_flag = False
   if len(alias_results) == 0:
+    tag_flag = True
     output_text, alias_results = fetch_tag(input_text, mycursor)
     if alias_results == None:
         return output_text
@@ -89,7 +91,7 @@ def chat(origin_input):
     output_text = forcastline.text_no_market(input_text)
     return output_text
     
-  if len(alias_results) == 1:
+  if len(alias_results) == 1 and not tag_flag:
     picture_name, output_text = draw_single(aiera_version, input_text, alias_results, mycursor, params, origin_input)
     if picture_name == None:
         return output_text
