@@ -138,7 +138,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     trsum = 0.0
     date_predict = date[1:]
     date_predict.append(date[-1]+datetime.timedelta(days=1))
-    dayndex = 0
+    dayindex = 0
     tr0list = [] #TR0清单
     for priceIndex in range(len(c)):
         maxp = max(lastclose, o[priceIndex], h[priceIndex], l[priceIndex], c[priceIndex])
