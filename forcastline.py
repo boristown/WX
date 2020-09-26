@@ -160,9 +160,9 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     #plt.title( alias_result[2] + ":" + alias_result[0] + " "
     plt.title( alias_result[2] + ":" + origin_input + " "
               + predictions_results[0][1].strftime('%Y-%m-%d')
-              + " UTC\n预测模型：海龟五号" ) #图标题 
+              + " UTC\n海龟五号AI 0.5倍ATR止损 公众号：AI纪元" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( "均幅指标ATR:" + str(atr * 100) + "% 评分Score:" + str((f[-1]*2-1)*100) + "\n红色是错误的预测，绿色是正确的预测，紫色是对未来的预测。")
+    plt.xlabel( "ATR:" + str(atr * 100) + "% 评分Score:" + str((f[-1]*2-1)*100) + "\n红色是错误的预测，绿色是正确的预测，紫色是对未来的预测。")
     #fig = plt.figure()
     #ax = fig.add_axes([0, 0, 1, 1])
     plt.text(0.5, 0.5, '红色',
@@ -213,11 +213,11 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                     stopindex += 1
                     #buying
                     if forcast_price_list[priceIndex] >= c[priceIndex]:
-                        if highprice / l[stopindex] - 1 > atr*2: #Stop buying loss
+                        if highprice / l[stopindex] - 1 > atr*0.5: #Stop buying loss
                             break
                     #selling
                     else:
-                        if h[stopindex] / lowprice -1 > atr*2: #Stop buying loss
+                        if h[stopindex] / lowprice -1 > atr*0.5: #Stop buying loss
                             break
                     highprice = max(highprice, h[stopindex])
                     lowprice = min(lowprice, l[stopindex])
@@ -228,7 +228,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                     changerate = 1.0
                 if changerate > 0 and 1 + atr > 0:
                     #print(changerate, 1 + atr)
-                    changeatr = math.log(changerate, 1 + atr*2)
+                    changeatr = math.log(changerate, 1 + atr*0.5)
                 else:
                     changeatr = 0
                 alpha = math.atan(changeatr) * 2 / math.pi 
@@ -254,7 +254,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
-    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, h, l, c, forcast_price_list, 1+atr*2)
+    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, h, l, c, forcast_price_list, 1+atr*0.5)
     plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='white', shrink=0.05, alpha = 0.3), 
                  bbox=dict(boxstyle="round,pad=0.5", fc='limegreen' if correctflag else 'crimson', ec='white', lw=1, alpha = 0.3))
 
