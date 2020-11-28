@@ -166,7 +166,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
               + predictions_results[0][1].strftime('%Y-%m-%d')
               + " UTC\n海龟v6 vs v7 移动止损Stop：ATR/2 公众号：AI纪元 aitrad.in" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( "ATR:" + str(round(atr * 100,2)) + "% 评分Score：v6:" + str(round((f[-1]*2-1)*100,2)) + " v7:" + str(round((f7[-1]*2-1)*100,2)) + "\n红色Red:错误Wrong，绿色Red:正确Right，紫色Purple:未来Future")
+    plt.xlabel( "ATR:" + str(round(atr * 100,2)) + "% 评分Score：[v6]" + str(round((f[-1]*2-1)*100,2)) + " [v7]" + str(round((f7[-1]*2-1)*100,2)) + "\n红色Red:错误Wrong，绿色Red:正确Right，紫色Purple:未来Future")
     #fig = plt.figure()
     #ax = fig.add_axes([0, 0, 1, 1])
     plt.text(0.5, 0.5, '红色',
@@ -278,7 +278,8 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
 
     plt.fill_between(date,l,h,facecolor="gray",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
-    plt.plot(date,[currentprice] * int(params["LEN"]), "w--", label="当前价Current:"+str(currentprice))
+    #plt.plot(date,[currentprice] * int(params["LEN"]), "w--", label="当前价Current:"+str(currentprice))
+    plt.plot(date,[currentprice] * int(params["LEN"]), "w--")
     plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="海龟6号预测Forcast v6:"+format(forcast_price_list[-1], '.6g'))
     plt.plot(date_predict,[forcast_price_list7[-1]] * int(params["LEN"]), color = "purple", linestyle = "--", label="海龟7号预测Forcast v7:"+format(forcast_price_list7[-1], '.6g'))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
