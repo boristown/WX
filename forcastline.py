@@ -115,6 +115,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     c = []
     v = []
     f = []
+    f7 = []
     date = []
     date_predict = []
     for predictions_result in predictions_results:
@@ -126,12 +127,14 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
         c.append(predictions_result[5])
         v.append(predictions_result[6])
         f.append(predictions_result[7])
+        f7.append(predictions_result[13])
     o = o[-1::-1]
     h = h[-1::-1]
     l = l[-1::-1]
     c = c[-1::-1]
     v = v[-1::-1]
     f = f[-1::-1]
+    f7 = f7[-1::-1]
     date = date[-1::-1]
     date_predict = date_predict[-1::-1]
     lastclose = o[0]
@@ -157,12 +160,13 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
         tr0list.append(tr0)
     atr = trsum / atr_count
     forcast_price_list = [forcast_price(f[n],c[n],atr) for n in range(len(c))]
+    forcast_price_list7 = [forcast_price(f7[n],c[n],atr) for n in range(len(c))]
     #plt.title( alias_result[2] + ":" + alias_result[0] + " "
     plt.title( alias_result[2] + ":" + origin_input + " "
               + predictions_results[0][1].strftime('%Y-%m-%d')
-              + " UTC\n海龟六号AI 0.5倍ATR止损 公众号：AI纪元" ) #图标题 
+              + " UTC\n海龟v6 vs v7 移动止损Stop：ATR/2 公众号：AI纪元 aitrad.in" ) #图标题 
     #prediction_text, nextprice = day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( "ATR:" + str(round(atr * 100,2)) + "% 评分Score:" + str(round((f[-1]*2-1)*100,2)) + "\n红色是错误的预测，绿色是正确的预测，紫色是对未来的预测。")
+    plt.xlabel( "ATR:" + str(round(atr * 100,2)) + "% 评分Score：v6:" + str(round((f[-1]*2-1)*100,2)) + " v7:" + str(round((f7[-1]*2-1)*100,2)) + "\n红色Red:错误Wrong，绿色Red:正确Right，紫色Purple:未来Future")
     #fig = plt.figure()
     #ax = fig.add_axes([0, 0, 1, 1])
     plt.text(0.5, 0.5, '红色',
@@ -205,9 +209,13 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
             atr -= tr0list.pop(0)
             if priceIndex < (len(c) - 1):
                 dayscount = 0
+                dayscount7 = 0
                 highprice = c[priceIndex]
                 lowprice = c[priceIndex]
+                highprice7 = c[priceIndex]
+                lowprice7 = c[priceIndex]
                 stopindex = priceIndex
+                stopindex7 = priceIndex
                 while stopindex < len(c) - 1:
                     dayscount += 1
                     stopindex += 1
@@ -221,6 +229,20 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                             break
                     highprice = max(highprice, h[stopindex])
                     lowprice = min(lowprice, l[stopindex])
+                    
+                while stopindex7 < len(c) - 1:
+                    dayscount7 += 1
+                    stopindex7 += 1
+                    #buying
+                    if forcast_price_list7[priceIndex] >= c[priceIndex]:
+                        if highprice7 / l[stopindex7] - 1 > atr*0.5: #Stop buying loss
+                            break
+                    #selling
+                    else:
+                        if h[stopindex7] / lowprice7 -1 > atr*0.5: #Stop buying loss
+                            break
+                    highprice7 = max(highprice7, h[stopindex])
+                    lowprice7 = min(lowprice7, l[stopindex])
 
                 if c[priceIndex] > 0 and c[stopindex] > 0:
                     changerate = max(c[priceIndex],c[stopindex]) / min(c[priceIndex],c[stopindex])
@@ -238,23 +260,30 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                 else:
                     color = "crimson"
                 plt.plot([date[priceIndex], date_predict[stopindex-1]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
+                
+                if c[stopindex] >= c[priceIndex] and forcast_price_list7[priceIndex] >= c[priceIndex] or c[stopindex] <= c[priceIndex] and forcast_price_list7[priceIndex] <= c[priceIndex]:
+                    color = "limegreen"
+                else:
+                    color = "crimson"
+                plt.plot([date[priceIndex], date_predict[stopindex-1]],[c[priceIndex], forcast_price_list7[priceIndex]], color = color, marker = "x", alpha = alpha, linewidth = linewidth, markevery=[1])
             else:
                 color = "darkviolet"
                 alpha = 1
                 linewidth = 2
                 plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
-        #plt.arrow(date[priceIndex], c[priceIndex], 1, forcast_price_list[priceIndex]-c[priceIndex], fc=color, ec=color, head_width=4, head_length=6)
+                color = "darkcyan"
+                alpha = 1
+                linewidth = 2
+                plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list7[priceIndex]], color = color, marker = "x", alpha = alpha, linewidth = linewidth, markevery=[1])
 
-    #plt.plot(date,v,"white",label="Volume")
-    #plt.gcf().autofmt_xdate()
-    #plt.fill_between(date,min(c),c,facecolor="white",alpha=0.3)
     plt.fill_between(date,l,h,facecolor="gray",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
     plt.plot(date,[currentprice] * int(params["LEN"]), "w--", label="当前价Current:"+str(currentprice))
-    plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="预测价Forcast:"+str(forcast_price_list[-1]))
+    plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="海龟6号预测Forcast v6:"+str(forcast_price_list[-1]))
+    plt.plot(date_predict,[forcast_price_list7[-1]] * int(params["LEN"]), color = "darkcyan", linestyle = "--", label="海龟7号预测Forcast v7:"+str(forcast_price_list7[-1]))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
-    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, h, l, c, forcast_price_list, 1+atr*0.5)
+    correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, h, l, c, forcast_price_list7, 1+atr*0.5)
     plt.annotate(predicttext, xy=predictxy, xytext=predicttextxy, arrowprops=dict(facecolor='white', shrink=0.05, alpha = 0.3), 
                  bbox=dict(boxstyle="round,pad=0.5", fc='limegreen' if correctflag else 'crimson', ec='white', lw=1, alpha = 0.3))
 
@@ -328,9 +357,9 @@ def getpredicttext(date, h, l, c, forcast_price_list, atrratio):
     ymiddle =max(max(c),max(forcast_price_list)) / 2 + min(min(c),min(forcast_price_list)) / 2 
     datetext = date[maxindex2].strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
     if correctflag:
-        correcttext = "预测正确"
+        correcttext = "预测正确（海龟v7）"
     else:
-        correcttext = "预测错误"
+        correcttext = "预测错误（海龟v7）"
     predicttext = datetext + "\n"+  riseorfall + "\n" + correcttext 
 
     predictxy = (date[maxindex2],forcast_price_list[maxindex1])
