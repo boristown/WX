@@ -262,19 +262,19 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
                 plt.plot([date[priceIndex], date_predict[stopindex-1]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
                 
                 if c[stopindex] >= c[priceIndex] and forcast_price_list7[priceIndex] >= c[priceIndex] or c[stopindex] <= c[priceIndex] and forcast_price_list7[priceIndex] <= c[priceIndex]:
-                    color = "lawngreen"
+                    color = "green"
                 else:
-                    color = "orangered"
-                plt.plot([date[priceIndex], date_predict[stopindex-1]],[c[priceIndex], forcast_price_list7[priceIndex]], color = color, marker = "x", alpha = alpha, linewidth = linewidth, markevery=[1])
+                    color = "red"
+                plt.plot([date[priceIndex], date_predict[stopindex-1]],[c[priceIndex], forcast_price_list7[priceIndex]], color = color, marker = "*", alpha = alpha, linewidth = linewidth, markevery=[1])
             else:
                 color = "darkviolet"
                 alpha = 1
-                linewidth = 1.5
+                linewidth = 2
                 plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list[priceIndex]], color = color, marker = "o", alpha = alpha, linewidth = linewidth, markevery=[1])
-                color = "darkcyan"
+                color = "purple"
                 alpha = 1
-                linewidth = 1.5
-                plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list7[priceIndex]], color = color, marker = "x", alpha = alpha, linewidth = linewidth, markevery=[1])
+                linewidth = 2
+                plt.plot([date[priceIndex], date_predict[priceIndex]],[c[priceIndex], forcast_price_list7[priceIndex]], color = color, marker = "*", alpha = alpha, linewidth = linewidth, markevery=[1])
 
     plt.fill_between(date,l,h,facecolor="gray",alpha=0.3)
     #plt.fill_between(date,min(l),v,facecolor="white",alpha=0.3)
