@@ -281,7 +281,7 @@ def draw_market_v2(alias_result, predictions_results, params, origin_input):
     #plt.plot(date,[currentprice] * int(params["LEN"]), "w--", label="当前价Current:"+str(currentprice))
     plt.plot(date,[currentprice] * int(params["LEN"]), "w--")
     plt.plot(date_predict,[forcast_price_list[-1]] * int(params["LEN"]), color = "darkviolet", linestyle = "--", label="海龟6号预测Forcast v6:"+format(forcast_price_list[-1], '.6g'))
-    plt.plot(date_predict,[forcast_price_list7[-1]] * int(params["LEN"]), color = "purple", linestyle = "--", label="海龟7号预测Forcast v7:"+format(forcast_price_list7[-1], '.6g'))
+    plt.plot(date_predict,[forcast_price_list7[-1]] * int(params["LEN"]), color = "purple", linestyle = (0, (3, 1, 1, 1, 1, 1)), label="海龟7号预测Forcast v7:"+format(forcast_price_list7[-1], '.6g'))
     #plt.fill_between(date_predict[:-1],c[1:],forcast_price_list[:-1],facecolor="darkviolet", alpha=0.5)
     #plt.fill_between(date_predict, c, forcast_price_list,facecolor="darkviolet", alpha=0.5)
     correctflag, predicttext, predictxy, predicttextxy = getpredicttext(date, h, l, c, forcast_price_list7, 1+atr*0.5)
