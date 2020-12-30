@@ -57,7 +57,7 @@ def chat(origin_input):
   timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"])
   turtle8_predict = f50_market_spider.predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list)
   time_end=time.time()
-  return_text = json.dumps(turtle8_predict) + '\ntotally cost:' + str(time_end-time_start) +"s"
+  return_text = json.dumps(turtle8_predict) + '\ntotally cost:' + str(time_end - time_start) +"s"
   return return_text
 
   origin_input = origin_input.strip().upper()
