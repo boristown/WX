@@ -14,6 +14,7 @@ from requests.packages.urllib3.filepost import encode_multipart_formdata
 import json
 import glob
 import forcastline
+import f50_market_spider
 
 class word_in_color(object):
   word_in_rising_major = ''
@@ -47,6 +48,17 @@ def utc2local(utc_st):
     return local_st
 
 def chat(origin_input):
+  
+  marketListString  = f50_market_spider.search_for_symbol(origin_input)
+  time_start=time.time()
+  market = f50_market_spider.get_best_market(json.loads(marketListString))
+  marketString = json.dumps(market).encode('utf-8').decode('unicode_escape')
+  marketObj = json.loads(marketString)
+  timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"])
+  turtle8_predict = f50_market_spider.predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list)
+  time_end=time.time()
+  return_text = json.dumps(turtle8_predict) + '\ntotally cost:' + str(time_end-time_start) +"s"
+  return return_text
 
   origin_input = origin_input.strip().upper()
 
