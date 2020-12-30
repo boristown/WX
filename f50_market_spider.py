@@ -115,7 +115,7 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
     #turtle7_predict = []
     #turtle8_predict = []
     print("predicting")
-    predict_len = 30
+    predict_len = 1
     timestamp_list = timestamp_list[0:input_days_len+predict_len-1]
     price_list = price_list[0:input_days_len+predict_len-1]
     openprice_list = openprice_list[0:input_days_len+predict_len-1]
@@ -144,7 +144,7 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
     #riseProb = controler.parseToRiseProb(json.loads(rsp.text))
     global time_start
     time_end=time.time()
-    print('totally cost',time_end-time_start,"s")
+    #print('totally cost',time_end-time_start,"s")
     riseProb_v8 = GetPredictResult(symbol, json.loads(rsp_v8.text), inputObj, "v8", timestamp_list)
     #return riseProb_v7, riseProb_v8
     return riseProb_v8
