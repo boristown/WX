@@ -1,4 +1,4 @@
-import requests
+﻿import requests
 import json
 #import common
 import re
@@ -21,6 +21,7 @@ time_start = None
 dateformat = "%Y-%m-%d"
 input_days_len = 225
 atr_len = 20
+predict_len = 5
 
 def search_for_symbol(symbol):
     url = "https://www.investing.com/search/?q=" + symbol
@@ -115,7 +116,7 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
     #turtle7_predict = []
     #turtle8_predict = []
     print("predicting")
-    predict_len = 1
+    global predict_len
     timestamp_list = timestamp_list[0:input_days_len+predict_len-1]
     price_list = price_list[0:input_days_len+predict_len-1]
     openprice_list = openprice_list[0:input_days_len+predict_len-1]
@@ -209,11 +210,11 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         date_list.append(datestr)
         score = (riseProb * 2 - 1)*100
         side_list.append(side)
-        score_list.append(score)
+        score_list.append(round(score,2))
         price_list.append(price)
         atr_list.append(round(float(atr * 100),2))
-        stop_list.append(float(stop_price))
-    outputRiseProb = {"symbol": symbol, "date_list": date_list, "prob_list": problist, "side_list" : side_list, "score_list" : score_list, "price_list" : price_list, "atr_list" : atr_list, "stop_list" : stop_list, "version" : version}
+        stop_list.append(format(float(stop_price), '.7g'))
+    outputRiseProb = {"symbol": symbol, "date_list": date_list, "prob_list": [round(probval,4) for probval in problist], "side_list" : side_list, "score_list" : score_list, "price_list" : price_list, "atr_list" : atr_list, "stop_list" : stop_list, "version" : version}
     return outputRiseProb
 
 if __name__ == "__main__":

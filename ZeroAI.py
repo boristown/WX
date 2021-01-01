@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 # filename: ZeroAI.py
 
 from wordcloud import WordCloud, STOPWORDS
@@ -47,22 +47,60 @@ def utc2local(utc_st):
     local_st = utc_st + offset
     return local_st
 
+input_days_len = 225
+
 def chat(origin_input):
-  
-  marketListString  = f50_market_spider.search_for_symbol(origin_input)
   time_start=time.time()
+  marketListString = ""
+  while len(origin_input) > 0:
+    marketListString  = f50_market_spider.search_for_symbol(origin_input)
+    if len(marketListString) == 0:
+      origin_input = origin_input[:-1]
+    else:
+      break
   market = f50_market_spider.get_best_market(json.loads(marketListString))
-  marketString = json.dumps(market).encode('utf-8').decode('unicode_escape')
-  marketObj = json.loads(marketString)
+  #marketString = json.dumps(market).encode('utf-8').decode('unicode_escape').replace("Investing.com","")
+  #marketString = json.dumps(market).replace("Investing.com","")
+  #print(marketString)
+  #marketObj = json.loads(marketString)
+  marketObj = market
+  marketObj["name"] = marketObj["name"].replace("Investing.com","")
+  sign_text = "——海龟8号AI预测引擎\n广告位：\n虚位以待……"
   timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"])
-  turtle8_predict = f50_market_spider.predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list)
+  if len(price_list) < input_days_len:
+    return "市场名："+marketObj["symbol"] + marketObj["name"] + \
+    "\n当前市场的数据仅"+str(len(price_list))+\
+    "天，不足"+str(input_days_len)+"天，无法执行预测！\n" + sign_text
+  turtle8_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list)
   time_end=time.time()
-  return_text = json.dumps(turtle8_predict) + '\ntotally cost:' + str(time_end - time_start) +"s"
-  print(return_text)
+  comment = """
+  注释：
+  symbol:市场名
+  date_list:预测日期
+  prob_list:上涨概率[0,1]
+  side_list:买入buy，卖出sell
+  score_list:趋势强弱[-100,100]
+  price_list:收盘价
+  atr_list:均幅指标(20日)
+  stop_list:移动止损价(ATR/2)
+  version:AI版本
+  """
+  return_text = marketObj["symbol"]+marketObj["name"] + \
+  "\n价格Price:" + str(turtle8_predict["price_list"][0]) + \
+  "\n" + ("即将上涨，" if float(turtle8_predict["score_list"][0]) > 0 else "即将下跌，") + \
+  "强度Score:" + str(turtle8_predict["score_list"][0]) + "%" \
+  "\n操作Side:" + ("做多Buy" if float(turtle8_predict["score_list"][0]) > 0 else "做空Sell") + \
+  "\n均幅指标ATR:" + str(turtle8_predict["atr_list"][0]) + "%" + \
+  "\n仓位Position:" + str(round(150 / float(turtle8_predict["atr_list"][0]),2)) + "%" + \
+  "\n止损价Stop:" + str(turtle8_predict["stop_list"][0]) + "\n历史预测序列(按日期倒序排列):\n" + \
+  json.dumps(turtle8_predict).encode('utf-8').decode('unicode_escape') + '\n' + \
+  '预测耗时cost time:' + str(round(time_end - time_start,3)) +"s\n" + sign_text
+  #return_text = '预测耗时cost time:' + str(round(time_end - time_start),3) +"s"
+  #print(return_text)
   return return_text
 
   origin_input = origin_input.strip().upper()
-
+ 
   origin_input, aiera_version = forcastline.get_version(origin_input)
   
   input_text, params = forcastline.command(origin_input)

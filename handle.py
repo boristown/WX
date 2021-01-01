@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 # filename: handle.py
 
 import hashlib
@@ -50,7 +50,7 @@ class Handle(object):
                 fromUser = recMsg.ToUserName
                 print (recMsg.Content.decode('utf-8'))
                 content = ZeroAI.chat(recMsg.Content.decode('utf-8'))
-                if '请' in content:
+                if '请' in content or '歉' in content or '市场' in content or 'price' in content:
                     replyMsg = reply.TextMsg(toUser, fromUser, content)
                 else:
                     replyMsg = reply.ImageMsg(toUser, fromUser, content)
