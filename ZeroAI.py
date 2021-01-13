@@ -66,12 +66,12 @@ def chat(origin_input):
   marketObj = market
   marketObj["name"] = marketObj["name"].replace("Investing.com","")
   sign_text = "——海龟8号AI预测引擎\n广告位：\n虚位以待……"
-  timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"])
+  timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 365)
   if len(price_list) < input_days_len:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
     "\n当前市场的数据仅"+str(len(price_list))+\
     "天，不足"+str(input_days_len)+"天，无法执行预测！\n" + sign_text
-  turtle8_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list)
+  turtle8_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 5)
   time_end=time.time()
   comment = """
   注释：

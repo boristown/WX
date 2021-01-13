@@ -21,7 +21,10 @@ time_start = None
 dateformat = "%Y-%m-%d"
 input_days_len = 225
 atr_len = 20
-predict_len = 5
+#predict_len = 4500
+risk_factor = 1.5
+#startdays = 4800
+predict_batch = 50
 
 def search_for_symbol(symbol):
     url = "https://www.investing.com/search/?q=" + symbol
@@ -52,7 +55,7 @@ def get_best_market(marketList):
             return market
     return None
 
-def get_history_price(pairId, pair_type):
+def get_history_price(pairId, pair_type, startdays):
     priceList = []
     if pair_type == "currency":
         smlID_str = '1072600'
@@ -70,7 +73,6 @@ def get_history_price(pairId, pair_type):
         'cache-control': "no-cache",
         'postman-token': "17db1643-3ef6-fa9e-157b-9d5058f391e4"
         }
-    startdays = 365
     st_date_str = (datetime.datetime.utcnow() + datetime.timedelta(days = -startdays)).strftime(dateformat).replace("-","%2F")
     end_date_str = (datetime.datetime.utcnow()).strftime(dateformat).replace("-","%2F")
     payload = "action=historical_data&curr_id="+ pairId +"&end_date=" + end_date_str + "&header=null&interval_sec=Daily&smlID=" + smlID_str + "&sort_col=date&sort_ord=DESC&st_date=" + st_date_str
@@ -102,21 +104,21 @@ def get_history_price(pairId, pair_type):
         highprice = float(str(cell_matchs.group(4)).replace(",",""))
         lowprice = float(str(cell_matchs.group(5)).replace(",",""))
         #if price_count == 1 or price != price_list[price_count-2]:
-        timestamp_list.append(timestamp)
-        price_list.append(price)
-        openprice_list.append(openprice)
-        highprice_list.append(highprice)
-        lowprice_list.append(lowprice)
+        if price > 0 and openprice > 0 and highprice > 0 and lowprice > 0:
+            timestamp_list.append(timestamp)
+            price_list.append(price)
+            openprice_list.append(openprice)
+            highprice_list.append(highprice)
+            lowprice_list.append(lowprice)
     return timestamp_list, price_list, openprice_list, highprice_list, lowprice_list
 
 #REQUEST_URL_V7 = "http://47.94.154.29:8501/v1/models/turtle7:predict"
 REQUEST_URL_V8 = "http://47.94.154.29:8501/v1/models/turtle8:predict"
 
-def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list):
+def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, predict_len):
     #turtle7_predict = []
     #turtle8_predict = []
     print("predicting")
-    global predict_len
     timestamp_list = timestamp_list[0:input_days_len+predict_len-1]
     price_list = price_list[0:input_days_len+predict_len-1]
     openprice_list = openprice_list[0:input_days_len+predict_len-1]
@@ -124,31 +126,34 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
     lowprice_list = lowprice_list[0:input_days_len+predict_len-1]
     price_len = len(price_list)
     predict_len = price_len - input_days_len + 1
-    inputObj = {"Prices":[]}
-    for predict_index in range(predict_len):
-        priceObj = {"Close":[],"High":[],"Low":[]}
-        for price_index in range(input_days_len):
-            priceObj["Close"].append(
-                price_list[predict_index+price_index])
-            priceObj["High"].append(
-                highprice_list[predict_index+price_index])
-            priceObj["Low"].append(
-                lowprice_list[predict_index+price_index])
-        inputObj["Prices"].append(priceObj)
-    HEADER = {'Content-Type':'application/json; charset=utf-8'}
-    inputpricelist = getInputPriceList(inputObj)
-    requestDict = {"instances": inputpricelist}
-    #rsp_v7 = requests.post(REQUEST_URL_V7, data=json.dumps(requestDict), headers=HEADER)
-    #riseProb = controler.parseToRiseProb(json.loads(rsp.text))
-    #riseProb_v7 = GetPredictResult(json.loads(rsp_v7.text), inputObj, "v7")
-    rsp_v8 = requests.post(REQUEST_URL_V8, data=json.dumps(requestDict), headers=HEADER)
-    #riseProb = controler.parseToRiseProb(json.loads(rsp.text))
+    predict_batch_count = math.ceil(float(predict_len)/predict_batch)
+    riseProb_v8_list = []
+    for predict_batch_index in range(predict_batch_count):
+        print("predicting " + str(predict_batch_index+1) + " of " + str(predict_batch_count))
+        inputObj = {"Prices":[]}
+        for predict_index in range(predict_batch):
+            absolute_predict_index = predict_batch_index*predict_batch+predict_index
+            if absolute_predict_index >= predict_len:
+                break
+            priceObj = {"Close":[],"High":[],"Low":[]}
+            for price_index in range(input_days_len):
+                absolute_price_index = absolute_predict_index + price_index
+                priceObj["Close"].append(
+                    price_list[absolute_price_index])
+                priceObj["High"].append(
+                    highprice_list[absolute_price_index])
+                priceObj["Low"].append(
+                    lowprice_list[absolute_price_index])
+            inputObj["Prices"].append(priceObj)
+        HEADER = {'Content-Type':'application/json; charset=utf-8'}
+        inputpricelist = getInputPriceList(inputObj)
+        requestDict = {"instances": inputpricelist}
+        rsp_v8 = requests.post(REQUEST_URL_V8, data=json.dumps(requestDict), headers=HEADER)
+        riseProb_v8 = GetPredictResult(symbol, json.loads(rsp_v8.text), inputObj, "v8", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
+        riseProb_v8_list.append(riseProb_v8)
     global time_start
     time_end=time.time()
-    #print('totally cost',time_end-time_start,"s")
-    riseProb_v8 = GetPredictResult(symbol, json.loads(rsp_v8.text), inputObj, "v8", timestamp_list)
-    #return riseProb_v7, riseProb_v8
-    return riseProb_v8
+    return combine_predict_result_list(riseProb_v8_list)
 
 def getInputPriceList(inputObj):
     pricelistsymbols = inputObj["Prices"]
@@ -158,9 +163,9 @@ def getInputPriceList(inputObj):
     dayscount = len(pricelistsymbols[0]["Close"])
     for pricelistsymbol in pricelistsymbols:
         #Desc by date
-        closelist = [math.log(closePrice) for closePrice in pricelistsymbol["Close"]]
-        highlist = [math.log(highPrice) for highPrice in pricelistsymbol["High"]]
-        lowlist = [math.log(lowPrice) for lowPrice in pricelistsymbol["Low"]]
+        closelist = [math.log(closePrice) if closePrice > 0 else 0 for closePrice in pricelistsymbol["Close"]]
+        highlist = [math.log(highPrice) if highPrice > 0 else 0 for highPrice in pricelistsymbol["High"]]
+        lowlist = [math.log(lowPrice) if lowPrice > 0 else 0 for lowPrice in pricelistsymbol["Low"]]
         maxprice = max(highlist)
         minprice = min(lowlist)
         rangePrice = maxprice - minprice
@@ -183,6 +188,9 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     price_list = []
     atr_list = []
     stop_list = []
+    position_list = []
+    high_list = []
+    low_list = []
     predict_len = len(price_data["Prices"])
     problist = [probitem["probabilities"][1] for probitem in predictRsp["predictions"]]
     for predict_index in range(predict_len):
@@ -198,9 +206,14 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         tr_list = [highs[i] / lows[i] - 1 for i in range(atr_len)]
         atr = (sum(tr_list) / len(tr_list))
         price = float(closes[0])
+        high = float(highs[0])
+        low = float(lows[0])
         if 'error' in predictRsp:
             return predictRsp
         riseProb = problist[predict_index]
+        
+        #riseProb = 1 - riseProb #反转AI
+
         if riseProb >= 0.5:
             side = "buy"
             stop_price = price / (1 + atr / 2)
@@ -212,10 +225,58 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         side_list.append(side)
         score_list.append(round(score,2))
         price_list.append(price)
+        high_list.append(high)
+        low_list.append(low)
         atr_list.append(round(float(atr * 100),2))
-        stop_list.append(format(float(stop_price), '.7g'))
-    outputRiseProb = {"symbol": symbol, "date_list": date_list, "prob_list": [round(probval,4) for probval in problist], "side_list" : side_list, "score_list" : score_list, "price_list" : price_list, "atr_list" : atr_list, "stop_list" : stop_list, "version" : version}
+        position_list.append(round(risk_factor / atr, 2))
+        stop_list.append(float(format(float(stop_price), '.7g')))
+    outputRiseProb = {"symbol": symbol, 
+                      "date_list": date_list, 
+                      #"prob_list": [round(probval,4) for probval in problist], 
+                      "side_list" : side_list, 
+                      "score_list" : score_list, 
+                      "price_list" : price_list, 
+                      "high_list" : high_list, 
+                      "low_list" : low_list, 
+                      "atr_list" : atr_list, 
+                      "stop_list" : stop_list, 
+                      #"position_list": position_list, 
+                      "version" : version}
     return outputRiseProb
+
+def combine_predict_result_list(predict_result_list):
+    if len(predict_result_list) == 0:
+        return None
+    date_list = []
+    side_list = []
+    score_list = []
+    price_list = []
+    high_list = []
+    low_list = []
+    atr_list = []
+    stop_list = []
+    for predict_result in predict_result_list:
+        date_list += predict_result["date_list"]
+        side_list += predict_result["side_list"]
+        score_list += predict_result["score_list"]
+        price_list += predict_result["price_list"]
+        high_list += predict_result["high_list"]
+        low_list += predict_result["low_list"]
+        atr_list += predict_result["atr_list"]
+        stop_list += predict_result["stop_list"]
+    predict_result_combined = {"symbol": predict_result_list[0]["symbol"], 
+                      "date_list": date_list, 
+                      #"prob_list": [round(probval,4) for probval in problist], 
+                      "side_list" : side_list, 
+                      "score_list" : score_list, 
+                      "price_list" : price_list, 
+                      "high_list" : high_list, 
+                      "low_list" : low_list, 
+                      "atr_list" : atr_list, 
+                      "stop_list" : stop_list, 
+                      #"position_list": position_list, 
+                      "version" : predict_result_list[0]["version"]}
+    return predict_result_combined
 
 if __name__ == "__main__":
     symbol = input("Input a symbol:")
@@ -226,7 +287,7 @@ if __name__ == "__main__":
     marketString = json.dumps(market).encode('utf-8').decode('unicode_escape')
     print("best market = " +  marketString)
     marketObj = json.loads(marketString)
-    timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = get_history_price(str(marketObj["pairId"]), marketObj["pair_type"])
+    timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 4800)
     time_end=time.time()
     print('totally cost',time_end-time_start,"s")
     '''
@@ -238,9 +299,9 @@ if __name__ == "__main__":
     '''
     #Predict
     #turtle7_predict, turtle8_predict = predict(price_list, openprice_list, highprice_list, lowprice_list)
-    turtle8_predict = predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list)
+    turtle8_predict = predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
     #print(json.dumps(turtle7_predict), json.dumps(turtle8_predict))
-        
+    
     print(json.dumps(turtle8_predict))
     time_end=time.time()
     print('totally cost',time_end-time_start,"s")
