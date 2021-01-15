@@ -48,13 +48,15 @@ def simulate_trading(predict_list):
         current_date += datetime.timedelta(days = 1)
     simulate_result["date_list"] = date_list
     date_index_list = [len(predict_symbol["date_list"]) - 1 for predict_symbol in predict_list]
+    init_balance = 100.0
+    init_year = simulate_result["date_list"][0].year
+    #无过滤器
     #初始余额为100
-    current_balance = 100.0
-    current_dynamic_balance = 100.0
-    max_balance = 100.0
-    init_balance = current_balance
+    current_balance = init_balance
+    current_dynamic_balance = init_balance
+    max_balance = init_balance
     max_loss = 0
-    max_loss_days = 0 
+    max_loss_days = 0
     win_count = 0
     loss_count = 0
     draw_count = 0
@@ -65,16 +67,33 @@ def simulate_trading(predict_list):
     year_list = []
     year_last_balance = {}
     #年度
-    init_year = simulate_result["date_list"][0].year
     year_last_balance[init_year] = init_balance
+    #含过滤器
+    #初始余额为100
+    current_balance_filtered = init_balance
+    current_dynamic_balance_filtered = init_balance
+    max_balance_filtered = 100.0
+    max_loss_filtered = 0
+    max_loss_days_filtered = 0
+    win_count_filtered = 0
+    loss_count_filtered = 0
+    draw_count_filtered = 0
+    max_banlance_date_filtered = simulate_result["date_list"][0]
+    #活动订单
+    active_orders_filtered = []
+    #年度收益
+    year_list_filtered = []
+    year_last_balance_filtered = {}
+    #年度
+    year_last_balance_filtered[init_year] = init_balance
 
     #循环遍历每一个交易日
     for date in simulate_result["date_list"]:
-        print("date:"+datetime.datetime.strftime(date, f50_market_spider.dateformat)
-              +";balance:"+str(current_balance)
-              +";dynamic balance:"+str(current_dynamic_balance)
-              +";len(active_orders):"+str(len(active_orders))
-              )
+        #print("date:"+datetime.datetime.strftime(date, f50_market_spider.dateformat)
+        #      +";balance:"+str(current_balance)
+        #      +";dynamic balance:"+str(current_dynamic_balance)
+        #      +";len(active_orders):"+str(len(active_orders))
+        #      )
         #每日可交易币种清单
         symbols_available = []
         #循环遍历每一个币种
@@ -84,7 +103,10 @@ def simulate_trading(predict_list):
             while date_index_list[predict_symbol_index] >= 0:
                 date_symbol = datetime.datetime.strptime(predict_list[predict_symbol_index]["date_list"][date_index_list[predict_symbol_index]], f50_market_spider.dateformat)
                 if date_symbol == date:
-                    symbols_available.append((predict_symbol_index, date_index_list[predict_symbol_index]))
+                    #Get profit of past 20 days
+                    past_profit = get_past_profit(predict_list[predict_symbol_index], date_index_list[predict_symbol_index], 20)
+                    if past_profit > 0:
+                        symbols_available.append((predict_symbol_index, date_index_list[predict_symbol_index]))
                     break
                 if date_symbol > date:
                     break
@@ -244,6 +266,99 @@ def simulate_trading(predict_list):
             profit = ( year_last_balance[year_item] / year_last_balance[year_item-1] - 1 ) * 100
         year_list.append({"year":year_item,"profit":profit})
     return simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list
+
+
+#Get profit of past 20 days
+def get_past_profit(predict_symbol, date_index, days_count):
+    total_len = len(predict_symbol["date_list"])
+    date_end_index = date_index + 1
+    date_begin_index = date_index + days_count
+    if date_begin_index >= total_len:
+        return 0
+    #活动订单
+    active_orders = []
+    #初始余额为100
+    init_balance = 100.0
+    current_balance = init_balance
+    current_dynamic_balance = init_balance
+    date_list = predict_symbol["date_list"][date_end_index:date_begin_index+1][::-1]
+    score_list = predict_symbol["score_list"][date_end_index:date_begin_index+1][::-1]
+    atr_list = predict_symbol["atr_list"][date_end_index:date_begin_index+1][::-1]
+    price_list = predict_symbol["price_list"][date_end_index:date_begin_index+1][::-1]
+    high_list = predict_symbol["high_list"][date_end_index:date_begin_index+1][::-1]
+    low_list = predict_symbol["low_list"][date_end_index:date_begin_index+1][::-1]
+    stop_list = predict_symbol["stop_list"][date_end_index:date_begin_index+1][::-1]
+    #活动订单
+    active_orders = []
+    for day_index in range(days_count):
+        score = score_list[day_index]
+        atr = atr_list[day_index]
+        entry_price = price_list[day_index]
+        high_price = high_list[day_index]
+        low_price = low_list[day_index]
+        position = round(f50_market_spider.risk_factor / atr, 2)
+        stop_price = stop_list[day_index]
+        new_order = {"score":score, "atr":atr, "entry_price":entry_price, "high_price":entry_price, "low_price":entry_price, "position":position, "stop_price":stop_price,"balance_dynamic": current_dynamic_balance, "stop_flag":"", "profit" : 0}
+
+        #遍历未止盈止损的活动订单(倒序循环时才能删除元素)
+        for active_order in active_orders[::-1]:
+            #计算入场金额
+            entry_amount = active_order["position"] * active_order["balance_dynamic"]
+            #做多订单
+            if active_order["score"]  > 0:
+                #先用当日最低价判断是否止损，再用当日最高价更新止损价
+                if low_price < active_order["stop_price"]:
+                    active_order["stop_flag"] = 'X'
+                    entry_price = active_order["entry_price"]
+                    stop_price = active_order["stop_price"]
+                    #计算离场金额
+                    exit_amount = entry_amount / entry_price * stop_price
+                    #计算收益时，考虑交易手续费fee_ratio
+                    active_order["profit"] = exit_amount * (1 - fee_ratio) - entry_amount * (1 + fee_ratio)
+                    #更新静态余额
+                    current_balance += active_order["profit"]
+                    #删除活动订单
+                    active_orders.remove(active_order)
+                else:
+                    if high_price > active_order["high_price"]:
+                        active_order["high_price"] = high_price
+                        active_order["stop_price"] = high_price / (1 + atr / 100 / 2)
+                    #计算离场金额
+                    exit_amount = entry_amount / entry_price * entry_price
+                    #计算收益时，考虑交易手续费fee_ratio
+                    active_order["profit"] = exit_amount * (1 - fee_ratio) - entry_amount * (1 + fee_ratio)
+            #做空订单
+            else:
+                #先用当日最低价判断是否止损，再用当日最高价更新止损价
+                if low_price > active_order["stop_price"]:
+                    active_order["stop_flag"] = 'X'
+                    entry_price = active_order["entry_price"]
+                    stop_price = active_order["stop_price"]
+                    #计算离场金额
+                    exit_amount = entry_amount / entry_price * stop_price
+                    #计算收益时，考虑交易手续费fee_ratio
+                    active_order["profit"] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)
+                    #更新静态余额
+                    current_balance += active_order["profit"]
+                    #删除活动订单
+                    active_orders.remove(active_order)
+                else:
+                    if low_price < active_order["low_price"]:
+                        active_order["low_price"] = low_price
+                        active_order["stop_price"] = low_price * (1 + atr / 100 / 2)
+                    #计算离场金额
+                    exit_amount = entry_amount / entry_price * entry_price
+                    #计算收益时，考虑交易手续费fee_ratio
+                    active_order["profit"] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)   
+        #新余额等于静态余额加动态收益
+        current_dynamic_balance = current_balance
+        #当前余额
+        for active_order in active_orders:
+            current_dynamic_balance += active_order["profit"]
+        active_orders.append(new_order)
+    profit_past = (current_dynamic_balance / init_balance - 1) * 100
+    print("date:" + str(date_list[-1]) + " profit:" + str(profit_past))
+    return profit_past
 
 #模拟交易
 #Simulated Trading

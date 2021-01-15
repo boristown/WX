@@ -81,7 +81,7 @@ def simulated_trading(next_id, input_text):
     last_balance = simulate_result["balance_dynamic_list"][-1]
     years = len(simulate_result["symbol_list"]) / 365
     annual_yield =math.pow( last_balance / init_balance, 1 / years) * 100.0 - 100.0
-    output_text = "模拟结果:\n" +str(input_text) + "\n天数 = " + str(len(simulate_result["symbol_list"])) + "\n盈利天数 = " + str(win_count) + "\n亏损天数 = " + str(loss_count) + "\n平局天数 = " + str(draw_count) + "\n胜率 = " + str(win_count * 100.0 / (win_count + loss_count)  ) + "%" + "\n最大亏损 = " + str(max_loss * 100.0)  + '%' + "\n最长衰落期 = " + str(max_loss_days) + "天" + "\n初始余额 = " + str(init_balance) + "\n最终余额 = " + str(last_balance) + "\n年化收益 = " + str(annual_yield) + '%'
+    output_text = "模拟结果:\n" +str(input_text) + "\n天数 = " + str(len(simulate_result["symbol_list"])) + "\n盈利天数 = " + str(win_count) + "\n亏损天数 = " + str(loss_count) + "\n平局天数 = " + str(draw_count) + "\n胜率 = " + str((win_count * 100.0 / (win_count + loss_count)) if (win_count + loss_count) > 0 else 0  ) + "%" + "\n最大亏损 = " + str(max_loss * 100.0)  + '%' + "\n最长衰落期 = " + str(max_loss_days) + "天" + "\n初始余额 = " + str(init_balance) + "\n最终余额 = " + str(last_balance) + "\n年化收益 = " + str(annual_yield) + '%'
     output_text +=  "\ndate_range = [" + datetime.datetime.strftime(simulate_result["date_list"][0],f50_market_spider.dateformat) + ',' + datetime.datetime.strftime(simulate_result["date_list"][-1],f50_market_spider.dateformat) + ']'
     for year_item in year_list:
         output_text += "\n"+str(year_item["year"])+":"+str(round(year_item["profit"],3)) + "%"
