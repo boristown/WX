@@ -15,6 +15,11 @@ import json
 import glob
 import forcastline
 import f50_market_spider
+import f51_simulated_trading
+import f52_db_simulated
+import asyncio
+import _thread
+import math
 
 class word_in_color(object):
   word_in_rising_major = ''
@@ -49,8 +54,61 @@ def utc2local(utc_st):
 
 input_days_len = 225
 
+def simulated_trading(next_id, input_text):
+    f52_db_simulated.save_result(next_id, '')
+    symbol_list = input_text.split(' ')
+    predict_list = []
+    for symbol in symbol_list:
+        while len(symbol) > 0:
+            marketListString  = f50_market_spider.search_for_symbol(symbol)
+            if len(marketListString) == 0:
+                symbol = symbol[:-1]
+            else:
+                break
+        if not marketListString:
+            f52_db_simulated.save_result(next_id, '模拟失败，未找到市场'+symbol+'相关信息。')
+        market = f50_market_spider.get_best_market(json.loads(marketListString))
+        marketObj = market
+        marketObj["name"] = marketObj["name"].replace("Investing.com","")
+        timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 4800)
+        if len(price_list) < f50_market_spider.input_days_len:
+            continue
+        turtle8_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
+        predict_list.append(turtle8_predict)
+    simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list = f51_simulated_trading.simulate_trading(predict_list)
+    time_end=time.time()
+    init_balance = simulate_result["balance_dynamic_list"][0]
+    last_balance = simulate_result["balance_dynamic_list"][-1]
+    years = len(simulate_result["symbol_list"]) / 365
+    annual_yield =math.pow( last_balance / init_balance, 1 / years) * 100.0 - 100.0
+    output_text = "模拟结果:\n" +str(input_text) + "\n天数 = " + str(len(simulate_result["symbol_list"])) + "\n盈利天数 = " + str(win_count) + "\n亏损天数 = " + str(loss_count) + "\n平局天数 = " + str(draw_count) + "\n胜率 = " + str(win_count * 100.0 / (win_count + loss_count)  ) + "%" + "\n最大亏损 = " + str(max_loss * 100.0)  + '%' + "\n最长衰落期 = " + str(max_loss_days) + "天" + "\n初始余额 = " + str(init_balance) + "\n最终余额 = " + str(last_balance) + "\n年化收益 = " + str(annual_yield) + '%'
+    output_text +=  "\ndate_range = [" + datetime.datetime.strftime(simulate_result["date_list"][0],f50_market_spider.dateformat) + ',' + datetime.datetime.strftime(simulate_result["date_list"][-1],f50_market_spider.dateformat) + ']'
+    for year_item in year_list:
+        output_text += "\n"+str(year_item["year"])+":"+str(round(year_item["profit"],3)) + "%"
+    f52_db_simulated.save_result(next_id, output_text)
+
+
+def simulated_begin(next_id, input_text):
+    simulated_trading(next_id,input_text.strip())
+    
+
+def simulated_end(input_text):
+    next_id = int(input_text.strip())
+    result = f52_db_simulated.read_result(next_id)
+    if len(result) == 0:
+        result = "模拟结果未生成，请稍后查询！"
+    return result
+
+
 def chat(origin_input):
   time_start=time.time()
+  if origin_input[:2] == "模拟":
+      max_id = f52_db_simulated.get_max_id()
+      next_id = max_id + 1
+      _thread.start_new_thread( simulated_begin, (next_id, origin_input[2:]) )
+      return "模拟开始，20分钟后输入'结果" + str(next_id) + "'查询模拟结果。"
+  if origin_input[:2] == "结果":
+      return simulated_end(origin_input[2:])
   marketListString = ""
   while len(origin_input) > 0:
     marketListString  = f50_market_spider.search_for_symbol(origin_input)

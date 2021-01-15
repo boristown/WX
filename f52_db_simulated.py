@@ -6,17 +6,15 @@ def save_result(simulate_id, simulate_result):
     myconnector, mycursor = common.init_mycursor()
     statement = '''
     insert into
-    `simulated` ( `simulate_id`, `simulate_result` )
-    values ( %d, "%s" )
+    `simulate` ( `simulate_id`, `simulate_result` )
+    values ( %s, %s )
     ON DUPLICATE KEY UPDATE
     `simulate_id` = VALUES(`simulate_id`), 
     `simulate_result` = VALUES(`simulate_result`)
     ;
-    ''' % (
-        int(simulate_id),
-        simulate_result
-        )
-    mycursor.execute(statement)
+    '''
+    print(simulate_result)
+    mycursor.execute(statement, (str(simulate_id), simulate_result.encode("utf-8")))
     myconnector.commit()
     return mycursor.rowcount
 
@@ -27,18 +25,16 @@ def read_result(simulate_id):
     `simulate_id`,
     `simulate_result`
     from 
-    `simulated`
+    `simulate`
     where 
-    `simulate_id` = %d
+    `simulate_id` = %s
     ;
-    ''' % (
-        int(simulate_id)
-        )
-    mycursor.execute(statement)
+    '''
+    mycursor.execute(statement, (str(simulate_id), ))
     list_results = mycursor.fetchall()
     simulate_result = ""
     for list_result in list_results:
-        simulate_result = list_result[1]
+        simulate_result = list_result[1].decode("utf-8")
     return simulate_result
 
 def get_max_id():
@@ -46,7 +42,7 @@ def get_max_id():
     statement = '''
     select max(`simulate_id`)
     from 
-    `simulated`
+    `simulate`
     ;
     '''
     mycursor.execute(statement)

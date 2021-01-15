@@ -17,10 +17,10 @@ def load_response(response):
 
 def init_mycursor():
     myconnector = mysql.connector.connect(
-      host=mypsw.host,
-      user=mypsw.user,
-      passwd=mypsw.passwd,
-      database=mypsw.database,
+      host=mypsw.wechatadmin.host,
+      user=mypsw.wechatadmin.user,
+      passwd=mypsw.wechatadmin.passwd,
+      database=mypsw.wechatadmin.database,
       auth_plugin='mysql_native_password'
       )
     mycursor = myconnector.cursor()
