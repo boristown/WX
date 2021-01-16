@@ -89,11 +89,6 @@ def simulate_trading(predict_list):
 
     #循环遍历每一个交易日
     for date in simulate_result["date_list"]:
-        #print("date:"+datetime.datetime.strftime(date, f50_market_spider.dateformat)
-        #      +";balance:"+str(current_balance)
-        #      +";dynamic balance:"+str(current_dynamic_balance)
-        #      +";len(active_orders):"+str(len(active_orders))
-        #      )
         #每日可交易币种清单
         symbols_available = []
         #循环遍历每一个币种
@@ -103,54 +98,14 @@ def simulate_trading(predict_list):
             while date_index_list[predict_symbol_index] >= 0:
                 date_symbol = datetime.datetime.strptime(predict_list[predict_symbol_index]["date_list"][date_index_list[predict_symbol_index]], f50_market_spider.dateformat)
                 if date_symbol == date:
-                    #Get profit of past 20 days
-                    past_profit = get_past_profit(predict_list[predict_symbol_index], date_index_list[predict_symbol_index], 20)
-                    if past_profit > 0:
-                        symbols_available.append((predict_symbol_index, date_index_list[predict_symbol_index]))
+                    symbols_available.append((predict_symbol_index, date_index_list[predict_symbol_index]))
                     break
                 if date_symbol > date:
                     break
                 date_index_list[predict_symbol_index] -= 1
+        trade_flag = False
         #如果当日存在可交易的币种
         if len(symbols_available) > 0:
-            #找到最优币种
-            max_abs_score = 0
-            best_symbol_available = symbols_available[0]
-            for symbol_available in symbols_available:
-                predict_symbol = predict_list[symbol_available[0]]
-                score_abs = abs(float(predict_symbol["score_list"][symbol_available[1]]))
-                if score_abs > max_abs_score:
-                    max_abs_score = score_abs
-                    best_symbol_available = symbol_available
-            simulate_result["symbol_list"].append(best_symbol_available[0])
-            score = predict_list[best_symbol_available[0]]["score_list"][best_symbol_available[1]]
-            simulate_result["score_list"].append(score)
-            atr = predict_list[best_symbol_available[0]]["atr_list"][best_symbol_available[1]]
-            simulate_result["atr_list"].append(atr)
-            entry_price = predict_list[best_symbol_available[0]]["price_list"][best_symbol_available[1]]
-            simulate_result["entry_price_list"].append(entry_price)
-            high_price = predict_list[best_symbol_available[0]]["high_list"][best_symbol_available[1]]
-            simulate_result["high_price_list"].append(entry_price)
-            low_price = predict_list[best_symbol_available[0]]["low_list"][best_symbol_available[1]]
-            simulate_result["low_price_list"].append(entry_price)
-            position = round(f50_market_spider.risk_factor / atr, 2)
-            simulate_result["position_list"].append(position)
-            stop_price = predict_list[best_symbol_available[0]]["stop_list"][best_symbol_available[1]]
-            #print("symbol:"+str(best_symbol_available[0])+";price:"+str(entry_price)+";high:"+str(high_price)+";low:"+str(low_price)+";stop:"+str(stop_price)+";position:"+str(position)+";atr:"+str(atr)+";score:"+str(score))
-            simulate_result["stop_list"].append(stop_price)
-            simulate_result["stop_flag"].append("")
-            simulate_result["profit_list"].append(0)
-            simulate_result["balance_list"].append(current_balance)
-            simulate_result["balance_dynamic_list"].append(current_dynamic_balance)
-            simulate_result["max_balance_list"].append(max_balance)
-            simulate_result["max_banlance_date"].append(max_banlance_date)
-            current_loss = (max_balance - current_dynamic_balance) / max_balance
-            max_loss = max(max_loss, current_loss)
-            current_loss_days = (date - max_banlance_date).days
-            max_loss_days = max(max_loss_days, current_loss_days)
-            #年度
-            current_year = date.year
-            year_last_balance[current_year] = current_dynamic_balance
             #遍历未止盈止损的活动订单(倒序循环时才能删除元素)
             for active_order in active_orders[::-1]:
                 #获取当前市场数据
@@ -226,9 +181,57 @@ def simulate_trading(predict_list):
             if current_dynamic_balance > max_balance:
                 max_balance = current_dynamic_balance
                 max_banlance_date = simulate_result["date_list"][len(simulate_result["symbol_list"])-1]
-            #添加新订单到活动订单
-            active_orders.append(len(simulate_result["symbol_list"])-1)
-        else:
+                
+            print("date:"+datetime.datetime.strftime(date, f50_market_spider.dateformat)
+                  +";balance:"+str(current_balance)
+                  +";dynamic balance:"+str(current_dynamic_balance)
+                  +";len(active_orders):"+str(len(active_orders))
+                  )
+            #找到最优币种
+            max_abs_score = -1
+            best_symbol_available = symbols_available[0]
+            for symbol_available in symbols_available:
+                predict_symbol = predict_list[symbol_available[0]]
+                score_abs = abs(float(predict_symbol["score_list"][symbol_available[1]]))
+                #Get profit of past 20 days
+                past_profit = get_past_profit(predict_list[symbol_available[0]], date_index_list[symbol_available[0]], 20)
+                if past_profit > 0 and score_abs > max_abs_score:
+                    max_abs_score = score_abs
+                    best_symbol_available = symbol_available
+            if max_abs_score > -1:
+                simulate_result["symbol_list"].append(best_symbol_available[0])
+                score = predict_list[best_symbol_available[0]]["score_list"][best_symbol_available[1]]
+                simulate_result["score_list"].append(score)
+                atr = predict_list[best_symbol_available[0]]["atr_list"][best_symbol_available[1]]
+                simulate_result["atr_list"].append(atr)
+                entry_price = predict_list[best_symbol_available[0]]["price_list"][best_symbol_available[1]]
+                simulate_result["entry_price_list"].append(entry_price)
+                high_price = predict_list[best_symbol_available[0]]["high_list"][best_symbol_available[1]]
+                simulate_result["high_price_list"].append(entry_price)
+                low_price = predict_list[best_symbol_available[0]]["low_list"][best_symbol_available[1]]
+                simulate_result["low_price_list"].append(entry_price)
+                position = round(f50_market_spider.risk_factor / atr, 2)
+                simulate_result["position_list"].append(position)
+                stop_price = predict_list[best_symbol_available[0]]["stop_list"][best_symbol_available[1]]
+                #print("symbol:"+str(best_symbol_available[0])+";price:"+str(entry_price)+";high:"+str(high_price)+";low:"+str(low_price)+";stop:"+str(stop_price)+";position:"+str(position)+";atr:"+str(atr)+";score:"+str(score))
+                simulate_result["stop_list"].append(stop_price)
+                simulate_result["stop_flag"].append("")
+                simulate_result["profit_list"].append(0)
+                simulate_result["balance_list"].append(current_balance)
+                simulate_result["balance_dynamic_list"].append(current_dynamic_balance)
+                simulate_result["max_balance_list"].append(max_balance)
+                simulate_result["max_banlance_date"].append(max_banlance_date)
+                current_loss = (max_balance - current_dynamic_balance) / max_balance
+                max_loss = max(max_loss, current_loss)
+                current_loss_days = (date - max_banlance_date).days
+                max_loss_days = max(max_loss_days, current_loss_days)
+                #年度
+                current_year = date.year
+                year_last_balance[current_year] = current_dynamic_balance
+                #添加新订单到活动订单
+                active_orders.append(len(simulate_result["symbol_list"])-1)
+                trade_flag = True
+        if not trade_flag:
             simulate_result["symbol_list"].append(-1)
             simulate_result["score_list"].append(0)
             simulate_result["atr_list"].append(0)
@@ -266,7 +269,6 @@ def simulate_trading(predict_list):
             profit = ( year_last_balance[year_item] / year_last_balance[year_item-1] - 1 ) * 100
         year_list.append({"year":year_item,"profit":profit})
     return simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list
-
 
 #Get profit of past 20 days
 def get_past_profit(predict_symbol, date_index, days_count):
