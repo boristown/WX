@@ -7,7 +7,8 @@ import math
 
 time_start = None
 fee_ratio = 0.001
-
+no_filter = False
+grid_profit = f50_market_spider.risk_factor / 100
 
 def simulate_trading(predict_list):
     simulate_result = {"date_list":[], 
@@ -25,7 +26,15 @@ def simulate_trading(predict_list):
                        "balance_list":[],
                        "balance_dynamic_list":[],
                        "max_balance_list":[],
-                       "max_banlance_date":[]
+                       "max_banlance_date":[],
+                       "grid_symbol_list":[],
+                       "grid_atr_list":[],
+                       'grid_entry_price_list':[],
+                       'grid_high_price_list':[],
+                       'grid_low_price_list':[],
+                       "grid_position_list":[],
+                       "grid_stop_flag":[],
+                       "grid_profit_list":[],
                        }
     min_date_list = [
         datetime.datetime.strptime(
@@ -63,30 +72,14 @@ def simulate_trading(predict_list):
     max_banlance_date = simulate_result["date_list"][0]
     #活动订单
     active_orders = []
+    #活动网格
+    active_grids = []
     #年度收益
     year_list = []
     year_last_balance = {}
     #年度
     year_last_balance[init_year] = init_balance
-    #含过滤器
-    #初始余额为100
-    current_balance_filtered = init_balance
-    current_dynamic_balance_filtered = init_balance
-    max_balance_filtered = 100.0
-    max_loss_filtered = 0
-    max_loss_days_filtered = 0
-    win_count_filtered = 0
-    loss_count_filtered = 0
-    draw_count_filtered = 0
-    max_banlance_date_filtered = simulate_result["date_list"][0]
-    #活动订单
-    active_orders_filtered = []
-    #年度收益
-    year_list_filtered = []
-    year_last_balance_filtered = {}
-    #年度
-    year_last_balance_filtered[init_year] = init_balance
-
+    
     #循环遍历每一个交易日
     for date in simulate_result["date_list"]:
         #每日可交易币种清单
@@ -104,6 +97,7 @@ def simulate_trading(predict_list):
                     break
                 date_index_list[predict_symbol_index] -= 1
         trade_flag = False
+        grid_flag = False
         #如果当日存在可交易的币种
         if len(symbols_available) > 0:
             #遍历未止盈止损的活动订单(倒序循环时才能删除元素)
@@ -172,11 +166,59 @@ def simulate_trading(predict_list):
                         exit_amount = entry_amount / entry_price * entry_price
                         #计算收益时，考虑交易手续费fee_ratio
                         simulate_result["profit_list"][active_order] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)
+            #遍历活动网格(倒序循环时才能删除元素)
+            for active_grid in active_grids[::-1]:
+                #获取当前市场数据
+                symbol_index = simulate_result["grid_symbol_list"][active_grid]
+                grid_atr = simulate_result["grid_atr_list"][active_grid] / 100
+                grid_price = simulate_result["grid_entry_price_list"][active_grid]
+                grid_high_limit = grid_price * (1 + grid_atr / 2)
+                grid_low_limit = grid_price / (1 + grid_atr / 2)
+                grid_high_stop = grid_price * (1 + grid_atr * 3 / 4)
+                grid_low_stop = grid_price / (1 + grid_atr * 3 / 4)
+                find_symbol = False
+                for symbol_available in symbols_available:
+                    if symbol_available[0] == symbol_index:
+                        find_symbol = True
+                        high_price = predict_list[symbol_index]["high_list"][symbol_available[1]]
+                        low_price = predict_list[symbol_index]["low_list"][symbol_available[1]]
+                        atr_price = predict_list[symbol_index]["atr_list"][symbol_available[1]]
+                        break
+                if not find_symbol:
+                    continue
+                #计算入场金额
+                entry_amount = simulate_result["grid_position_list"][active_grid] * simulate_result["balance_dynamic_list"][active_grid]
+                #计算网格最大收益
+                grid_max_profit = grid_profit * simulate_result["balance_dynamic_list"][active_grid] - entry_amount * fee_ratio * 2
+                #计算网格的最大亏损
+                grid_max_loss = grid_profit * simulate_result["balance_dynamic_list"][active_grid] + entry_amount * fee_ratio * 2
+                #计算更新网格状态
+                if high_price > simulate_result["grid_high_price_list"][active_grid]:
+                    simulate_result["grid_high_price_list"][active_grid] = min(high_price,grid_high_limit)
+                if low_price < simulate_result["grid_low_price_list"][active_grid]:
+                    simulate_result["grid_low_price_list"][active_grid] = max(low_price,grid_low_limit)
+                #计算网格收益
+                sell_ratio = (simulate_result["grid_high_price_list"][active_grid] - grid_price) / (grid_high_limit - grid_price)
+                buy_ratio = (grid_price - simulate_result["grid_low_price_list"][active_grid]) / (grid_price - grid_low_limit)
+                grid_profit_ratio = math.pow(min(sell_ratio, buy_ratio), 2)
+                grid_loss_ratio = math.pow(1-min(sell_ratio, buy_ratio), 2)
+                simulate_result["grid_profit_list"][active_grid] = grid_max_profit * grid_profit_ratio - grid_max_loss * grid_loss_ratio
+                #退出网格
+                if high_price >= grid_high_stop or low_price <= grid_low_stop:
+                    simulate_result["grid_stop_flag"][active_grid] = 'X'
+                    #更新静态余额
+                    current_balance += simulate_result["grid_profit_list"][active_order]
+                    #删除活动订单
+                    active_grids.remove(active_grid)
+                
             #新余额等于静态余额加动态收益
             current_dynamic_balance = current_balance
-            #当前余额
+            #趋势收益
             for active_order in active_orders:
                 current_dynamic_balance += simulate_result["profit_list"][active_order]
+            #网格收益
+            for active_grid in active_grids:
+                current_dynamic_balance += simulate_result["grid_profit_list"][active_grid]
             #更新最大收益值
             if current_dynamic_balance > max_balance:
                 max_balance = current_dynamic_balance
@@ -185,19 +227,28 @@ def simulate_trading(predict_list):
             print("date:"+datetime.datetime.strftime(date, f50_market_spider.dateformat)
                   +";balance:"+str(current_balance)
                   +";dynamic balance:"+str(current_dynamic_balance)
-                  +";len(active_orders):"+str(len(active_orders))
+                  +";active_orders:"+str(len(active_orders))
+                  +";active_grids:"+str(len(active_grids))
                   )
             #找到最优币种
-            max_abs_score = -1
+            min_profit = 999999
+            max_abs_score = -1 #网格交易
             best_symbol_available = symbols_available[0]
+            best_grid_symbol = symbols_available[0]
             for symbol_available in symbols_available:
                 predict_symbol = predict_list[symbol_available[0]]
                 score_abs = abs(float(predict_symbol["score_list"][symbol_available[1]]))
                 #Get profit of past 20 days
-                past_profit = get_past_profit(predict_list[symbol_available[0]], date_index_list[symbol_available[0]], 20)
-                if past_profit > 0 and score_abs > max_abs_score:
-                    max_abs_score = score_abs
-                    best_symbol_available = symbol_available
+                past_profit = get_past_profit(predict_list[symbol_available[0]], date_index_list[symbol_available[0]], 20, False)
+                past_profit_reversed = get_past_profit(predict_list[symbol_available[0]], date_index_list[symbol_available[0]], 20, True)
+                past_profit_grid = past_profit + past_profit_reversed
+                if score_abs > max_abs_score:
+                    if past_profit > 0 or no_filter: #无过滤器时直接通过
+                        max_abs_score = score_abs
+                        best_symbol_available = symbol_available
+                if past_profit_grid < 0 and past_profit_grid < min_profit and not no_filter: #无过滤器时不执行
+                    min_profit = past_profit_grid
+                    best_grid_symbol = symbol_available
             if max_abs_score > -1:
                 simulate_result["symbol_list"].append(best_symbol_available[0])
                 score = predict_list[best_symbol_available[0]]["score_list"][best_symbol_available[1]]
@@ -217,20 +268,26 @@ def simulate_trading(predict_list):
                 simulate_result["stop_list"].append(stop_price)
                 simulate_result["stop_flag"].append("")
                 simulate_result["profit_list"].append(0)
-                simulate_result["balance_list"].append(current_balance)
-                simulate_result["balance_dynamic_list"].append(current_dynamic_balance)
-                simulate_result["max_balance_list"].append(max_balance)
-                simulate_result["max_banlance_date"].append(max_banlance_date)
-                current_loss = (max_balance - current_dynamic_balance) / max_balance
-                max_loss = max(max_loss, current_loss)
-                current_loss_days = (date - max_banlance_date).days
-                max_loss_days = max(max_loss_days, current_loss_days)
-                #年度
-                current_year = date.year
-                year_last_balance[current_year] = current_dynamic_balance
                 #添加新订单到活动订单
                 active_orders.append(len(simulate_result["symbol_list"])-1)
                 trade_flag = True
+            if min_profit < 999999:
+                simulate_result["grid_symbol_list"].append(best_grid_symbol[0])
+                atr = predict_list[best_grid_symbol[0]]["atr_list"][best_grid_symbol[1]]
+                simulate_result["grid_atr_list"].append(atr)
+                entry_price = predict_list[best_grid_symbol[0]]["price_list"][best_grid_symbol[1]]
+                simulate_result["grid_entry_price_list"].append(entry_price)
+                high_price = predict_list[best_grid_symbol[0]]["high_list"][best_grid_symbol[1]]
+                simulate_result["grid_high_price_list"].append(entry_price)
+                low_price = predict_list[best_grid_symbol[0]]["low_list"][best_grid_symbol[1]]
+                simulate_result["grid_low_price_list"].append(entry_price)
+                position = round(f50_market_spider.risk_factor / atr, 2)
+                simulate_result["grid_position_list"].append(position)
+                simulate_result["grid_stop_flag"].append("")
+                simulate_result["grid_profit_list"].append(0)
+                #添加新订单到活动订单
+                active_grids.append(len(simulate_result["symbol_list"])-1)
+                grid_flag = True
         if not trade_flag:
             simulate_result["symbol_list"].append(-1)
             simulate_result["score_list"].append(0)
@@ -243,17 +300,26 @@ def simulate_trading(predict_list):
             simulate_result["stop_list"].append(0)
             simulate_result["stop_flag"].append("")
             simulate_result["profit_list"].append(0)
-            simulate_result["balance_list"].append(current_balance)
-            simulate_result["balance_dynamic_list"].append(current_dynamic_balance)
-            simulate_result["max_balance_list"].append(max_balance)
-            simulate_result["max_banlance_date"].append(max_banlance_date)
-            current_loss = (max_balance - current_dynamic_balance) / max_balance
-            max_loss = max(max_loss, current_loss)
-            current_loss_days = (date - max_banlance_date).days
-            max_loss_days = max(max_loss_days, current_loss_days)
-            #年度
-            current_year = date.year
-            year_last_balance[current_year] = current_dynamic_balance
+        if not grid_flag:
+            simulate_result["grid_symbol_list"].append(-1)
+            simulate_result["grid_atr_list"].append(0)
+            simulate_result["grid_entry_price_list"].append(0)
+            simulate_result["grid_high_price_list"].append(0)
+            simulate_result["grid_low_price_list"].append(0)
+            simulate_result["grid_position_list"].append(0)
+            simulate_result["grid_stop_flag"].append("")
+            simulate_result["grid_profit_list"].append(0)
+        simulate_result["balance_list"].append(current_balance)
+        simulate_result["balance_dynamic_list"].append(current_dynamic_balance)
+        simulate_result["max_balance_list"].append(max_balance)
+        simulate_result["max_banlance_date"].append(max_banlance_date)
+        current_loss = (max_balance - current_dynamic_balance) / max_balance
+        max_loss = max(max_loss, current_loss)
+        current_loss_days = (date - max_banlance_date).days
+        max_loss_days = max(max_loss_days, current_loss_days)
+        #年度
+        current_year = date.year
+        year_last_balance[current_year] = current_dynamic_balance
 
         if len(simulate_result["balance_dynamic_list"]) > 1:
             if simulate_result["balance_dynamic_list"][-1] > simulate_result["balance_dynamic_list"][-2]:
@@ -271,7 +337,7 @@ def simulate_trading(predict_list):
     return simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list
 
 #Get profit of past 20 days
-def get_past_profit(predict_symbol, date_index, days_count):
+def get_past_profit(predict_symbol, date_index, days_count, reversed):
     total_len = len(predict_symbol["date_list"])
     date_end_index = date_index + 1
     date_begin_index = date_index + days_count
@@ -294,6 +360,8 @@ def get_past_profit(predict_symbol, date_index, days_count):
     active_orders = []
     for day_index in range(days_count):
         score = score_list[day_index]
+        if reversed: #预测反转
+            score *= -1
         atr = atr_list[day_index]
         entry_price = price_list[day_index]
         high_price = high_list[day_index]
@@ -359,7 +427,7 @@ def get_past_profit(predict_symbol, date_index, days_count):
             current_dynamic_balance += active_order["profit"]
         active_orders.append(new_order)
     profit_past = (current_dynamic_balance / init_balance - 1) * 100
-    print("date:" + str(date_list[-1]) + " profit:" + str(profit_past))
+    #print("date:" + str(date_list[-1]) + " profit:" + str(profit_past))
     return profit_past
 
 #模拟交易
