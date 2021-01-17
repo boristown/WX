@@ -81,10 +81,13 @@ def simulated_trading(next_id, input_text):
     last_balance = simulate_result["balance_dynamic_list"][-1]
     years = len(simulate_result["symbol_list"]) / 365
     annual_yield =math.pow( last_balance / init_balance, 1 / years) * 100.0 - 100.0
-    output_text = "模拟结果:\n" +str(input_text) + "\n天数 = " + str(len(simulate_result["symbol_list"])) + "\n盈利天数 = " + str(win_count) + "\n亏损天数 = " + str(loss_count) + "\n平局天数 = " + str(draw_count) + "\n胜率 = " + str((win_count * 100.0 / (win_count + loss_count)) if (win_count + loss_count) > 0 else 0  ) + "%" + "\n最大亏损 = " + str(max_loss * 100.0)  + '%' + "\n最长衰落期 = " + str(max_loss_days) + "天" + "\n初始余额 = " + str(init_balance) + "\n最终余额 = " + str(last_balance) + "\n年化收益 = " + str(annual_yield) + '%'
-    output_text +=  "\ndate_range = [" + datetime.datetime.strftime(simulate_result["date_list"][0],f50_market_spider.dateformat) + ',' + datetime.datetime.strftime(simulate_result["date_list"][-1],f50_market_spider.dateformat) + ']'
+    output_text = "模拟结果：\n" +str(input_text) + "\n海龟8号AI趋势网格交易系统\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
+    output_text +=  "\n胜率：" + str(round((win_count * 100.0 / (win_count + loss_count)),3) if (win_count + loss_count) > 0 else 0  ) + "%" + "\n最大亏损：" + str(round(max_loss * 100.0,3))  + '%' + "\n最长衰落期：" + str(max_loss_days) + "天"
+    output_text +=  "\n初始余额：" + str(init_balance) + "\n最终余额：" + str(last_balance) + "\n年化收益：" + str(round(annual_yield,3)) + '%'
+    output_text +=  "\n日期范围：[" + datetime.datetime.strftime(simulate_result["date_list"][0],f50_market_spider.dateformat) + ',' + datetime.datetime.strftime(simulate_result["date_list"][-1],f50_market_spider.dateformat) + ']\n历年收益：'
     for year_item in year_list:
         output_text += "\n"+str(year_item["year"])+":"+str(round(year_item["profit"],3)) + "%"
+    output_text +=  "\n广告位：\n虚位以待……"
     f52_db_simulated.save_result(next_id, output_text)
 
 
@@ -105,8 +108,12 @@ def chat(origin_input):
   if origin_input[:2] == "模拟":
       max_id = f52_db_simulated.get_max_id()
       next_id = max_id + 1
-      _thread.start_new_thread( simulated_begin, (next_id, origin_input[2:]) )
-      return "模拟开始，20分钟后输入'结果" + str(next_id) + "'查询模拟结果。"
+      symbols_str = origin_input[2:].strip()
+      symbol_list = symbols_str.split(' ')
+      if len(symbol_list) == 0:
+          return "请输入模拟+市场名1+市场名2+市场名3……市场名用空格分隔。"
+      _thread.start_new_thread( simulated_begin, (next_id, symbols_str) )
+      return "模拟开始，"+str(len(symbol_list)*5)+"分钟后输入'结果" + str(next_id) + "'查询模拟结果。"
   if origin_input[:2] == "结果":
       return simulated_end(origin_input[2:])
   marketListString = ""
