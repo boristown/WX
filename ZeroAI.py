@@ -81,7 +81,7 @@ def simulated_trading(next_id, input_text):
     last_balance = simulate_result["balance_dynamic_list"][-1]
     years = len(simulate_result["symbol_list"]) / 365
     annual_yield =math.pow( last_balance / init_balance, 1 / years) * 100.0 - 100.0
-    output_text = "模拟结果：\n" +str(input_text) + "\n海龟8号AI趋势网格交易系统\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
+    output_text = "模拟结果：\n" +str(input_text) + "\n海龟8号AI趋势网格交易系统（收益追踪型）\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
     output_text +=  "\n胜率：" + str(round((win_count * 100.0 / (win_count + loss_count)),3) if (win_count + loss_count) > 0 else 0  ) + "%" + "\n最大亏损：" + str(round(max_loss * 100.0,3))  + '%' + "\n最长衰落期：" + str(max_loss_days) + "天"
     output_text +=  "\n初始余额：" + str(init_balance) + "\n最终余额：" + str(last_balance) + "\n年化收益：" + str(round(annual_yield,3)) + '%'
     output_text +=  "\n日期范围：[" + datetime.datetime.strftime(simulate_result["date_list"][0],f50_market_spider.dateformat) + ',' + datetime.datetime.strftime(simulate_result["date_list"][-1],f50_market_spider.dateformat) + ']\n历年收益：'
