@@ -56,6 +56,8 @@ def simulate_trading(predict_list):
     while current_date <= max_date:
         date_list.append(current_date)
         current_date += datetime.timedelta(days = 1)
+    if len(date_list) < 100:
+        no_filter = True
     simulate_result["date_list"] = date_list
     date_index_list = [len(predict_symbol["date_list"]) - 1 for predict_symbol in predict_list]
     init_balance = 100.0
