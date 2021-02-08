@@ -105,13 +105,14 @@ def get_history_price(pairId, pair_type, startdays):
         highprice = float(str(cell_matchs.group(4)).replace(",",""))
         lowprice = float(str(cell_matchs.group(5)).replace(",",""))
         #if price_count == 1 or price != price_list[price_count-2]:
-        if price > 0 and openprice > 0 and highprice > 0 and lowprice > 0 and (highprice != lastclose or lowprice != lastclose):
+        if price > 0 and openprice > 0 and highprice > 0 and lowprice > 0 and (highprice != lastclose or lowprice != lastclose) \
+            and highprice / lowprice <= 1000 and openprice / lastclose <= 5 and openprice / lastclose >= 0.2:
             timestamp_list.append(timestamp)
             price_list.append(price)
             openprice_list.append(openprice)
             highprice_list.append(highprice)
             lowprice_list.append(lowprice)
-        lastclose = price
+            lastclose = price
     return timestamp_list, price_list, openprice_list, highprice_list, lowprice_list
 
 #REQUEST_URL_V7 = "http://47.94.154.29:8501/v1/models/turtle7:predict"
