@@ -56,6 +56,7 @@ def simulate_trading(predict_list):
     while current_date <= max_date:
         date_list.append(current_date)
         current_date += datetime.timedelta(days = 1)
+    global no_filter
     if len(date_list) < 100:
         no_filter = True
     simulate_result["date_list"] = date_list
