@@ -104,6 +104,8 @@ def get_history_price(pairId, pair_type, startdays):
         openprice = float(str(cell_matchs.group(3)).replace(",",""))
         highprice = float(str(cell_matchs.group(4)).replace(",",""))
         lowprice = float(str(cell_matchs.group(5)).replace(",",""))
+        if lastclose == -1:
+            lastclose = openprice
         #if price_count == 1 or price != price_list[price_count-2]:
         if price > 0 and openprice > 0 and highprice > 0 and lowprice > 0 and (highprice != lastclose or lowprice != lastclose) \
             and highprice / lowprice <= 1000 and openprice / lastclose <= 5 and openprice / lastclose >= 0.2:
