@@ -5,6 +5,7 @@ import re
 import datetime
 import time
 import math
+import f51_simulated_trading
 
 #一次爬取所有市场的爬虫程序
 #加密货币:
@@ -119,10 +120,11 @@ def get_history_price(pairId, pair_type, startdays):
 
 #REQUEST_URL_V7 = "http://47.94.154.29:8501/v1/models/turtle7:predict"
 REQUEST_URL_V8 = "http://47.94.154.29:8501/v1/models/turtle8:predict"
+REQUEST_URL_VX = "http://47.94.154.29:8501/v1/models/turtlex:predict"
 
 def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, predict_len):
     #turtle7_predict = []
-    #turtle8_predict = []
+    #turtlex_predict = []
     print("predicting")
     timestamp_list = timestamp_list[0:input_days_len+predict_len-1]
     price_list = price_list[0:input_days_len+predict_len-1]
@@ -132,7 +134,7 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
     price_len = len(price_list)
     predict_len = price_len - input_days_len + 1
     predict_batch_count = math.ceil(float(predict_len)/predict_batch)
-    riseProb_v8_list = []
+    riseProb_vx_list = []
     for predict_batch_index in range(predict_batch_count):
         print("predicting " + str(predict_batch_index+1) + " of " + str(predict_batch_count))
         inputObj = {"Prices":[]}
@@ -153,12 +155,12 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
         HEADER = {'Content-Type':'application/json; charset=utf-8'}
         inputpricelist = getInputPriceList(inputObj)
         requestDict = {"instances": inputpricelist}
-        rsp_v8 = requests.post(REQUEST_URL_V8, data=json.dumps(requestDict), headers=HEADER)
-        riseProb_v8 = GetPredictResult(symbol, json.loads(rsp_v8.text), inputObj, "v8", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
-        riseProb_v8_list.append(riseProb_v8)
+        rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
+        riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "vx", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
+        riseProb_vx_list.append(riseProb_vx)
     global time_start
     time_end=time.time()
-    return combine_predict_result_list(riseProb_v8_list)
+    return combine_predict_result_list(riseProb_vx_list)
 
 def getInputPriceList(inputObj):
     pricelistsymbols = inputObj["Prices"]
@@ -197,7 +199,8 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     high_list = []
     low_list = []
     predict_len = len(price_data["Prices"])
-    problist = [probitem["probabilities"][1] for probitem in predictRsp["predictions"]]
+    #Get Best Strategy
+    problist = [probitem["probabilities"].index(max(probitem["probabilities"])) for probitem in predictRsp["predictions"]]
     for predict_index in range(predict_len):
         date = datetime.datetime.fromtimestamp(timestamp_list[predict_index])
         datestr = date.strftime("%Y-%m-%d")
@@ -215,37 +218,52 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         low = float(lows[0])
         if 'error' in predictRsp:
             return predictRsp
-        riseProb = problist[predict_index]
+        #riseProb = problist[predict_index]
+        strategy = problist[predict_index]
         
         #riseProb = 1 - riseProb #反转AI
 
-        if riseProb >= 0.5:
-            side = "buy"
-            stop_price = price / (1 + atr / 2)
-        else:
-            side = "sell"
-            stop_price = price * (1 + atr / 2)
+        side = ""
+        stop_price = 0
+        stop_loss = 0
+        position = 0
+
+        if strategy > 0 and strategy < 7:
+            side = f51_simulated_trading.side_dict[strategy]
+            stop_loss = f51_simulated_trading.stop_loss_dict[strategy]
+            if side == "buy":
+                stop_price = price / (1 + atr * stop_loss)
+            else: #sell
+                stop_price = price * (1 + atr * stop_loss)
+            position = round(risk_factor / atr / stop_loss, 2)
+        elif strategy >= 7:
+            stop_loss = f51_simulated_trading.stop_loss_dict[strategy]
+            order_range = f51_simulated_trading.order_range_dict[strategy]
+            position = round(risk_factor / atr / (order_range - stop_loss), 2)
+
         date_list.append(datestr)
-        score = (riseProb * 2 - 1)*100
+        #score = (riseProb * 2 - 1)*100
+        score = 0
         side_list.append(side)
         score_list.append(round(score,2))
+        strategy_list.append(strategy)
         price_list.append(price)
         high_list.append(high)
         low_list.append(low)
         atr_list.append(round(float(atr * 100),2))
-        position_list.append(round(risk_factor / atr, 2))
+        position_list.append(round(float(position*100,2)))
         stop_list.append(float(format(float(stop_price), '.7g')))
     outputRiseProb = {"symbol": symbol, 
                       "date_list": date_list, 
                       #"prob_list": [round(probval,4) for probval in problist], 
                       "side_list" : side_list, 
-                      "score_list" : score_list, 
+                      "strategy_list" : strategy_list, 
                       "price_list" : price_list, 
                       "high_list" : high_list, 
                       "low_list" : low_list, 
                       "atr_list" : atr_list, 
                       "stop_list" : stop_list, 
-                      #"position_list": position_list, 
+                      "position_list": position_list, 
                       "version" : version}
     return outputRiseProb
 
@@ -303,10 +321,10 @@ if __name__ == "__main__":
         print(datestr, price_list[i], openprice_list[i], highprice_list[i], lowprice_list[i])
     '''
     #Predict
-    #turtle7_predict, turtle8_predict = predict(price_list, openprice_list, highprice_list, lowprice_list)
-    turtle8_predict = predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
-    #print(json.dumps(turtle7_predict), json.dumps(turtle8_predict))
+    #turtle7_predict, turtlex_predict = predict(price_list, openprice_list, highprice_list, lowprice_list)
+    turtlex_predict = predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
+    #print(json.dumps(turtle7_predict), json.dumps(turtlex_predict))
     
-    print(json.dumps(turtle8_predict))
+    print(json.dumps(turtlex_predict))
     time_end=time.time()
     print('totally cost',time_end-time_start,"s")

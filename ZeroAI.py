@@ -73,8 +73,8 @@ def simulated_trading(next_id, input_text):
         timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 4800)
         if len(price_list) < f50_market_spider.input_days_len:
             continue
-        turtle8_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
-        predict_list.append(turtle8_predict)
+        turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
+        predict_list.append(turtlex_predict)
     simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list = f51_simulated_trading.simulate_trading(predict_list)
     time_end=time.time()
     init_balance = simulate_result["balance_dynamic_list"][0]
@@ -130,13 +130,13 @@ def chat(origin_input):
   #marketObj = json.loads(marketString)
   marketObj = market
   marketObj["name"] = marketObj["name"].replace("Investing.com","")
-  sign_text = "——海龟8号AI预测引擎\n广告位：\n虚位以待……"
+  sign_text = "——海龟X Lite量化交易决策引擎\n广告位：\n虚位以待……"
   timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 365)
   if len(price_list) < input_days_len:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
     "\n当前市场的数据仅"+str(len(price_list))+\
     "天，不足"+str(input_days_len)+"天，无法执行预测！\n" + sign_text
-  turtle8_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 5)
+  turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20)
   time_end=time.time()
   comment = """
   注释：
@@ -150,15 +150,25 @@ def chat(origin_input):
   stop_list:移动止损价(ATR/2)
   version:AI版本
   """
+  strategy_text_dict = {
+      0:"无需操作",
+      1:"做多/下跌0.5倍ATR时止损",
+      2:"做空/上涨0.5倍ATR时止损",
+      3:"做多/下跌0.8倍ATR时止损",
+      4:"做空/上涨0.8倍ATR时止损",
+      5:"做多/下跌1.1倍ATR时止损",
+      6:"做空/上涨1.1倍ATR时止损",
+      7:"±0.25倍ATR挂单/±0.75倍ATR止损",
+      8:"±0.4倍ATR挂单/±1.2倍ATR止损",
+      9:"±0.55倍ATR挂单/±1.65倍ATR止损"
+      }
+  strategy = turtlex_predict["strategy_list"][0]
   return_text = marketObj["symbol"]+marketObj["name"] + \
-  "\n价格Price:" + str(turtle8_predict["price_list"][0]) + \
-  "\n" + ("即将上涨，" if float(turtle8_predict["score_list"][0]) > 0 else "即将下跌，") + \
-  "强度Score:" + str(turtle8_predict["score_list"][0]) + "%" \
-  "\n操作Side:" + ("做多Buy" if float(turtle8_predict["score_list"][0]) > 0 else "做空Sell") + \
-  "\n均幅指标ATR:" + str(turtle8_predict["atr_list"][0]) + "%" + \
-  "\n仓位Position:" + str(round(150 / float(turtle8_predict["atr_list"][0]),2)) + "%" + \
-  "\n止损价Stop:" + str(turtle8_predict["stop_list"][0]) + "\n历史预测序列(按日期倒序排列):\n" + \
-  json.dumps(turtle8_predict).encode('utf-8').decode('unicode_escape') + '\n' + \
+  "\n价格Price:" + str(turtlex_predict["price_list"][0]) + \
+  "\n策略" + str(strategy) + ":" + strategy_text_dict[strategy] + "" + \
+  "\n20日收益：" + str(profit20) + "%" + \
+  "\n均幅指标ATR:" + str(turtlex_predict["atr_list"][0]) + "%" + \
+  "\n仓位Position:" + str(round(float(turtlex_predict["position_list"][0]),2)) + "%" + \
   '预测耗时cost time:' + str(round(time_end - time_start,3)) +"s\n" + sign_text
   #return_text = '预测耗时cost time:' + str(round(time_end - time_start),3) +"s"
   #print(return_text)
