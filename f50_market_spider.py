@@ -156,7 +156,7 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
         inputpricelist = getInputPriceList(inputObj)
         requestDict = {"instances": inputpricelist}
         rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
-        riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "vx", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
+        riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "X Lite", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
         riseProb_vx_list.append(riseProb_vx)
     global time_start
     time_end=time.time()
@@ -191,7 +191,8 @@ def getInputPriceList(inputObj):
 def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     date_list = []
     side_list = []
-    score_list = []
+    strategy_list = []
+    prob_list = []
     price_list = []
     atr_list = []
     stop_list = []
@@ -200,7 +201,9 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     low_list = []
     predict_len = len(price_data["Prices"])
     #Get Best Strategy
-    problist = [probitem["probabilities"].index(max(probitem["probabilities"])) for probitem in predictRsp["predictions"]]
+    maxproblist = [max(probitem["probabilities"]) for probitem in predictRsp["predictions"]]
+    problist = [predictRsp["predictions"][probitemindex]["probabilities"].index(maxproblist[probitemindex]) 
+                for probitemindex in range(predictRsp["predictions"])]
     for predict_index in range(predict_len):
         date = datetime.datetime.fromtimestamp(timestamp_list[predict_index])
         datestr = date.strftime("%Y-%m-%d")
@@ -219,6 +222,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         if 'error' in predictRsp:
             return predictRsp
         #riseProb = problist[predict_index]
+        prob = maxproblist[predict_index]
         strategy = problist[predict_index]
         
         #riseProb = 1 - riseProb #反转AI
@@ -247,6 +251,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         side_list.append(side)
         score_list.append(round(score,2))
         strategy_list.append(strategy)
+        prob_list.append(round(float(prob * 100),2))
         price_list.append(price)
         high_list.append(high)
         low_list.append(low)
@@ -258,6 +263,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
                       #"prob_list": [round(probval,4) for probval in problist], 
                       "side_list" : side_list, 
                       "strategy_list" : strategy_list, 
+                      "prob_list" : prob_list,
                       "price_list" : price_list, 
                       "high_list" : high_list, 
                       "low_list" : low_list, 
@@ -272,32 +278,37 @@ def combine_predict_result_list(predict_result_list):
         return None
     date_list = []
     side_list = []
-    score_list = []
+    strategy_list = []
+    prob_list = []
     price_list = []
     high_list = []
     low_list = []
     atr_list = []
     stop_list = []
+    position_list = []
     for predict_result in predict_result_list:
         date_list += predict_result["date_list"]
         side_list += predict_result["side_list"]
-        score_list += predict_result["score_list"]
+        strategy_list += predict_result["strategy_list"]
+        prob_list += predict_result["prob_list"]
         price_list += predict_result["price_list"]
         high_list += predict_result["high_list"]
         low_list += predict_result["low_list"]
         atr_list += predict_result["atr_list"]
         stop_list += predict_result["stop_list"]
+        position_list += predict_result["position_list"]
     predict_result_combined = {"symbol": predict_result_list[0]["symbol"], 
                       "date_list": date_list, 
                       #"prob_list": [round(probval,4) for probval in problist], 
                       "side_list" : side_list, 
-                      "score_list" : score_list, 
+                      "strategy_list" : strategy_list, 
+                      "prob_list" : prob_list,
                       "price_list" : price_list, 
                       "high_list" : high_list, 
                       "low_list" : low_list, 
                       "atr_list" : atr_list, 
                       "stop_list" : stop_list, 
-                      #"position_list": position_list, 
+                      "position_list": position_list, 
                       "version" : predict_result_list[0]["version"]}
     return predict_result_combined
 

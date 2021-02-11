@@ -132,11 +132,13 @@ def chat(origin_input):
   marketObj["name"] = marketObj["name"].replace("Investing.com","")
   sign_text = "——海龟X Lite量化交易决策引擎\n广告位：\n虚位以待……"
   timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 365)
-  if len(price_list) < input_days_len:
+  if len(price_list) < input_days_len + 20 - 1:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
     "\n当前市场的数据仅"+str(len(price_list))+\
     "天，不足"+str(input_days_len)+"天，无法执行预测！\n" + sign_text
   turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20)
+  #Get profit of past 20 days
+  past_profit = get_past_profit(turtlex_predict, len(turtlex_predict) - 1, 20, False)
   time_end=time.time()
   comment = """
   注释：
@@ -163,9 +165,10 @@ def chat(origin_input):
       9:"±0.55倍ATR挂单/±1.65倍ATR止损"
       }
   strategy = turtlex_predict["strategy_list"][0]
+  prob = turtlex_predict["prob_list"][0]
   return_text = marketObj["symbol"]+marketObj["name"] + \
   "\n价格Price:" + str(turtlex_predict["price_list"][0]) + \
-  "\n策略" + str(strategy) + ":" + strategy_text_dict[strategy] + "" + \
+  "\n最优策略" + str(strategy) + ":" + strategy_text_dict[strategy] + "[" + str(prob) +"%]" + \
   "\n20日收益：" + str(profit20) + "%" + \
   "\n均幅指标ATR:" + str(turtlex_predict["atr_list"][0]) + "%" + \
   "\n仓位Position:" + str(round(float(turtlex_predict["position_list"][0]),2)) + "%" + \
