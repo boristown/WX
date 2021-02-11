@@ -118,7 +118,7 @@ def get_history_price(pairId, pair_type, startdays):
             lastclose = price
     return timestamp_list, price_list, openprice_list, highprice_list, lowprice_list
 
-#REQUEST_URL_V7 = "http://47.94.154.29:8501/v1/models/turtle7:predict"
+REQUEST_URL_V7 = "http://47.94.154.29:8501/v1/models/turtle7:predict"
 REQUEST_URL_V8 = "http://47.94.154.29:8501/v1/models/turtle8:predict"
 REQUEST_URL_VX = "http://47.94.154.29:8501/v1/models/turtlex:predict"
 
@@ -153,9 +153,12 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
                     lowprice_list[absolute_price_index])
             inputObj["Prices"].append(priceObj)
         HEADER = {'Content-Type':'application/json; charset=utf-8'}
+        print(json.dumps(inputObj))
         inputpricelist = getInputPriceList(inputObj)
         requestDict = {"instances": inputpricelist}
+        print(json.dumps(requestDict))
         rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
+        #print(json.loads(rsp_vx.text))
         riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "X Lite", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
         riseProb_vx_list.append(riseProb_vx)
     global time_start
@@ -176,17 +179,32 @@ def getInputPriceList(inputObj):
         maxprice = max(highlist)
         minprice = min(lowlist)
         rangePrice = maxprice - minprice
+        print("maxprice:" + str(maxprice) + "/minprice:" + str(minprice) + "/rangePrice:" + str(rangePrice))
         closelistscaled = [(closePrice - minprice) / rangePrice for closePrice in closelist]
         highlistscaled = [(highPrice - minprice) / rangePrice for highPrice in highlist]
         lowlistscaled = [(lowPrice - minprice) / rangePrice for lowPrice in lowlist]
         inputPriceList = []
-        for dayindex in range(dayscount):
-            inputPriceList.extend([highlistscaled[dayindex],closelistscaled[dayindex],lowlistscaled[dayindex]])
-        inputPriceListSymbols.append(inputPriceList)
-    for dayindex in range(dayscount*3):
-        for symbolindex in range(symbolCount):
-            inputPriceListSymbols2.append(inputPriceListSymbols[symbolindex][dayindex])
-    return inputPriceListSymbols2
+        height = 15
+        width = 15
+        list1 = []
+        for height_index in range(height):
+            list2 = []
+            for width_index in range(width):
+                dayindex = height_index * width + width_index
+                list3 = [highlistscaled[dayindex],closelistscaled[dayindex],lowlistscaled[dayindex]]
+                #list3 = [1,1,1]
+                list2.append(list3)
+            list1.append(list2)
+        #for dayindex in range(dayscount):
+        #    #inputPriceList.extend([highlistscaled[dayindex],closelistscaled[dayindex],lowlistscaled[dayindex]])
+        #    inputPriceList.append([highlistscaled[dayindex],closelistscaled[dayindex],lowlistscaled[dayindex]])
+        #inputPriceList = list1
+        inputPriceListSymbols.append(list1)
+    #for dayindex in range(dayscount*3):
+    #    for symbolindex in range(symbolCount):
+    #        inputPriceListSymbols2.append(inputPriceListSymbols[symbolindex][dayindex])
+    #return inputPriceListSymbols2
+    return inputPriceListSymbols
 
 def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     date_list = []
@@ -200,10 +218,13 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     high_list = []
     low_list = []
     predict_len = len(price_data["Prices"])
+    print(str(predictRsp))
+    for probitem in predictRsp["predictions"]:
+        print(json.dumps(probitem))
+        #probitem = list(map(float, probitem))
     #Get Best Strategy
-    maxproblist = [max(probitem["probabilities"]) for probitem in predictRsp["predictions"]]
-    problist = [predictRsp["predictions"][probitemindex]["probabilities"].index(maxproblist[probitemindex]) 
-                for probitemindex in range(predictRsp["predictions"])]
+    maxproblist = [max(probitem) for probitem in predictRsp["predictions"]]
+    problist = [predictRsp["predictions"][probitemindex].index(maxproblist[probitemindex]) for probitemindex in range(len(predictRsp["predictions"]))]
     for predict_index in range(predict_len):
         date = datetime.datetime.fromtimestamp(timestamp_list[predict_index])
         datestr = date.strftime("%Y-%m-%d")

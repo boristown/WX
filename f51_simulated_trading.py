@@ -1,5 +1,4 @@
 import requests
-import f50_market_spider
 import json
 import datetime
 import time
@@ -9,7 +8,8 @@ time_start = None
 fee_ratio = 0.001
 no_filter = False
 grid_mode = True
-grid_profit = f50_market_spider.risk_factor / 100
+risk_factor = 1.5
+grid_profit = risk_factor / 100
 side_dict = {1:"buy",2:"sell",3:"buy",4:"sell",5:"buy",6:"sell"}
 
 stop_loss_dict = {1:0.5,2:0.5,3:0.8,4:0.8,5:1.1,6:1.1, 7:0.25,8:0.4,9:0.55}
