@@ -138,7 +138,7 @@ def chat(origin_input):
     "天，不足"+str(input_days_len)+"天，无法执行预测！\n" + sign_text
   turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20)
   #Get profit of past 20 days
-  past_profit = get_past_profit(turtlex_predict, len(turtlex_predict) - 1, 20, False)
+  profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, len(turtlex_predict) - 1, 20, False)
   time_end=time.time()
   comment = """
   注释：

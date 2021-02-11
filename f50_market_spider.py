@@ -270,14 +270,14 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         #score = (riseProb * 2 - 1)*100
         score = 0
         side_list.append(side)
-        score_list.append(round(score,2))
+        #score_list.append(round(score,2))
         strategy_list.append(strategy)
         prob_list.append(round(float(prob * 100),2))
         price_list.append(price)
         high_list.append(high)
         low_list.append(low)
         atr_list.append(round(float(atr * 100),2))
-        position_list.append(round(float(position*100,2)))
+        position_list.append(round(float(position*100),2))
         stop_list.append(float(format(float(stop_price), '.7g')))
     outputRiseProb = {"symbol": symbol, 
                       "date_list": date_list, 
