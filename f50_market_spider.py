@@ -159,7 +159,7 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
         print(json.dumps(requestDict))
         rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
         #print(json.loads(rsp_vx.text))
-        riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "X Lite", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
+        riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
         riseProb_vx_list.append(riseProb_vx)
     global time_start
     time_end=time.time()
@@ -214,6 +214,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     price_list = []
     atr_list = []
     stop_list = []
+    stop_loss_list = []
     position_list = []
     high_list = []
     low_list = []
@@ -264,7 +265,8 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         elif strategy >= 7:
             stop_loss = f51_simulated_trading.stop_loss_dict[strategy]
             order_range = f51_simulated_trading.order_range_dict[strategy]
-            position = round(risk_factor / atr / (order_range - stop_loss), 2)
+            #position = round(risk_factor / atr / (order_range - stop_loss), 2)
+            position = round(risk_factor / atr / (stop_loss - order_range), 2)
 
         date_list.append(datestr)
         #score = (riseProb * 2 - 1)*100
@@ -277,8 +279,9 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         high_list.append(high)
         low_list.append(low)
         atr_list.append(round(float(atr * 100),2))
-        position_list.append(round(float(position*100),2))
+        position_list.append(position)
         stop_list.append(float(format(float(stop_price), '.7g')))
+        stop_loss_list.append(stop_loss)
     outputRiseProb = {"symbol": symbol, 
                       "date_list": date_list, 
                       #"prob_list": [round(probval,4) for probval in problist], 
@@ -290,6 +293,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
                       "low_list" : low_list, 
                       "atr_list" : atr_list, 
                       "stop_list" : stop_list, 
+                      "stop_loss_list" : stop_loss_list, 
                       "position_list": position_list, 
                       "version" : version}
     return outputRiseProb
@@ -306,6 +310,7 @@ def combine_predict_result_list(predict_result_list):
     low_list = []
     atr_list = []
     stop_list = []
+    stop_loss_list = []
     position_list = []
     for predict_result in predict_result_list:
         date_list += predict_result["date_list"]
@@ -317,6 +322,7 @@ def combine_predict_result_list(predict_result_list):
         low_list += predict_result["low_list"]
         atr_list += predict_result["atr_list"]
         stop_list += predict_result["stop_list"]
+        stop_loss_list += predict_result["stop_loss_list"]
         position_list += predict_result["position_list"]
     predict_result_combined = {"symbol": predict_result_list[0]["symbol"], 
                       "date_list": date_list, 
@@ -329,6 +335,7 @@ def combine_predict_result_list(predict_result_list):
                       "low_list" : low_list, 
                       "atr_list" : atr_list, 
                       "stop_list" : stop_list, 
+                      "stop_loss_list" : stop_loss_list, 
                       "position_list": position_list, 
                       "version" : predict_result_list[0]["version"]}
     return predict_result_combined

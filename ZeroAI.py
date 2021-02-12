@@ -130,7 +130,7 @@ def chat(origin_input):
   #marketObj = json.loads(marketString)
   marketObj = market
   marketObj["name"] = marketObj["name"].replace("Investing.com","")
-  sign_text = "——海龟X Lite量化交易决策引擎\n广告位：\n虚位以待……"
+  sign_text = "——海龟X量化交易决策引擎\n广告位：\n虚位以待……"
   timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 365)
   if len(price_list) < input_days_len + 20 - 1:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
@@ -138,7 +138,7 @@ def chat(origin_input):
     "天，不足"+str(input_days_len)+"天，无法执行预测！\n" + sign_text
   turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20)
   #Get profit of past 20 days
-  profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, len(turtlex_predict) - 1, 20, False)
+  profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, -1, 20, False)
   time_end=time.time()
   comment = """
   注释：
@@ -152,27 +152,51 @@ def chat(origin_input):
   stop_list:移动止损价(ATR/2)
   version:AI版本
   """
+  
+  base_price = float(turtlex_predict["price_list"][0])
+  atr100 = float(turtlex_predict["atr_list"][0])
+  
+  price_up_25 = format(base_price * (1 + atr100/100*0.25),'.7g')
+  price_down_25 = format(base_price / (1 + atr100/100*0.25),'.7g')
+  price_up_40 = format(base_price * (1 + atr100/100*0.4),'.7g')
+  price_down_40 = format(base_price / (1 + atr100/100*0.4),'.7g')
+  price_up_50 = format(base_price * (1 + atr100/100*0.5),'.7g')
+  price_down_50 = format(base_price / (1 + atr100/100*0.5),'.7g')
+  price_up_55 = format(base_price * (1 + atr100/100*0.55),'.7g')
+  price_down_55 = format(base_price / (1 + atr100/100*0.55),'.7g')
+  price_up_75 = format(base_price * (1 + atr100/100*0.75),'.7g')
+  price_down_75 = format(base_price / (1 + atr100/100*0.75),'.7g')
+  price_up_80 = format(base_price * (1 + atr100/100*0.8),'.7g')
+  price_down_80 = format(base_price / (1 + atr100/100*0.8),'.7g')
+  price_up_110 = format(base_price * (1 + atr100/100*1.1),'.7g')
+  price_down_110 = format(base_price / (1 + atr100/100*1.1),'.7g')
+  price_up_120 = format(base_price * (1 + atr100/100*1.2),'.7g')
+  price_down_120 = format(base_price / (1 + atr100/100*1.2),'.7g')
+  price_up_165 = format(base_price * (1 + atr100/100*1.65),'.7g')
+  price_down_165 = format(base_price / (1 + atr100/100*1.65),'.7g')
+
   strategy_text_dict = {
       0:"无需操作",
-      1:"做多/下跌0.5倍ATR时止损",
-      2:"做空/上涨0.5倍ATR时止损",
-      3:"做多/下跌0.8倍ATR时止损",
-      4:"做空/上涨0.8倍ATR时止损",
-      5:"做多/下跌1.1倍ATR时止损",
-      6:"做空/上涨1.1倍ATR时止损",
-      7:"±0.25倍ATR挂单/±0.75倍ATR止损",
-      8:"±0.4倍ATR挂单/±1.2倍ATR止损",
-      9:"±0.55倍ATR挂单/±1.65倍ATR止损"
+      1:"做多/下跌0.5倍ATR时("+ price_down_50 +")止损",
+      2:"做空/上涨0.5倍ATR时("+ price_up_50 +")止损",
+      3:"做多/下跌0.8倍ATR时("+ price_down_80 +")止损",
+      4:"做空/上涨0.8倍ATR时("+ price_up_80 +")止损",
+      5:"做多/下跌1.1倍ATR时("+ price_down_110 +")止损",
+      6:"做空/上涨1.1倍ATR时("+ price_up_110 +")止损",
+      7:"±0.25倍ATR("+ price_down_25 + "," + price_up_25 +")挂单/±0.75倍ATR("+ price_down_75 + "," + price_up_75 +")止损",
+      8:"±0.4倍ATR("+ price_down_40 + "," + price_up_40 +")挂单/±1.2倍ATR("+ price_down_120 + "," + price_up_120 +")止损",
+      9:"±0.55倍ATR("+ price_down_55 + "," + price_up_55 +")挂单/±1.65倍ATR("+ price_down_165 + "," + price_up_165 +")止损"
       }
+
   strategy = turtlex_predict["strategy_list"][0]
   prob = turtlex_predict["prob_list"][0]
   return_text = marketObj["symbol"]+marketObj["name"] + \
   "\n价格Price:" + str(turtlex_predict["price_list"][0]) + \
-  "\n最优策略" + str(strategy) + ":" + strategy_text_dict[strategy] + "[" + str(prob) +"%]" + \
+  "\n策略" + str(strategy) + ":" + strategy_text_dict[strategy] + "[" + str(prob) +"%]" + \
   "\n20日收益：" + str(profit20) + "%" + \
   "\n均幅指标ATR:" + str(turtlex_predict["atr_list"][0]) + "%" + \
   "\n仓位Position:" + str(round(float(turtlex_predict["position_list"][0]),2)) + "%" + \
-  '预测耗时cost time:' + str(round(time_end - time_start,3)) +"s\n" + sign_text
+  '\n预测耗时cost time:' + str(round(time_end - time_start,3)) +"s\n" + sign_text
   #return_text = '预测耗时cost time:' + str(round(time_end - time_start),3) +"s"
   #print(return_text)
   return return_text
