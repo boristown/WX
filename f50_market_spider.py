@@ -108,8 +108,9 @@ def get_history_price(pairId, pair_type, startdays):
         if lastclose == -1:
             lastclose = openprice
         #if price_count == 1 or price != price_list[price_count-2]:
-        if price > 0 and openprice > 0 and highprice > 0 and lowprice > 0 and (highprice != lastclose or lowprice != lastclose) \
-            and highprice / lowprice <= 1000 and openprice / lastclose <= 5 and openprice / lastclose >= 0.2:
+        if lastclose > 0 and price > 0 and openprice > 0 and highprice > 0 and lowprice > 0 and (highprice != lastclose or lowprice != lastclose) \
+            and highprice / lowprice <= 1000 and (highprice / openprice <= 10 or highprice / price <= 10) and (lowprice / openprice >= 0.1 or lowprice / price >= 0.1) \
+            and openprice / lastclose <= 5 and openprice / lastclose >= 0.2:
             timestamp_list.append(timestamp)
             price_list.append(price)
             openprice_list.append(openprice)
@@ -254,7 +255,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         stop_loss = 0
         position = 0
 
-        if strategy > 0 and strategy < 7:
+        if strategy < 10:
             side = f51_simulated_trading.side_dict[strategy]
             stop_loss = f51_simulated_trading.stop_loss_dict[strategy]
             if side == "buy":
@@ -262,7 +263,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
             else: #sell
                 stop_price = price * (1 + atr * stop_loss)
             position = round(risk_factor / atr / stop_loss, 2)
-        elif strategy >= 7:
+        elif strategy >= 10:
             stop_loss = f51_simulated_trading.stop_loss_dict[strategy]
             order_range = f51_simulated_trading.order_range_dict[strategy]
             #position = round(risk_factor / atr / (order_range - stop_loss), 2)

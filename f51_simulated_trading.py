@@ -10,10 +10,15 @@ no_filter = False
 grid_mode = True
 risk_factor = 1.5
 grid_profit = risk_factor / 100
-side_dict = {1:"buy",2:"sell",3:"buy",4:"sell",5:"buy",6:"sell"}
+side_dict = {0:"sell",1:"buy",2:"sell",3:"buy",4:"sell",5:"buy",6:"sell",7:"buy",8:"sell",9:"buy"}
 
-stop_loss_dict = {1:0.5,2:0.5,3:0.8,4:0.8,5:1.1,6:1.1,7:0.75,8:1.2,9:1.65}
-order_range_dict = {7:0.25,8:0.4,9:0.55}
+stop_loss_dict = {0:0.16,1:0.16,
+                  2:0.24,3:0.24,
+                  4:0.36,5:0.36,
+                  6:0.54,7:0.54,
+                  8:0.81,9:0.81,
+                  10:0.40,11:0.80}
+order_range_dict = {10:0.20,11:0.40}
 
 def strategy_long(balance, fee_rate, risk_factor, h_list, l_list, c_list, atr, stop_loss):
     atr_stop = atr * stop_loss
@@ -25,7 +30,7 @@ def strategy_long(balance, fee_rate, risk_factor, h_list, l_list, c_list, atr, s
     high_stop = False
     low_stop = False
     range_stop = False
-    volume = balance * risk_factor / atr_stop / entry_price
+    volume = balance * risk_factor / (atr_stop * (1 - fee_rate) + fee_rate * 2) / entry_price
     # Simultaneously simulate long, short, 
     # and price range three trading systems, 
     # and exit when the price pulls back 0.5ATR
@@ -51,7 +56,7 @@ def strategy_short(balance, fee_rate, risk_factor, h_list, l_list, c_list, atr, 
     high_stop = False
     low_stop = False
     range_stop = False
-    volume = balance * risk_factor / atr / stop_loss / entry_price
+    volume = balance * risk_factor / (atr_stop * (1 - fee_rate) + fee_rate * 2) / entry_price
     # Simultaneously simulate long, short, 
     # and price range three trading systems, 
     # and exit when the price pulls back 0.5ATR
@@ -77,7 +82,7 @@ def strategy_range(balance, fee_rate, risk_factor, h_list, l_list, c_list, atr, 
     sell_range = base_price * (1 + atr_range)
     buy_range = base_price / (1 + atr_range)
     buy_stop = base_price / (1 + atr_stop)
-    volume = balance * risk_factor / atr / (stop_loss - order_range) / base_price
+    volume = balance * risk_factor / ((atr_stop - atr_range) * (1 - fee_rate) + fee_rate * 2) / base_price
     buy_order_executed = False
     sell_order_executed = False
     # Simultaneously simulate long, short, 
@@ -393,7 +398,7 @@ def simulate_trading(predict_list):
                 #    best_grid_symbol = symbol_available
             #if max_abs_score > -1:
             if max_profit > -999999:
-                if strategy > 0 and strategy < 7:
+                if strategy < 10:
                     simulate_result["symbol_list"].append(best_symbol_available[0])
                     #score = predict_list[best_symbol_available[0]]["strategy_list"][best_symbol_available[1]]
                     #simulate_result["strategy_list"].append(score)
@@ -421,7 +426,7 @@ def simulate_trading(predict_list):
                     active_orders.append(len(simulate_result["symbol_list"])-1)
                     trade_flag = True
                 #if min_profit < 999999:
-                elif strategy >=7:
+                elif strategy >=10:
                     simulate_result["grid_symbol_list"].append(best_grid_symbol[0])
                     atr = predict_list[best_grid_symbol[0]]["atr_list"][best_grid_symbol[1]]
                     simulate_result["grid_atr_list"].append(atr)
@@ -537,19 +542,24 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
         entry_price = price_list[day_index]
         high_price = high_list[day_index]
         low_price = low_list[day_index]
-        if strategy > 0 and strategy < 7:
+        side = ""
+        order_range = 0
+        stop_loss = 0
+        position = 0
+        stop_price = 0
+        if strategy < 10:
             stop_price = stop_list[day_index]
             stop_loss = stop_loss_list[day_index]
             side = side_dict[strategy]
             order_range = 0
-            position = round(f50_market_spider.risk_factor / atr / stop_loss, 2)
-        elif strategy >= 7:
+            position = round(risk_factor / ((atr * stop_loss) * (1 - fee_rate) + fee_rate * 2), 2)
+        elif strategy >= 10:
             stop_price = 0
             stop_loss = stop_loss_dict[strategy]
             order_range = order_range_dict[strategy]
             side = ""
             #position = round(risk_factor / atr / (order_range - stop_loss), 2)
-            position = round(risk_factor / atr / (stop_loss - order_range), 2)
+            position = round(risk_factor / ((atr * (stop_loss - order_range)) * (1 - fee_rate) + fee_rate * 2), 2)
         #if score > 0:
         #    stop_price = entry_price / (1 + atr / 100 / 2)
         #else:
@@ -561,7 +571,7 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
         #遍历未止盈止损的活动订单(倒序循环时才能删除元素)
         for active_order in active_orders[::-1]:
             #计算入场金额
-            entry_amount = active_order["position"] * active_order["balance_dynamic"]
+            entry_amount = active_order["position"] * current_dynamic_balance
             #做多订单
             #if active_order["score"] > 0:
             if active_order["side"] == "buy":
@@ -686,9 +696,9 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
         #当前余额
         for active_order in active_orders:
             current_dynamic_balance += active_order["profit"]
-        if strategy > 0 and strategy < 7:
+        if strategy < 10:
             active_orders.append(new_order)
-        elif strategy >= 7:
+        elif strategy >= 10:
             active_grids.append(new_order)
     profit_past = round((current_dynamic_balance / init_balance - 1) * 100,2)
     #print("date:" + str(date_list[-1]) + " profit:" + str(profit_past))
