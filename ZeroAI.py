@@ -160,24 +160,24 @@ def chat(origin_input):
   base_price = float(turtlex_predict["price_list"][0])
   atr100 = float(turtlex_predict["atr_list"][0])
   
-  price_up_25 = format(base_price * (1 + atr100/100*0.25),'.7g')
-  price_down_25 = format(base_price / (1 + atr100/100*0.25),'.7g')
-  price_up_40 = format(base_price * (1 + atr100/100*0.4),'.7g')
-  price_down_40 = format(base_price / (1 + atr100/100*0.4),'.7g')
-  price_up_50 = format(base_price * (1 + atr100/100*0.5),'.7g')
-  price_down_50 = format(base_price / (1 + atr100/100*0.5),'.7g')
-  price_up_55 = format(base_price * (1 + atr100/100*0.55),'.7g')
-  price_down_55 = format(base_price / (1 + atr100/100*0.55),'.7g')
-  price_up_75 = format(base_price * (1 + atr100/100*0.75),'.7g')
-  price_down_75 = format(base_price / (1 + atr100/100*0.75),'.7g')
-  price_up_80 = format(base_price * (1 + atr100/100*0.8),'.7g')
-  price_down_80 = format(base_price / (1 + atr100/100*0.8),'.7g')
-  price_up_110 = format(base_price * (1 + atr100/100*1.1),'.7g')
-  price_down_110 = format(base_price / (1 + atr100/100*1.1),'.7g')
-  price_up_120 = format(base_price * (1 + atr100/100*1.2),'.7g')
-  price_down_120 = format(base_price / (1 + atr100/100*1.2),'.7g')
-  price_up_165 = format(base_price * (1 + atr100/100*1.65),'.7g')
-  price_down_165 = format(base_price / (1 + atr100/100*1.65),'.7g')
+  #price_up_25 = format(base_price * (1 + atr100/100*0.25),'.7g')
+  #price_down_25 = format(base_price / (1 + atr100/100*0.25),'.7g')
+  #price_up_40 = format(base_price * (1 + atr100/100*0.4),'.7g')
+  #price_down_40 = format(base_price / (1 + atr100/100*0.4),'.7g')
+  #price_up_50 = format(base_price * (1 + atr100/100*0.5),'.7g')
+  #price_down_50 = format(base_price / (1 + atr100/100*0.5),'.7g')
+  #price_up_55 = format(base_price * (1 + atr100/100*0.55),'.7g')
+  #price_down_55 = format(base_price / (1 + atr100/100*0.55),'.7g')
+  #price_up_75 = format(base_price * (1 + atr100/100*0.75),'.7g')
+  #price_down_75 = format(base_price / (1 + atr100/100*0.75),'.7g')
+  #price_up_80 = format(base_price * (1 + atr100/100*0.8),'.7g')
+  #price_down_80 = format(base_price / (1 + atr100/100*0.8),'.7g')
+  #price_up_110 = format(base_price * (1 + atr100/100*1.1),'.7g')
+  #price_down_110 = format(base_price / (1 + atr100/100*1.1),'.7g')
+  #price_up_120 = format(base_price * (1 + atr100/100*1.2),'.7g')
+  #price_down_120 = format(base_price / (1 + atr100/100*1.2),'.7g')
+  #price_up_165 = format(base_price * (1 + atr100/100*1.65),'.7g')
+  #price_down_165 = format(base_price / (1 + atr100/100*1.65),'.7g')
 
   strategy_text_dict = {
       0:"做空/上涨0.16倍ATR时("+ format(base_price * (1 + atr100/100*0.16),'.7g') +")止损",
@@ -190,8 +190,8 @@ def chat(origin_input):
       7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
       8:"做空/上涨0.81倍ATR时("+ format(base_price * (1 + atr100/100*0.81),'.7g') +")止损",
       9:"做多/下跌0.81倍ATR时("+ format(base_price / (1 + atr100/100*0.81),'.7g') +")止损",
-      10:"±0.2倍ATR("+ format(base_price / (1 + atr100/100*0.2),'.7g') + "," + format(base_price * (1 + atr100/100*0.2),'.7g') +")挂单/±0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")止损",
-      11:"±0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/±0.8倍ATR("+ format(base_price / (1 + atr100/100*0.8),'.7g') + "," + format(base_price * (1 + atr100/100*0.8),'.7g') +")止损",
+      10:"网格:0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.2),'.7g') + "," + format(base_price * (1 + atr100/100*0.2),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")止损",
+      11:"网格:0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*0.8),'.7g') + "," + format(base_price * (1 + atr100/100*0.8),'.7g') +")止损",
       }
 
   strategy = turtlex_predict["strategy_list"][0]
@@ -199,9 +199,9 @@ def chat(origin_input):
   return_text = marketObj["symbol"]+marketObj["name"] + \
   "\n价格Price:" + str(turtlex_predict["price_list"][0]) + \
   "\n策略" + str(strategy) + ":" + strategy_text_dict[strategy] + "[" + str(prob) +"%]" + \
-  "\n20日收益：" + str(profit20) + "%" + \
   "\n均幅指标ATR:" + str(turtlex_predict["atr_list"][0]) + "%" + \
   "\n仓位Position:" + str(round(float(turtlex_predict["position_list"][0]),2)) + "%" + \
+  "\n20日收益：" + str(profit20) + "%" + \
   '\n预测耗时cost time:' + str(round(time_end - time_start,3)) +"s\n" + sign_text
   #return_text = '预测耗时cost time:' + str(round(time_end - time_start),3) +"s"
   #print(return_text)

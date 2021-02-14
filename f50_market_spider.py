@@ -137,7 +137,7 @@ REQUEST_URL_VX = "http://47.94.154.29:8501/v1/models/turtlex:predict"
 def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, predict_len):
     #turtle7_predict = []
     #turtlex_predict = []
-    print("predicting")
+    #print("predicting")
     timestamp_list = timestamp_list[0:input_days_len+predict_len-1]
     price_list = price_list[0:input_days_len+predict_len-1]
     openprice_list = openprice_list[0:input_days_len+predict_len-1]
