@@ -3,6 +3,7 @@ import json
 import datetime
 import time
 import math
+import f50_market_spider
 
 time_start = None
 fee_ratio = 0.001
@@ -120,6 +121,7 @@ def simulate_trading(predict_list):
                        'low_price_list':[],
                        "position_list":[],
                        "stop_list": [],
+                       "stop_loss_list": [],
                        "stop_flag":[],
                        "profit_list":[],
                        "balance_list":[],
@@ -185,7 +187,9 @@ def simulate_trading(predict_list):
     year_last_balance = {}
     #年度
     year_last_balance[init_year] = init_balance
-    
+    max_single_win = 0
+    max_single_loss = 0
+    strategy_count = {0:0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0}
     #循环遍历每一个交易日
     for date in simulate_result["date_list"]:
         #每日可交易币种清单
@@ -244,7 +248,7 @@ def simulate_trading(predict_list):
                         if high_price > simulate_result["high_price_list"][active_order]:
                             simulate_result["high_price_list"][active_order] = high_price
                             #simulate_result["stop_list"][active_order] = high_price / (1 + atr/100 * 0.5)
-                            simulate_result["stop_list"][active_order] = high_price / (1 + atr/100 * simulate_result["stop_loss"][active_order])
+                            simulate_result["stop_list"][active_order] = high_price / (1 + atr/100 * simulate_result["stop_loss_list"][active_order])
                         #计算离场金额
                         exit_amount = entry_amount / entry_price * entry_price
                         #计算收益时，考虑交易手续费fee_ratio
@@ -270,7 +274,7 @@ def simulate_trading(predict_list):
                         if low_price < simulate_result["low_price_list"][active_order]:
                             simulate_result["low_price_list"][active_order] = low_price
                             #simulate_result["stop_list"][active_order] = low_price * (1 + atr/100 * 0.5)
-                            simulate_result["stop_list"][active_order] = low_price * (1 + atr/100 * simulate_result["stop_loss"][active_order])
+                            simulate_result["stop_list"][active_order] = low_price * (1 + atr/100 * simulate_result["stop_loss_list"][active_order])
                         #计算离场金额
                         exit_amount = entry_amount / entry_price * entry_price
                         #计算收益时，考虑交易手续费fee_ratio
@@ -313,12 +317,12 @@ def simulate_trading(predict_list):
                 #if low_price < simulate_result["grid_low_price_list"][active_grid]:
                 #    simulate_result["grid_low_price_list"][active_grid] = max(low_price,grid_low_limit)
                 if high_price > grid_high_limit:
-                    simulate_result["sell_order_executed"] = True
+                    simulate_result["sell_order_executed"][active_grid] = True
                 if low_price < grid_low_limit:
-                    simulate_result["buy_order_executed"] = True
+                    simulate_result["buy_order_executed"][active_grid] = True
                 #计算网格收益
                 #正常退出网格
-                if simulate_result["sell_order_executed"] and simulate_result["buy_order_executed"]:
+                if simulate_result["sell_order_executed"][active_grid] and simulate_result["buy_order_executed"][active_grid]:
                     simulate_result["grid_stop_flag"][active_grid] = 'X'
                     current_balance += grid_high_limit * entry_amount / grid_price * (1 - fee_ratio) \
                         - grid_low_limit * entry_amount / grid_price * (1 + fee_ratio)
@@ -366,12 +370,12 @@ def simulate_trading(predict_list):
                 max_balance = current_dynamic_balance
                 max_banlance_date = simulate_result["date_list"][len(simulate_result["symbol_list"])-1]
                 
-            print("date:"+datetime.datetime.strftime(date, f50_market_spider.dateformat)
-                  +";balance:"+str(current_balance)
-                  +";dynamic balance:"+str(current_dynamic_balance)
-                  +";active_orders:"+str(len(active_orders))
-                  +";active_grids:"+str(len(active_grids))
-                  )
+            #print("date:"+datetime.datetime.strftime(date, f50_market_spider.dateformat)
+            #      +";balance:"+str(current_balance)
+            #      +";dynamic balance:"+str(current_dynamic_balance)
+            #      +";active_orders:"+str(len(active_orders))
+            #      +";active_grids:"+str(len(active_grids))
+            #      )
             #找到最优币种
             min_profit = 999999
             max_profit = -999999
@@ -398,13 +402,14 @@ def simulate_trading(predict_list):
                 #    best_grid_symbol = symbol_available
             #if max_abs_score > -1:
             if max_profit > -999999:
+                strategy = predict_list[best_symbol_available[0]]["strategy_list"][best_symbol_available[1]]
+                strategy_count[strategy] += 1
                 if strategy < 10:
                     simulate_result["symbol_list"].append(best_symbol_available[0])
                     #score = predict_list[best_symbol_available[0]]["strategy_list"][best_symbol_available[1]]
                     #simulate_result["strategy_list"].append(score)
-                    strategy = predict_list[best_symbol_available[0]]["strategy_list"][best_symbol_available[1]]
                     
-                    simulate_result["side_list"].append(side_dict(strategy))
+                    simulate_result["side_list"].append(side_dict[strategy])
                     atr = predict_list[best_symbol_available[0]]["atr_list"][best_symbol_available[1]]
                     simulate_result["atr_list"].append(atr)
                     entry_price = predict_list[best_symbol_available[0]]["price_list"][best_symbol_available[1]]
@@ -461,6 +466,7 @@ def simulate_trading(predict_list):
             simulate_result["low_price_list"].append(0)
             simulate_result["position_list"].append(0)
             simulate_result["stop_list"].append(0)
+            simulate_result["stop_loss_list"].append(0)
             simulate_result["stop_flag"].append("")
             simulate_result["profit_list"].append(0)
         if not grid_flag:
@@ -493,8 +499,10 @@ def simulate_trading(predict_list):
         if len(simulate_result["balance_dynamic_list"]) > 1:
             if simulate_result["balance_dynamic_list"][-1] > simulate_result["balance_dynamic_list"][-2]:
                 win_count += 1
+                max_single_win = max(max_single_win, (simulate_result["balance_dynamic_list"][-1] / simulate_result["balance_dynamic_list"][-2] - 1) * 100)
             elif simulate_result["balance_dynamic_list"][-1] < simulate_result["balance_dynamic_list"][-2]:
                 loss_count += 1
+                max_single_loss = max(max_single_loss, (1 - simulate_result["balance_dynamic_list"][-1] / simulate_result["balance_dynamic_list"][-2]) * 100)
             else:
                 draw_count += 1
     for year_item in year_last_balance:
@@ -503,7 +511,7 @@ def simulate_trading(predict_list):
         else:
             profit = ( year_last_balance[year_item] / year_last_balance[year_item-1] - 1 ) * 100
         year_list.append({"year":year_item,"profit":profit})
-    return simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list
+    return simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, round(max_single_win,2), round(max_single_loss,2), strategy_count
 
 #Get profit of past 20 days
 def get_past_profit(predict_symbol, date_index, days_count, reversed):
@@ -511,9 +519,9 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
     date_end_index = date_index + 1
     date_begin_index = date_index + days_count
     if date_begin_index >= total_len:
-        print("date_begin_index:" + str(date_begin_index))
-        print("total_len:" + str(total_len))
-        print("total_len >= total_len")
+        #print("date_begin_index:" + str(date_begin_index))
+        #print("total_len:" + str(total_len))
+        #print("total_len >= total_len")
         return 0
     #活动订单
     active_orders = []
@@ -547,6 +555,7 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
         stop_loss = 0
         position = 0
         stop_price = 0
+        fee_rate = fee_ratio
         if strategy < 10:
             stop_price = stop_list[day_index]
             stop_loss = stop_loss_list[day_index]

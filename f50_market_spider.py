@@ -5,7 +5,7 @@ import re
 import datetime
 import time
 import math
-import f51_simulated_trading
+#import f51_simulated_trading
 
 #一次爬取所有市场的爬虫程序
 #加密货币:
@@ -15,7 +15,7 @@ import f51_simulated_trading
 #个股
 #ID长度：
 
-#https://www.investing.com/search/?q=BTC
+#https://cn.investing.com/search/?q=BTC
 #window.allResultsQuotesDataArray = [{"pairId":"{1}"……"symbol":"{2}"……
 
 time_start = None
@@ -27,13 +27,24 @@ risk_factor = 1.5
 #startdays = 4800
 predict_batch = 50
 
+side_dict = {0:"sell",1:"buy",2:"sell",3:"buy",4:"sell",5:"buy",6:"sell",7:"buy",8:"sell",9:"buy"}
+
+stop_loss_dict = {0:0.16,1:0.16,
+                  2:0.24,3:0.24,
+                  4:0.36,5:0.36,
+                  6:0.54,7:0.54,
+                  8:0.81,9:0.81,
+                  10:0.40,11:0.80}
+order_range_dict = {10:0.20,11:0.40}
+
 def search_for_symbol(symbol):
-    url = "https://www.investing.com/search/?q=" + symbol
+    url = "https://cn.investing.com/search/?q=" + symbol
     headers={"user-agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
     response = requests.get(url, headers=headers)
     marketListString = ""
     if response.status_code == 200:
         string = response.text
+        #print(string)
         pattern = 'allResultsQuotesDataArray\s+?=\s+?(\[.+?\]);\s+?</script>'
         searchObj = re.search(pattern, string, flags=0)
         if searchObj:
@@ -67,7 +78,7 @@ def get_history_price(pairId, pair_type, startdays):
 
     headers = {
         'accept': "text/plain, */*; q=0.01",
-        'origin': "https://www.investing.com",
+        'origin': "https://cn.investing.com",
         'x-requested-with': "XMLHttpRequest",
         'user-agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
         'content-type': "application/x-www-form-urlencoded",
@@ -154,10 +165,10 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
                     lowprice_list[absolute_price_index])
             inputObj["Prices"].append(priceObj)
         HEADER = {'Content-Type':'application/json; charset=utf-8'}
-        print(json.dumps(inputObj))
+        #print(json.dumps(inputObj))
         inputpricelist = getInputPriceList(inputObj)
         requestDict = {"instances": inputpricelist}
-        print(json.dumps(requestDict))
+        #print(json.dumps(requestDict))
         rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
         #print(json.loads(rsp_vx.text))
         riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
@@ -180,7 +191,34 @@ def getInputPriceList(inputObj):
         maxprice = max(highlist)
         minprice = min(lowlist)
         rangePrice = maxprice - minprice
-        print("maxprice:" + str(maxprice) + "/minprice:" + str(minprice) + "/rangePrice:" + str(rangePrice))
+        closelistscaled = [(closePrice - minprice) / rangePrice for closePrice in closelist]
+        highlistscaled = [(highPrice - minprice) / rangePrice for highPrice in highlist]
+        lowlistscaled = [(lowPrice - minprice) / rangePrice for lowPrice in lowlist]
+        inputPriceList = []
+        for dayindex in range(dayscount):
+            inputPriceList.extend([highlistscaled[dayindex],closelistscaled[dayindex],lowlistscaled[dayindex]])
+        inputPriceListSymbols.append(inputPriceList)
+    for dayindex in range(dayscount*3):
+        for symbolindex in range(symbolCount):
+            inputPriceListSymbols2.append(inputPriceListSymbols[symbolindex][dayindex])
+    return inputPriceListSymbols2
+
+
+def getInputPriceList_efficientnet(inputObj):
+    pricelistsymbols = inputObj["Prices"]
+    inputPriceListSymbols = []
+    inputPriceListSymbols2 = []
+    symbolCount = len(pricelistsymbols)
+    dayscount = len(pricelistsymbols[0]["Close"])
+    for pricelistsymbol in pricelistsymbols:
+        #Desc by date
+        closelist = [math.log(closePrice) if closePrice > 0 else 0 for closePrice in pricelistsymbol["Close"]]
+        highlist = [math.log(highPrice) if highPrice > 0 else 0 for highPrice in pricelistsymbol["High"]]
+        lowlist = [math.log(lowPrice) if lowPrice > 0 else 0 for lowPrice in pricelistsymbol["Low"]]
+        maxprice = max(highlist)
+        minprice = min(lowlist)
+        rangePrice = maxprice - minprice
+        #print("maxprice:" + str(maxprice) + "/minprice:" + str(minprice) + "/rangePrice:" + str(rangePrice))
         closelistscaled = [(closePrice - minprice) / rangePrice for closePrice in closelist]
         highlistscaled = [(highPrice - minprice) / rangePrice for highPrice in highlist]
         lowlistscaled = [(lowPrice - minprice) / rangePrice for lowPrice in lowlist]
@@ -220,13 +258,13 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     high_list = []
     low_list = []
     predict_len = len(price_data["Prices"])
-    print(str(predictRsp))
-    for probitem in predictRsp["predictions"]:
-        print(json.dumps(probitem))
+    #print(str(predictRsp))
+    #for probitem in predictRsp["predictions"]:
+    #    print(json.dumps(probitem))
         #probitem = list(map(float, probitem))
     #Get Best Strategy
-    maxproblist = [max(probitem) for probitem in predictRsp["predictions"]]
-    problist = [predictRsp["predictions"][probitemindex].index(maxproblist[probitemindex]) for probitemindex in range(len(predictRsp["predictions"]))]
+    maxproblist = [max(probitem["probabilities"]) for probitem in predictRsp["predictions"]]
+    problist = [predictRsp["predictions"][probitemindex]["probabilities"].index(maxproblist[probitemindex]) for probitemindex in range(len(predictRsp["predictions"]))]
     for predict_index in range(predict_len):
         date = datetime.datetime.fromtimestamp(timestamp_list[predict_index])
         datestr = date.strftime("%Y-%m-%d")
@@ -256,16 +294,16 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         position = 0
 
         if strategy < 10:
-            side = f51_simulated_trading.side_dict[strategy]
-            stop_loss = f51_simulated_trading.stop_loss_dict[strategy]
+            side = side_dict[strategy]
+            stop_loss = stop_loss_dict[strategy]
             if side == "buy":
                 stop_price = price / (1 + atr * stop_loss)
             else: #sell
                 stop_price = price * (1 + atr * stop_loss)
             position = round(risk_factor / atr / stop_loss, 2)
         elif strategy >= 10:
-            stop_loss = f51_simulated_trading.stop_loss_dict[strategy]
-            order_range = f51_simulated_trading.order_range_dict[strategy]
+            stop_loss = stop_loss_dict[strategy]
+            order_range = order_range_dict[strategy]
             #position = round(risk_factor / atr / (order_range - stop_loss), 2)
             position = round(risk_factor / atr / (stop_loss - order_range), 2)
 

@@ -60,7 +60,10 @@ def simulated_trading(next_id, input_text):
     predict_list = []
     for symbol in symbol_list:
         while len(symbol) > 0:
-            marketListString  = f50_market_spider.search_for_symbol(symbol)
+            for _ in range(5):
+                marketListString  = f50_market_spider.search_for_symbol(symbol)
+                if marketListString != None:
+                    break
             if len(marketListString) == 0:
                 symbol = symbol[:-1]
             else:
@@ -75,16 +78,17 @@ def simulated_trading(next_id, input_text):
             continue
         turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
         predict_list.append(turtlex_predict)
-    simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list = f51_simulated_trading.simulate_trading(predict_list)
+    simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading(predict_list)
     time_end=time.time()
     init_balance = simulate_result["balance_dynamic_list"][0]
     last_balance = simulate_result["balance_dynamic_list"][-1]
     years = len(simulate_result["symbol_list"]) / 365
     annual_yield =math.pow( last_balance / init_balance, 1 / years) * 100.0 - 100.0
-    output_text = "模拟结果：\n" +str(input_text) + "\n海龟8号AI趋势网格交易系统（收益追踪型）\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
-    output_text +=  "\n胜率：" + str(round((win_count * 100.0 / (win_count + loss_count)),3) if (win_count + loss_count) > 0 else 0  ) + "%" + "\n最大亏损：" + str(round(max_loss * 100.0,3))  + '%' + "\n最长衰落期：" + str(max_loss_days) + "天"
-    output_text +=  "\n初始余额：" + str(init_balance) + "\n最终余额：" + str(last_balance) + "\n年化收益：" + str(round(annual_yield,3)) + '%'
-    output_text +=  "\n日期范围：[" + datetime.datetime.strftime(simulate_result["date_list"][0],f50_market_spider.dateformat) + ',' + datetime.datetime.strftime(simulate_result["date_list"][-1],f50_market_spider.dateformat) + ']\n历年收益：'
+    output_text = "模拟结果：\n" +str(input_text) + "\n海龟X Lite量化交易决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
+    output_text += "\n胜率：" + str(round((win_count * 100.0 / (win_count + loss_count)),3) if (win_count + loss_count) > 0 else 0  ) + "%" + "\n最大亏损：" + str(round(max_loss * 100.0,3))  + '%' + "\n最长衰落期：" + str(max_loss_days) + "天"
+    output_text += "\n初始余额：" + str(init_balance) + "\n最终余额：" + str(last_balance) + "\n年化收益：" + str(round(annual_yield,3)) + '%'
+    output_text += "\n最大单日盈利：" + str(max_single_win) + "%\n最大单日亏损：" + str(max_single_loss) + '%' + "\n策略分布：" + json.dumps(strategy_count)
+    output_text += "\n日期范围：[" + datetime.datetime.strftime(simulate_result["date_list"][0],f50_market_spider.dateformat) + ',' + datetime.datetime.strftime(simulate_result["date_list"][-1],f50_market_spider.dateformat) + ']\n历年收益：'
     for year_item in year_list:
         output_text += "\n"+str(year_item["year"])+":"+str(round(year_item["profit"],3)) + "%"
     output_text +=  "\n广告位：\n虚位以待……"
@@ -130,7 +134,7 @@ def chat(origin_input):
   #marketObj = json.loads(marketString)
   marketObj = market
   marketObj["name"] = marketObj["name"].replace("Investing.com","")
-  sign_text = "——海龟X量化交易决策引擎\n广告位：\n虚位以待……"
+  sign_text = "——海龟X Lite量化交易决策引擎\n广告位：\n虚位以待……"
   timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 365)
   if len(price_list) < input_days_len + 20 - 1:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
@@ -176,16 +180,18 @@ def chat(origin_input):
   price_down_165 = format(base_price / (1 + atr100/100*1.65),'.7g')
 
   strategy_text_dict = {
-      0:"无需操作",
-      1:"做多/下跌0.5倍ATR时("+ price_down_50 +")止损",
-      2:"做空/上涨0.5倍ATR时("+ price_up_50 +")止损",
-      3:"做多/下跌0.8倍ATR时("+ price_down_80 +")止损",
-      4:"做空/上涨0.8倍ATR时("+ price_up_80 +")止损",
-      5:"做多/下跌1.1倍ATR时("+ price_down_110 +")止损",
-      6:"做空/上涨1.1倍ATR时("+ price_up_110 +")止损",
-      7:"±0.25倍ATR("+ price_down_25 + "," + price_up_25 +")挂单/±0.75倍ATR("+ price_down_75 + "," + price_up_75 +")止损",
-      8:"±0.4倍ATR("+ price_down_40 + "," + price_up_40 +")挂单/±1.2倍ATR("+ price_down_120 + "," + price_up_120 +")止损",
-      9:"±0.55倍ATR("+ price_down_55 + "," + price_up_55 +")挂单/±1.65倍ATR("+ price_down_165 + "," + price_up_165 +")止损"
+      0:"做空/上涨0.16倍ATR时("+ format(base_price * (1 + atr100/100*0.16),'.7g') +")止损",
+      1:"做多/下跌0.16倍ATR时("+ format(base_price / (1 + atr100/100*0.16),'.7g') +")止损",
+      2:"做空/上涨0.24倍ATR时("+ format(base_price * (1 + atr100/100*0.24),'.7g') +")止损",
+      3:"做多/下跌0.24倍ATR时("+ format(base_price / (1 + atr100/100*0.24),'.7g') +")止损",
+      4:"做空/上涨0.36倍ATR时("+ format(base_price * (1 + atr100/100*0.36),'.7g') +")止损",
+      5:"做多/下跌0.36倍ATR时("+ format(base_price / (1 + atr100/100*0.36),'.7g') +")止损",
+      6:"做空/上涨0.54倍ATR时("+ format(base_price * (1 + atr100/100*0.54),'.7g') +")止损",
+      7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
+      8:"做空/上涨0.81倍ATR时("+ format(base_price * (1 + atr100/100*0.81),'.7g') +")止损",
+      9:"做多/下跌0.81倍ATR时("+ format(base_price / (1 + atr100/100*0.81),'.7g') +")止损",
+      10:"±0.2倍ATR("+ format(base_price / (1 + atr100/100*0.2),'.7g') + "," + format(base_price * (1 + atr100/100*0.2),'.7g') +")挂单/±0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")止损",
+      11:"±0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/±0.8倍ATR("+ format(base_price / (1 + atr100/100*0.8),'.7g') + "," + format(base_price * (1 + atr100/100*0.8),'.7g') +")止损",
       }
 
   strategy = turtlex_predict["strategy_list"][0]
@@ -224,7 +230,7 @@ def chat(origin_input):
     " inner join predictlog on symbol_alias.symbol = predictlog.symbol and predictlog.LOADINGDATE > '1950-1-1' " \
     " WHERE symbol_alias.symbol_alias = '" + input_text + "'"
 
-  print(select_alias_statment)
+  #print(select_alias_statment)
 
   mycursor.execute(select_alias_statment)
   
@@ -243,8 +249,8 @@ def chat(origin_input):
     output_text = forcastline.text_no_market(input_text)
     return output_text
     
-  print("len(res)=" + str(len(alias_results)) + ";tag_flag=" + str(tag_flag))
-  print(str(alias_results[0]))
+  #print("len(res)=" + str(len(alias_results)) + ";tag_flag=" + str(tag_flag))
+  #print(str(alias_results[0]))
   if len(alias_results[0]) != 5:
       tag_flag = True
   if len(alias_results) == 1 and not tag_flag:
@@ -266,14 +272,14 @@ def draw_single_v1(input_text, alias_results, mycursor):
     output_text = ""
     alias_result = alias_results[0]
     select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
-    print(select_predictions_statment)
+    #print(select_predictions_statment)
     mycursor.execute(select_predictions_statment)
     predictions_results = mycursor.fetchall()
     if len(predictions_results) == 0:
       output_text = forcastline.text_no_market(input_text)
       return None, output_text
     select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
-    print(select_prices_statment)
+    #print(select_prices_statment)
     mycursor.execute(select_prices_statment)
     prices_results = mycursor.fetchall()
     picture_name = draw_market_v1(alias_result, prices_results, predictions_results)
@@ -293,7 +299,7 @@ def help_text():
 def get_subtags(tagname, mycursor):
     subtags = []
     select_subtags_statment = "select * from subtags where tag = '" + tagname + "' and tag <> subtag"
-    print(select_subtags_statment)
+    #print(select_subtags_statment)
     mycursor.execute(select_subtags_statment)
     subtags_results = mycursor.fetchall()
     for subtags_result in subtags_results:
@@ -303,7 +309,7 @@ def get_subtags(tagname, mycursor):
 def get_markets_from_endtags(endtags, mycursor):
     markets = []
     select_tags_statment = 'select * from tags where tag in (%s) ' % ','.join(['%s']*len(endtags))
-    print(select_tags_statment)
+    #print(select_tags_statment)
     mycursor.execute(select_tags_statment, endtags)
     tags_results = mycursor.fetchall()
     for tags_result in tags_results:
@@ -344,7 +350,7 @@ def fetch_tag(input_text, mycursor):
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate and pricehistory.l <> pricehistory.h and pricehistory.c > 0 " \
         " ORDER BY pricehistory.SYMBOL" % ','.join(['%s']*len(markets))
       
-        print(select_alias_statment)
+        #print(select_alias_statment)
       
         mycursor.execute(select_alias_statment, markets)
   
@@ -356,7 +362,7 @@ def fetch_tag(input_text, mycursor):
 
       select_alias_statment = "SELECT * FROM symbol_alias WHERE symbol_alias LIKE '%" + input_text + "%' group by symbol"
 
-      print(select_alias_statment)
+      #print(select_alias_statment)
 
       mycursor.execute(select_alias_statment)
   
@@ -373,7 +379,7 @@ def fetch_tag(input_text, mycursor):
         " inner join pricehistory on pricehistory.symbol = symbol_alias.symbol and pricehistory.date = predictlog.maxdate  and pricehistory.l <> pricehistory.h and pricehistory.c > 0 " \
         " WHERE symbol_alias LIKE '%" + input_text + "%' ORDER BY pricehistory.symbol ASC"
 
-        print(select_alias_statment)
+        #print(select_alias_statment)
 
         mycursor.execute(select_alias_statment)
   
@@ -403,7 +409,7 @@ def picture_url(picture_name):
     filePath = picture_name
     mediaType = "image"
     murlResp = Media.uplaod(accessToken, filePath, mediaType)
-    print(murlResp)
+    #print(murlResp)
     return murlResp
 
 def draw_market_v1(alias_result, prices_results, predictions_results):
@@ -534,5 +540,5 @@ class Media(object):
     headers = {'Content-Type': content_type}
     files = {'media': open(filePath, "rb")}
     urlResp = requests.post(postUrl, files=files)
-    print(urlResp.text)
+    #print(urlResp.text)
     return json.loads(urlResp.text)['media_id']
