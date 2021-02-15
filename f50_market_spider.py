@@ -148,7 +148,7 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
     predict_batch_count = math.ceil(float(predict_len)/predict_batch)
     riseProb_vx_list = []
     for predict_batch_index in range(predict_batch_count):
-        print("predicting " + str(predict_batch_index+1) + " of " + str(predict_batch_count))
+        print(symbol + " predicting " + str(predict_batch_index+1) + " of " + str(predict_batch_count))
         inputObj = {"Prices":[]}
         for predict_index in range(predict_batch):
             absolute_predict_index = predict_batch_index*predict_batch+predict_index
