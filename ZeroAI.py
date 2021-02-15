@@ -139,7 +139,7 @@ def chat(origin_input):
   if len(price_list) < input_days_len + 20 - 1:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
     "\n当前市场的数据仅"+str(len(price_list))+\
-    "天，不足"+str(input_days_len)+"天，无法执行预测！\n" + sign_text
+    "天，不足"+str(input_days_len + 20 - 1)+"天，无法执行预测！\n" + sign_text
   turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20)
   #Get profit of past 20 days
   profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, -1, 20, False)
@@ -190,8 +190,8 @@ def chat(origin_input):
       7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
       8:"做空/上涨0.81倍ATR时("+ format(base_price * (1 + atr100/100*0.81),'.7g') +")止损",
       9:"做多/下跌0.81倍ATR时("+ format(base_price / (1 + atr100/100*0.81),'.7g') +")止损",
-      10:"网格:0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.2),'.7g') + "," + format(base_price * (1 + atr100/100*0.2),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")止损",
-      11:"网格:0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*0.8),'.7g') + "," + format(base_price * (1 + atr100/100*0.8),'.7g') +")止损",
+      10:"网格/0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.2),'.7g') + "," + format(base_price * (1 + atr100/100*0.2),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")止损",
+      11:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*0.8),'.7g') + "," + format(base_price * (1 + atr100/100*0.8),'.7g') +")止损",
       }
 
   strategy = turtlex_predict["strategy_list"][0]
