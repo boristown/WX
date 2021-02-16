@@ -52,20 +52,22 @@ def search_for_symbol(symbol):
         return marketListString
 
 def get_best_market(marketList):
+    is_crypto = False
     if len(marketList) > 0:
         if marketList[0]["pair_type"] == "equities":
             for market in marketList:
                 if market["flag"] == "China" and market["pair_type"] == "equities":
-                    return market
+                    return market, is_crypto
             for market in marketList:
                 if market["flag"] == "Hong_Kong" and market["pair_type"] == "equities":
-                    return market
+                    return market, is_crypto
             for market in marketList:
                 if market["flag"] == "USA" and market["pair_type"] == "equities":
-                    return market
+                    return market, is_crypto
         for market in marketList:
-            return market
-    return None
+            is_crypto = market["isCrypto"] or (market["pair_type"] == "indice" and market["flag"] != "USA" and market["flag"] != "Hong_Kong" and market["flag"] != "China")
+            return market, is_crypto
+    return None, is_crypto
 
 def get_history_price(pairId, pair_type, startdays):
     priceList = []
@@ -133,11 +135,13 @@ def get_history_price(pairId, pair_type, startdays):
 REQUEST_URL_V7 = "http://47.94.154.29:8501/v1/models/turtle7:predict"
 REQUEST_URL_V8 = "http://47.94.154.29:8501/v1/models/turtle8:predict"
 REQUEST_URL_VX = "http://47.94.154.29:8501/v1/models/turtlex:predict"
+REQUEST_URL_VXC = "http://47.94.154.29:8501/v1/models/turtlexcrypto:predict"
 
-def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, predict_len):
+def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, predict_len, isCrypto):
     #turtle7_predict = []
     #turtlex_predict = []
     #print("predicting")
+    print("isCrypto:"+str(isCrypto))
     timestamp_list = timestamp_list[0:input_days_len+predict_len-1]
     price_list = price_list[0:input_days_len+predict_len-1]
     openprice_list = openprice_list[0:input_days_len+predict_len-1]
@@ -169,7 +173,10 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
         inputpricelist = getInputPriceList(inputObj)
         requestDict = {"instances": inputpricelist}
         #print(json.dumps(requestDict))
-        rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
+        if isCrypto:
+            rsp_vx = requests.post(REQUEST_URL_VXC, data=json.dumps(requestDict), headers=HEADER)
+        else:
+            rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
         #print(json.loads(rsp_vx.text))
         riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
         riseProb_vx_list.append(riseProb_vx)
@@ -384,7 +391,7 @@ if __name__ == "__main__":
     marketListString  = search_for_symbol(symbol)
     #print("marketListString = " + marketListString)
     time_start=time.time()
-    market = get_best_market(json.loads(marketListString))
+    market, is_crypto = get_best_market(json.loads(marketListString))
     marketString = json.dumps(market).encode('utf-8').decode('unicode_escape')
     print("best market = " +  marketString)
     marketObj = json.loads(marketString)
@@ -400,7 +407,7 @@ if __name__ == "__main__":
     '''
     #Predict
     #turtle7_predict, turtlex_predict = predict(price_list, openprice_list, highprice_list, lowprice_list)
-    turtlex_predict = predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
+    turtlex_predict = predict(marketObj["symbol"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500, is_crypto)
     #print(json.dumps(turtle7_predict), json.dumps(turtlex_predict))
     
     print(json.dumps(turtlex_predict))

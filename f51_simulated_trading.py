@@ -829,13 +829,13 @@ if __name__ == "__main__":
                 symbol = symbol[:-1]
             else:
                 break
-        market = f50_market_spider.get_best_market(json.loads(marketListString))
+        market, is_crypto = f50_market_spider.get_best_market(json.loads(marketListString))
         marketObj = market
         marketObj["name"] = marketObj["name"].replace("Investing.com","")
         timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 4800)
         if len(price_list) < f50_market_spider.input_days_len:
             continue
-        turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
+        turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500, is_crypto)
         predict_list.append(turtlex_predict)
     simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list = simulate_trading(predict_list)
     time_end=time.time()

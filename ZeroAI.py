@@ -70,13 +70,13 @@ def simulated_trading(next_id, input_text):
                 break
         if not marketListString:
             f52_db_simulated.save_result(next_id, '模拟失败，未找到市场'+symbol+'相关信息。')
-        market = f50_market_spider.get_best_market(json.loads(marketListString))
+        market, is_crypto = f50_market_spider.get_best_market(json.loads(marketListString))
         marketObj = market
         marketObj["name"] = marketObj["name"].replace("Investing.com","")
         timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 4800)
         if len(price_list) < f50_market_spider.input_days_len:
             continue
-        turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500)
+        turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500, is_crypto)
         predict_list.append(turtlex_predict)
     simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading(predict_list)
     time_end=time.time()
@@ -84,7 +84,10 @@ def simulated_trading(next_id, input_text):
     last_balance = simulate_result["balance_dynamic_list"][-1]
     years = len(simulate_result["symbol_list"]) / 365
     annual_yield =math.pow( last_balance / init_balance, 1 / years) * 100.0 - 100.0
-    output_text = "模拟结果：\n" +str(input_text) + "\n海龟X Lite量化交易决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
+    if is_crypto:
+        output_text = "模拟结果：\n" +str(input_text) + "\n海龟X Crypto量化交易决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
+    else:
+        output_text = "模拟结果：\n" +str(input_text) + "\n海龟X量化交易决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
     output_text += "\n胜率：" + str(round((win_count * 100.0 / (win_count + loss_count)),3) if (win_count + loss_count) > 0 else 0  ) + "%" + "\n最大亏损：" + str(round(max_loss * 100.0,3))  + '%' + "\n最长衰落期：" + str(max_loss_days) + "天"
     output_text += "\n初始余额：" + str(init_balance) + "\n最终余额：" + str(last_balance) + "\n年化收益：" + str(round(annual_yield,3)) + '%'
     output_text += "\n最大单日盈利：" + str(max_single_win) + "%\n最大单日亏损：" + str(max_single_loss) + '%' + "\n策略分布：" + json.dumps(strategy_count)
@@ -127,20 +130,24 @@ def chat(origin_input):
       origin_input = origin_input[:-1]
     else:
       break
-  market = f50_market_spider.get_best_market(json.loads(marketListString))
+  market, is_crypto = f50_market_spider.get_best_market(json.loads(marketListString))
+  print(json.dumps(market))
   #marketString = json.dumps(market).encode('utf-8').decode('unicode_escape').replace("Investing.com","")
   #marketString = json.dumps(market).replace("Investing.com","")
   #print(marketString)
   #marketObj = json.loads(marketString)
   marketObj = market
   marketObj["name"] = marketObj["name"].replace("Investing.com","")
-  sign_text = "——海龟X Lite量化交易决策引擎\n广告位：\n虚位以待……"
+  if is_crypto:
+    sign_text = "——海龟X Crypto量化交易决策引擎\n广告位：\n虚位以待……"
+  else:
+    sign_text = "——海龟X量化交易决策引擎\n广告位：\n虚位以待……"
   timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 365)
   if len(price_list) < input_days_len + 20 - 1:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
     "\n当前市场的数据仅"+str(len(price_list))+\
     "天，不足"+str(input_days_len + 20 - 1)+"天，无法执行预测！\n" + sign_text
-  turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20)
+  turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20, is_crypto)
   #Get profit of past 20 days
   profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, -1, 20, False)
   time_end=time.time()
@@ -196,7 +203,7 @@ def chat(origin_input):
 
   strategy = turtlex_predict["strategy_list"][0]
   prob = turtlex_predict["prob_list"][0]
-  return_text = marketObj["symbol"]+marketObj["name"] + \
+  return_text = "[" + marketObj["pair_type"] + "/" + marketObj["flag"] + "]" + marketObj["symbol"]+marketObj["name"] + \
   "\n价格Price:" + str(turtlex_predict["price_list"][0]) + \
   "\n策略" + str(strategy) + ":" + strategy_text_dict[strategy] + "[" + str(prob) +"%]" + \
   "\n均幅指标ATR:" + str(turtlex_predict["atr_list"][0]) + "%" + \
