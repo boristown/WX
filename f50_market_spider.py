@@ -270,7 +270,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
     #    print(json.dumps(probitem))
         #probitem = list(map(float, probitem))
     #Get Best Strategy
-    maxproblist = [max(probitem["probabilities"]) for probitem in predictRsp["predictions"]]
+    maxproblist = [max(probitem["probabilities"][:10]) for probitem in predictRsp["predictions"]]
     problist = [predictRsp["predictions"][probitemindex]["probabilities"].index(maxproblist[probitemindex]) for probitemindex in range(len(predictRsp["predictions"]))]
     for predict_index in range(predict_len):
         date = datetime.datetime.fromtimestamp(timestamp_list[predict_index])
