@@ -97,10 +97,8 @@ def simulated_trading(next_id, input_text):
     output_text +=  "\n广告位：\n虚位以待……"
     f52_db_simulated.save_result(next_id, output_text)
 
-
 def simulated_begin(next_id, input_text):
     simulated_trading(next_id,input_text.strip())
-    
 
 def simulated_end(input_text):
     next_id = int(input_text.strip())
