@@ -154,7 +154,7 @@ def chat(origin_input):
     sign_text = "——海龟X Crypto量化交易决策引擎\n广告位：\n虚位以待……"
   else:
     sign_text = "——海龟X量化交易决策引擎\n广告位：\n虚位以待……"
-  timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 365)
+  timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 400)
   if len(price_list) < input_days_len + 20 - 1:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
     "\n当前市场的数据仅"+str(len(price_list))+\
