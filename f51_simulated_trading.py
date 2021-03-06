@@ -570,7 +570,7 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
             order_range = order_range_dict[strategy]
             side = ""
             #position = round(risk_factor / atr / (order_range - stop_loss), 2)
-            position = round(risk_factor / ((atr * (stop_loss - order_range)) * (1 - fee_rate) + fee_rate * 2), 2)
+            position = round(risk_factor * 2 / ((atr * (stop_loss - order_range)) * (1 - fee_rate) + fee_rate * 2), 2)
         #if score > 0:
         #    stop_price = entry_price / (1 + atr / 100 / 2)
         #else:
