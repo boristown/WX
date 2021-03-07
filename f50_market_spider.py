@@ -176,6 +176,7 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
         #print(json.dumps(requestDict))
         if isCrypto:
             rsp_vx = requests.post(REQUEST_URL_VXC, data=json.dumps(requestDict), headers=HEADER)
+            #rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
         else:
             rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
         #print(json.loads(rsp_vx.text))

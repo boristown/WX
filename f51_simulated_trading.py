@@ -237,7 +237,7 @@ def simulate_trading(predict_list):
                     #stop_price_low = low_price
                     stop_price_low = max(low_price, last_price / (1 + atr / 100 * simulate_result["stop_loss_list"][active_order]))
                     entry_price = simulate_result["entry_price_list"][active_order]
-                    if stop_price_high > stop_price_low:
+                    if stop_price_high >= stop_price_low:
                         simulate_result["stop_flag"][active_order] = 'X'
                         stop_price = (stop_price_high + stop_price_low) / 2.0
                         #计算离场金额
@@ -284,7 +284,7 @@ def simulate_trading(predict_list):
                     stop_price_high = min(high_price, last_price * (1 + atr / 100 * simulate_result["stop_loss_list"][active_order]))
                     #止损触发
                     entry_price = simulate_result["entry_price_list"][active_order]
-                    if stop_price_low < stop_price_high:
+                    if stop_price_low <= stop_price_high:
                         simulate_result["stop_flag"][active_order] = 'X'
                         stop_price = (stop_price_high + stop_price_low) / 2.0
                         #计算离场金额
@@ -414,6 +414,7 @@ def simulate_trading(predict_list):
             #趋势收益
             for active_order in active_orders:
                 current_dynamic_balance += simulate_result["profit_list"][active_order]
+                simulate_result["profit_list"][active_order] = 0
             ##网格收益
             #for active_grid in active_grids:
             #    current_dynamic_balance += simulate_result["grid_profit_list"][active_grid]
@@ -642,7 +643,7 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
                 stop_price_low = max(low_price, last_price / (1 + atr / 100 * active_order["stop_loss"]))
                 #止损触发
                 entry_price = active_order["entry_price"]
-                if stop_price_high > stop_price_low:
+                if stop_price_high >= stop_price_low:
                     active_order["stop_flag"] = 'X'
                     stop_price = (stop_price_high + stop_price_low) / 2.0
                     #计算离场金额
@@ -688,7 +689,7 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
                 stop_price_high = min(high_price, last_price * (1 + atr / 100 * active_order["stop_loss"]))
                 #止损触发
                 entry_price = active_order["entry_price"]
-                if stop_price_low < stop_price_high:
+                if stop_price_low <= stop_price_high:
                     active_order["stop_flag"] = 'X'
                     stop_price = (stop_price_high + stop_price_low) / 2.0
                     #计算离场金额
