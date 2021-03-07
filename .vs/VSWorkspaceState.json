@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Img"
   ],
-  "SelectedNode": "\\f50_market_spider.py",
+  "SelectedNode": "\\f51_simulated_trading.py",
   "PreviewInSolutionExplorer": false
 }

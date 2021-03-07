@@ -222,7 +222,9 @@ def simulate_trading(predict_list):
                         high_price = predict_list[symbol_index]["high_list"][symbol_available[1]]
                         low_price = predict_list[symbol_index]["low_list"][symbol_available[1]]
                         close_price = predict_list[symbol_index]["price_list"][symbol_available[1]]
+                        last_price = predict_list[symbol_index]["price_list"][symbol_available[1]+1]
                         atr_price = predict_list[symbol_index]["atr_list"][symbol_available[1]]
+                        print("high_price:"+str(high_price)+";low_price:"+str(low_price)+";close_price:"+str(close_price)+";last_price:"+str(last_price))
                         break
                 if not find_symbol:
                     continue
@@ -231,12 +233,13 @@ def simulate_trading(predict_list):
                 #做多订单
                 #if simulate_result["strategy_list"][active_order]  > 0:
                 if simulate_result["side_list"][active_order]  == "buy":
-                    #先用当日最低价判断是否止损，再用当日最高价更新止损价
-                    if low_price < simulate_result["stop_list"][active_order]:
+                    stop_price_high = high_price / (1 + atr / 100 * simulate_result["stop_loss_list"][active_order])
+                    #stop_price_low = low_price
+                    stop_price_low = max(low_price, last_price / (1 + atr / 100 * simulate_result["stop_loss_list"][active_order]))
+                    entry_price = simulate_result["entry_price_list"][active_order]
+                    if stop_price_high > stop_price_low:
                         simulate_result["stop_flag"][active_order] = 'X'
-                        entry_price = simulate_result["entry_price_list"][active_order]
-                        stop_price = simulate_result["stop_list"][active_order]
-                        #simulate_result["exit_price_list"][active_order] = stop_price
+                        stop_price = (stop_price_high + stop_price_low) / 2.0
                         #计算离场金额
                         exit_amount = entry_amount / entry_price * stop_price
                         #计算收益时，考虑交易手续费fee_ratio
@@ -246,23 +249,44 @@ def simulate_trading(predict_list):
                         #删除活动订单
                         active_orders.remove(active_order)
                     else:
-                        #print("low:"+str(low_price) + ">=stop:" + str(simulate_result["stop_list"][active_order]))
-                        if high_price > simulate_result["high_price_list"][active_order]:
-                            simulate_result["high_price_list"][active_order] = high_price
-                            #simulate_result["stop_list"][active_order] = high_price / (1 + atr/100 * 0.5)
-                            simulate_result["stop_list"][active_order] = high_price / (1 + atr/100 * simulate_result["stop_loss_list"][active_order])
                         #计算离场金额
                         exit_amount = entry_amount / entry_price * close_price
                         #计算收益时，考虑交易手续费fee_ratio
                         simulate_result["profit_list"][active_order] = exit_amount * (1 - fee_ratio) - entry_amount * (1 + fee_ratio)
+
+                    ##先用当日最低价判断是否止损，再用当日最高价更新止损价
+                    #if low_price < simulate_result["stop_list"][active_order]:
+                    #    simulate_result["stop_flag"][active_order] = 'X'
+                    #    stop_price = simulate_result["stop_list"][active_order]
+                    #    #simulate_result["exit_price_list"][active_order] = stop_price
+                    #    #计算离场金额
+                    #    exit_amount = entry_amount / entry_price * stop_price
+                    #    #计算收益时，考虑交易手续费fee_ratio
+                    #    simulate_result["profit_list"][active_order] = exit_amount * (1 - fee_ratio) - entry_amount * (1 + fee_ratio)
+                    #    #更新静态余额
+                    #    current_balance += simulate_result["profit_list"][active_order]
+                    #    #删除活动订单
+                    #    active_orders.remove(active_order)
+                    #else:
+                    #    #print("low:"+str(low_price) + ">=stop:" + str(simulate_result["stop_list"][active_order]))
+                    #    if high_price > simulate_result["high_price_list"][active_order]:
+                    #        simulate_result["high_price_list"][active_order] = high_price
+                    #        #simulate_result["stop_list"][active_order] = high_price / (1 + atr/100 * 0.5)
+                    #        simulate_result["stop_list"][active_order] = high_price / (1 + atr/100 * simulate_result["stop_loss_list"][active_order])
+                    #    #计算离场金额
+                    #    exit_amount = entry_amount / entry_price * close_price
+                    #    #计算收益时，考虑交易手续费fee_ratio
+                    #    simulate_result["profit_list"][active_order] = exit_amount * (1 - fee_ratio) - entry_amount * (1 + fee_ratio)
                 #做空订单
                 else:
-                    #先用当日最高价判断是否止损，再用当日最低价更新止损价
-                    if high_price > simulate_result["stop_list"][active_order]:
+                    stop_price_low = low_price * (1 + atr / 100 * simulate_result["stop_loss_list"][active_order])
+                    #stop_price_high = high_price
+                    stop_price_high = min(high_price, last_price * (1 + atr / 100 * simulate_result["stop_loss_list"][active_order]))
+                    #止损触发
+                    entry_price = simulate_result["entry_price_list"][active_order]
+                    if stop_price_low < stop_price_high:
                         simulate_result["stop_flag"][active_order] = 'X'
-                        entry_price = simulate_result["entry_price_list"][active_order]
-                        stop_price = simulate_result["stop_list"][active_order]
-                        #simulate_result["exit_price_list"][active_order] = stop_price
+                        stop_price = (stop_price_high + stop_price_low) / 2.0
                         #计算离场金额
                         exit_amount = entry_amount / entry_price * stop_price
                         #计算收益时，考虑交易手续费fee_ratio
@@ -272,15 +296,35 @@ def simulate_trading(predict_list):
                         #删除活动订单
                         active_orders.remove(active_order)
                     else:
-                        #print("high:"+str(high_price) + "<=stop:" + str(simulate_result["stop_list"][active_order]))
-                        if low_price < simulate_result["low_price_list"][active_order]:
-                            simulate_result["low_price_list"][active_order] = low_price
-                            #simulate_result["stop_list"][active_order] = low_price * (1 + atr/100 * 0.5)
-                            simulate_result["stop_list"][active_order] = low_price * (1 + atr/100 * simulate_result["stop_loss_list"][active_order])
                         #计算离场金额
                         exit_amount = entry_amount / entry_price * close_price
                         #计算收益时，考虑交易手续费fee_ratio
-                        simulate_result["profit_list"][active_order] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)
+                        simulate_result["profit_list"][active_order] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)   
+
+                    #entry_price = simulate_result["entry_price_list"][active_order]
+                    ##先用当日最高价判断是否止损，再用当日最低价更新止损价
+                    #if high_price > simulate_result["stop_list"][active_order]:
+                    #    simulate_result["stop_flag"][active_order] = 'X'
+                    #    stop_price = simulate_result["stop_list"][active_order]
+                    #    #simulate_result["exit_price_list"][active_order] = stop_price
+                    #    #计算离场金额
+                    #    exit_amount = entry_amount / entry_price * stop_price
+                    #    #计算收益时，考虑交易手续费fee_ratio
+                    #    simulate_result["profit_list"][active_order] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)
+                    #    #更新静态余额
+                    #    current_balance += simulate_result["profit_list"][active_order]
+                    #    #删除活动订单
+                    #    active_orders.remove(active_order)
+                    #else:
+                    #    #print("high:"+str(high_price) + "<=stop:" + str(simulate_result["stop_list"][active_order]))
+                    #    if low_price < simulate_result["low_price_list"][active_order]:
+                    #        simulate_result["low_price_list"][active_order] = low_price
+                    #        #simulate_result["stop_list"][active_order] = low_price * (1 + atr/100 * 0.5)
+                    #        simulate_result["stop_list"][active_order] = low_price * (1 + atr/100 * simulate_result["stop_loss_list"][active_order])
+                    #    #计算离场金额
+                    #    exit_amount = entry_amount / entry_price * close_price
+                    #    #计算收益时，考虑交易手续费fee_ratio
+                    #    simulate_result["profit_list"][active_order] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)
             #遍历活动网格(倒序循环时才能删除元素)
             for active_grid in active_grids[::-1]:
                 #获取当前市场数据
@@ -320,8 +364,12 @@ def simulate_trading(predict_list):
                 #    simulate_result["grid_low_price_list"][active_grid] = max(low_price,grid_low_limit)
                 if high_price > grid_high_limit:
                     simulate_result["sell_order_executed"][active_grid] = True
+                #else:
+                #    print("high_price(" + str(high_price) + ")<= grid_high_limit("+str(grid_high_limit) +")")
                 if low_price < grid_low_limit:
                     simulate_result["buy_order_executed"][active_grid] = True
+                #else:
+                #    print("low_price("+ str(low_price) + ")>= grid_low_limit(" + str(grid_low_limit) + ")")
                 #计算网格收益
                 #正常退出网格
                 if simulate_result["sell_order_executed"][active_grid] and simulate_result["buy_order_executed"][active_grid]:
@@ -332,6 +380,7 @@ def simulate_trading(predict_list):
                     continue
                 #  上涨止损
                 if high_price > grid_high_stop:
+                    #print("high_price(" + str(high_price) + ")>" +  "grid_high_stop(" + str(grid_high_stop) + ")")
                     simulate_result["grid_stop_flag"][active_grid] = 'X'
                     current_balance += grid_high_limit * entry_amount / grid_price * (1 - fee_ratio) \
                         - grid_high_stop * entry_amount / grid_price * (1 + fee_ratio)
@@ -339,6 +388,7 @@ def simulate_trading(predict_list):
                     continue
                 # 下跌止损
                 if low_price < grid_low_stop:
+                    #print("low_price(" + str(low_price) + ")<" +  "grid_low_stop(" + str(grid_low_stop) + ")")
                     simulate_result["grid_stop_flag"][active_grid] = 'X'
                     current_balance += grid_low_stop * entry_amount / grid_price * (1 - fee_ratio) \
                         - grid_low_limit * entry_amount / grid_price * (1 + fee_ratio)
@@ -552,6 +602,7 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
         close_price = price_list[day_index]
         high_price = high_list[day_index]
         low_price = low_list[day_index]
+        last_price = price_list[day_index-1]
         side = ""
         order_range = 0
         stop_loss = 0
@@ -587,11 +638,12 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
             if active_order["side"] == "buy":
 
                 stop_price_high = high_price / (1 + atr / 100 * active_order["stop_loss"])
-                stop_price_low = low_price
+                #stop_price_low = low_price
+                stop_price_low = max(low_price, last_price / (1 + atr / 100 * active_order["stop_loss"]))
                 #止损触发
+                entry_price = active_order["entry_price"]
                 if stop_price_high > stop_price_low:
                     active_order["stop_flag"] = 'X'
-                    entry_price = active_order["entry_price"]
                     stop_price = (stop_price_high + stop_price_low) / 2.0
                     #计算离场金额
                     exit_amount = entry_amount / entry_price * stop_price
@@ -632,11 +684,12 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
             else:
                 
                 stop_price_low = low_price * (1 + atr / 100 * active_order["stop_loss"])
-                stop_price_high = high_price
+                #stop_price_high = high_price
+                stop_price_high = min(high_price, last_price * (1 + atr / 100 * active_order["stop_loss"]))
                 #止损触发
+                entry_price = active_order["entry_price"]
                 if stop_price_low < stop_price_high:
                     active_order["stop_flag"] = 'X'
-                    entry_price = active_order["entry_price"]
                     stop_price = (stop_price_high + stop_price_low) / 2.0
                     #计算离场金额
                     exit_amount = entry_amount / entry_price * stop_price
@@ -750,11 +803,12 @@ def get_past_profit(predict_symbol, date_index, days_count, reversed):
         #当前余额
         for active_order in active_orders:
             current_dynamic_balance += active_order["profit"]
+            active_order["profit"] = 0
         if strategy < 10:
             active_orders.append(new_order)
         elif strategy >= 10:
             active_grids.append(new_order)
-    profit_past = round((current_dynamic_balance / init_balance - 1) * 100,2)
+    profit_past = round((current_dynamic_balance / init_balance - 1) * 100, 2)
     #print("date:" + str(date_list[-1]) + " profit:" + str(profit_past))
     return profit_past
 
