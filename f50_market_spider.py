@@ -38,6 +38,32 @@ stop_loss_dict = {0:0.16,1:0.16,
                   10:1.00,11:2.00}
 order_range_dict = {10:0.20,11:0.40}
 
+stop_loss_dict11 = {0:0.16,1:0.16,
+                  2:0.24,3:0.24,
+                  4:0.36,5:0.36,
+                  6:0.54,7:0.54,
+                  8:1.50, 9:2.00}
+
+order_range_dict11 = {8:0.30,9:0.40}
+
+spiral_matrix  = [
+    0,     1,     2,    3,     4,      5,    6,     7,      8,    9,   10,   11,   12,  13,  14,
+  55,   56,   57,  58,    59,   60,  61,   62,    63,  64,   65,   66,   67,  68,  15,
+  54, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,  69, 16,
+  53, 102, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 115,  70, 17,
+  52, 101, 142, 175, 176, 177, 178, 179, 180, 181, 182, 153, 116,  71, 18,
+  51, 100, 141, 174, 199, 200, 201, 202, 203, 204, 183, 154, 117,  72, 19,
+  50,  99, 140, 173, 198, 215, 216, 217, 218, 205, 184, 155, 118,  73,  20,
+  49,  98, 139, 172, 197, 214, 223, 224, 219, 206, 185, 156, 119,  74,  21,
+  48,  97, 138, 171, 196, 213, 222, 221, 220, 207, 186, 157, 120,  75,  22,
+  47,  96, 137, 170, 195, 212, 211, 210, 209, 208, 187, 158, 121,  76,  23,
+  46,  95, 136, 169, 194, 193, 192, 191, 190, 189, 188, 159, 122,  77,  24,
+  45,  94, 135, 168, 167, 166, 165, 164, 163, 162, 161, 160, 123,  78,  25,
+  44,  93, 134, 133, 132, 131, 130, 129, 128, 127, 126, 125, 124,  79,  26,
+  43,  92,   91,   90,   89,  88,    87,   86,   85,   84,   83,   82,   81,  80,  27,
+  42,  41,   40,   39,   38,  37,    36,   35,   34,   33,   32,   31,   30,  29,  28
+  ]
+
 def search_for_symbol(symbol):
     url = "https://cn.investing.com/search/?q=" + symbol
     headers={"user-agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
@@ -136,7 +162,7 @@ def get_history_price(pairId, pair_type, startdays):
 REQUEST_URL_V7 = "http://47.94.154.29:8501/v1/models/turtle7:predict"
 REQUEST_URL_V8 = "http://47.94.154.29:8501/v1/models/turtle8:predict"
 REQUEST_URL_VX = "http://47.94.154.29:8501/v1/models/turtlex:predict"
-REQUEST_URL_VXC = "http://47.94.154.29:8501/v1/models/turtlexcrypto:predict"
+REQUEST_URL_V11C = "http://47.94.154.29:8501/v1/models/crypto11:predict"
 
 def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, predict_len, isCrypto):
     #turtle7_predict = []
@@ -171,13 +197,15 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
             inputObj["Prices"].append(priceObj)
         HEADER = {'Content-Type':'application/json; charset=utf-8'}
         #print(json.dumps(inputObj))
-        inputpricelist = getInputPriceList(inputObj)
-        requestDict = {"instances": inputpricelist}
         #print(json.dumps(requestDict))
         if isCrypto:
-            rsp_vx = requests.post(REQUEST_URL_VXC, data=json.dumps(requestDict), headers=HEADER)
+            inputpricelist = getInputPriceList11(inputObj)
+            requestDict = {"instances": inputpricelist}
+            rsp_vx = requests.post(REQUEST_URL_V11C, data=json.dumps(requestDict), headers=HEADER)
             #rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
         else:
+            inputpricelist = getInputPriceList(inputObj)
+            requestDict = {"instances": inputpricelist}
             rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
         #print(json.loads(rsp_vx.text))
         riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
@@ -212,6 +240,35 @@ def getInputPriceList(inputObj):
             inputPriceListSymbols2.append(inputPriceListSymbols[symbolindex][dayindex])
     return inputPriceListSymbols2
 
+
+def getInputPriceList11(inputObj):
+    pricelistsymbols = inputObj["Prices"]
+    inputPriceListSymbols = []
+    inputPriceListSymbols2 = []
+    symbolCount = len(pricelistsymbols)
+    dayscount = len(pricelistsymbols[0]["Close"])
+    for pricelistsymbol in pricelistsymbols:
+        #Desc by date
+        closelist = [math.log(closePrice) if closePrice > 0 else 0 for closePrice in pricelistsymbol["Close"]]
+        highlist = [math.log(highPrice) if highPrice > 0 else 0 for highPrice in pricelistsymbol["High"]]
+        lowlist = [math.log(lowPrice) if lowPrice > 0 else 0 for lowPrice in pricelistsymbol["Low"]]
+        maxprice = max(highlist)
+        minprice = min(lowlist)
+        rangePrice = maxprice - minprice
+        closelistscaled = [(closePrice - minprice) / rangePrice for closePrice in closelist]
+        highlistscaled = [(highPrice - minprice) / rangePrice for highPrice in highlist]
+        lowlistscaled = [(lowPrice - minprice) / rangePrice for lowPrice in lowlist]
+        closelistscaled = [closelistscaled[spiral_matrix[index]] for index in range(input_days_len)]
+        highlistscaled = [highlistscaled[spiral_matrix[index]] for index in range(input_days_len)]
+        lowlistscaled = [lowlistscaled[spiral_matrix[index]] for index in range(input_days_len)]
+        inputPriceList = []
+        for dayindex in range(dayscount):
+            inputPriceList.extend([highlistscaled[dayindex],closelistscaled[dayindex],lowlistscaled[dayindex]])
+        inputPriceListSymbols.append(inputPriceList)
+    for dayindex in range(dayscount*3):
+        for symbolindex in range(symbolCount):
+            inputPriceListSymbols2.append(inputPriceListSymbols[symbolindex][dayindex])
+    return inputPriceListSymbols2
 
 def getInputPriceList_efficientnet(inputObj):
     pricelistsymbols = inputObj["Prices"]
@@ -314,6 +371,99 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
         elif strategy >= 10:
             stop_loss = stop_loss_dict[strategy]
             order_range = order_range_dict[strategy]
+            #position = round(risk_factor / atr / (order_range - stop_loss), 2)
+            position = round(risk_factor / atr / (stop_loss - order_range), 2)
+
+        date_list.append(datestr)
+        #score = (riseProb * 2 - 1)*100
+        score = 0
+        side_list.append(side)
+        #score_list.append(round(score,2))
+        strategy_list.append(strategy)
+        prob_list.append(round(float(prob * 100),2))
+        price_list.append(price)
+        high_list.append(high)
+        low_list.append(low)
+        atr_list.append(round(float(atr * 100),2))
+        position_list.append(position)
+        stop_list.append(float(format(float(stop_price), '.7g')))
+        stop_loss_list.append(stop_loss)
+    outputRiseProb = {"symbol": symbol, 
+                      "date_list": date_list, 
+                      #"prob_list": [round(probval,4) for probval in problist], 
+                      "side_list" : side_list, 
+                      "strategy_list" : strategy_list, 
+                      "prob_list" : prob_list,
+                      "price_list" : price_list, 
+                      "high_list" : high_list, 
+                      "low_list" : low_list, 
+                      "atr_list" : atr_list, 
+                      "stop_list" : stop_list, 
+                      "stop_loss_list" : stop_loss_list, 
+                      "position_list": position_list, 
+                      "version" : version}
+    return outputRiseProb
+
+def GetPredictResult11(symbol, predictRsp, price_data, version, timestamp_list):
+    date_list = []
+    side_list = []
+    strategy_list = []
+    prob_list = []
+    price_list = []
+    atr_list = []
+    stop_list = []
+    stop_loss_list = []
+    position_list = []
+    high_list = []
+    low_list = []
+    predict_len = len(price_data["Prices"])
+    #print(str(predictRsp))
+    #for probitem in predictRsp["predictions"]:
+    #    print(json.dumps(probitem))
+        #probitem = list(map(float, probitem))
+    #Get Best Strategy
+    maxproblist = [max(probitem["probabilities"][:10]) for probitem in predictRsp["predictions"]]
+    #maxproblist = [max(probitem["probabilities"][:12]) for probitem in predictRsp["predictions"]]
+    problist = [predictRsp["predictions"][probitemindex]["probabilities"].index(maxproblist[probitemindex]) for probitemindex in range(len(predictRsp["predictions"]))]
+    for predict_index in range(predict_len):
+        date = datetime.datetime.fromtimestamp(timestamp_list[predict_index])
+        datestr = date.strftime("%Y-%m-%d")
+        prices = price_data["Prices"][predict_index]
+        closes = prices["Close"][:atr_len]
+        highs = prices["High"][:atr_len]
+        lows = prices["Low"][:atr_len]
+        for i in range(atr_len -1):
+            highs[i] = max(highs[i], closes[i+1])
+            lows[i] = min(lows[i], closes[i+1])
+        tr_list = [highs[i] / lows[i] - 1 for i in range(atr_len)]
+        atr = (sum(tr_list) / len(tr_list))
+        price = float(closes[0])
+        high = float(highs[0])
+        low = float(lows[0])
+        if 'error' in predictRsp:
+            return predictRsp
+        #riseProb = problist[predict_index]
+        prob = maxproblist[predict_index]
+        strategy = problist[predict_index]
+        
+        #riseProb = 1 - riseProb #反转AI
+
+        side = ""
+        stop_price = 0
+        stop_loss = 0
+        position = 0
+
+        if strategy < 8:
+            side = side_dict[strategy]
+            stop_loss = stop_loss_dict[strategy]
+            if side == "buy":
+                stop_price = price / (1 + atr * stop_loss)
+            else: #sell
+                stop_price = price * (1 + atr * stop_loss)
+            position = round(risk_factor / atr / stop_loss, 2)
+        elif strategy >= 8:
+            stop_loss = stop_loss_dict11[strategy]
+            order_range = order_range_dict11[strategy]
             #position = round(risk_factor / atr / (order_range - stop_loss), 2)
             position = round(risk_factor / atr / (stop_loss - order_range), 2)
 
