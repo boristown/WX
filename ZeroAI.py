@@ -78,7 +78,10 @@ def simulated_trading(next_id, input_text):
             continue
         turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500, is_crypto)
         predict_list.append(turtlex_predict)
-    simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading(predict_list)
+    if is_crypto:
+        simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading11(predict_list)
+    else:
+        simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading(predict_list)
     time_end=time.time()
     init_balance = simulate_result["balance_dynamic_list"][0]
     last_balance = simulate_result["balance_dynamic_list"][-1]
@@ -159,7 +162,10 @@ def chat(origin_input):
     "天，不足"+str(input_days_len + 20 - 1)+"天，无法执行预测！\n" + sign_text
   turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20, is_crypto)
   #Get profit of past 20 days
-  profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, -1, 20, False)
+  if is_crypto:
+    profit20 = f51_simulated_trading.get_past_profit11(turtlex_predict, -1, 20, False)
+  else:
+    profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, -1, 20, False)
   time_end=time.time()
   comment = """
   注释：
