@@ -22,6 +22,14 @@ stop_loss_dict = {0:0.16,1:0.16,
                   #10:0.40,11:0.80}
 order_range_dict = {10:0.20,11:0.40}
 
+stop_loss_dict11 = {0:0.16,1:0.16,
+                  2:0.24,3:0.24,
+                  4:0.36,5:0.36,
+                  6:0.54,7:0.54,
+                  8:1.50, 9:2.00}
+
+order_range_dict11 = {8:0.30,9:0.40}
+
 def strategy_long(balance, fee_rate, risk_factor, h_list, l_list, c_list, atr, stop_loss):
     atr_stop = atr * stop_loss
     benefit = 0.0
