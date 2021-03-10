@@ -255,9 +255,9 @@ def getInputPriceList11(inputObj):
         maxprice = max(highlist)
         minprice = min(lowlist)
         rangePrice = maxprice - minprice
-        closelistscaled = [(closePrice - minprice) / rangePrice for closePrice in closelist]
-        highlistscaled = [(highPrice - minprice) / rangePrice for highPrice in highlist]
-        lowlistscaled = [(lowPrice - minprice) / rangePrice for lowPrice in lowlist]
+        closelistscaled = [(closePrice - minprice) / rangePrice for closePrice in closelist][::-1]
+        highlistscaled = [(highPrice - minprice) / rangePrice for highPrice in highlist][::-1]
+        lowlistscaled = [(lowPrice - minprice) / rangePrice for lowPrice in lowlist][::-1]
         closelistscaled = [closelistscaled[spiral_matrix[index]] for index in range(input_days_len)]
         highlistscaled = [highlistscaled[spiral_matrix[index]] for index in range(input_days_len)]
         lowlistscaled = [lowlistscaled[spiral_matrix[index]] for index in range(input_days_len)]
