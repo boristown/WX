@@ -163,6 +163,7 @@ REQUEST_URL_V7 = "http://47.94.154.29:8501/v1/models/turtle7:predict"
 REQUEST_URL_V8 = "http://47.94.154.29:8501/v1/models/turtle8:predict"
 REQUEST_URL_VX = "http://47.94.154.29:8501/v1/models/turtlex:predict"
 REQUEST_URL_V11C = "http://47.94.154.29:8501/v1/models/crypto11:predict"
+REQUEST_URL_V11 = "http://47.94.154.29:8501/v1/models/turtle11:predict"
 
 def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, predict_len, isCrypto):
     #turtle7_predict = []
@@ -198,15 +199,15 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
         HEADER = {'Content-Type':'application/json; charset=utf-8'}
         #print(json.dumps(inputObj))
         #print(json.dumps(requestDict))
-        if isCrypto:
-            inputpricelist = getInputPriceList11(inputObj)
-            requestDict = {"instances": inputpricelist}
-            rsp_vx = requests.post(REQUEST_URL_V11C, data=json.dumps(requestDict), headers=HEADER)
-            #rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
-        else:
-            inputpricelist = getInputPriceList(inputObj)
-            requestDict = {"instances": inputpricelist}
-            rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
+        #if isCrypto:
+        inputpricelist = getInputPriceList11(inputObj)
+        requestDict = {"instances": inputpricelist}
+        rsp_vx = requests.post(REQUEST_URL_V11, data=json.dumps(requestDict), headers=HEADER)
+        #rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
+        #else:
+        #    inputpricelist = getInputPriceList(inputObj)
+        #    requestDict = {"instances": inputpricelist}
+        #    rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
         #print(json.loads(rsp_vx.text))
         riseProb_vx = GetPredictResult(symbol, json.loads(rsp_vx.text), inputObj, "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
         riseProb_vx_list.append(riseProb_vx)

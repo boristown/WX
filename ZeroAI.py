@@ -78,19 +78,20 @@ def simulated_trading(next_id, input_text):
             continue
         turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 4500, is_crypto)
         predict_list.append(turtlex_predict)
-    if is_crypto:
-        simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading11(predict_list)
-    else:
-        simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading(predict_list)
+    #if is_crypto:
+    simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading11(predict_list)
+    #else:
+    #    simulate_result, win_count, loss_count, draw_count, max_loss, max_loss_days, year_list, max_single_win, max_single_loss, strategy_count = f51_simulated_trading.simulate_trading(predict_list)
     time_end=time.time()
     init_balance = simulate_result["balance_dynamic_list"][0]
     last_balance = simulate_result["balance_dynamic_list"][-1]
     years = len(simulate_result["symbol_list"]) / 365
     annual_yield =math.pow( last_balance / init_balance, 1 / years) * 100.0 - 100.0
-    if is_crypto:
-        output_text = "模拟结果：\n" +str(input_text) + "\n海龟11加密货币决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
-    else:
-        output_text = "模拟结果：\n" +str(input_text) + "\n海龟X量化交易决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
+    #if is_crypto:
+    #    output_text = "模拟结果：\n" +str(input_text) + "\n海龟11加密货币决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
+    #else:
+    #    output_text = "模拟结果：\n" +str(input_text) + "\n海龟X量化交易决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
+    output_text = "模拟结果：\n" +str(input_text) + "\n海龟11量化交易决策引擎\n交易天数：" + str(len(simulate_result["symbol_list"])) + "\n盈利天数：" + str(win_count) + "\n亏损天数：" + str(loss_count) + "\n平局天数：" + str(draw_count)
     output_text += "\n胜率：" + str(round((win_count * 100.0 / (win_count + loss_count)),3) if (win_count + loss_count) > 0 else 0  ) + "%" + "\n最大亏损：" + str(round(max_loss * 100.0,3))  + '%' + "\n最长衰落期：" + str(max_loss_days) + "天"
     output_text += "\n初始余额：" + str(init_balance) + "\n最终余额：" + str(last_balance) + "\n年化收益：" + str(round(annual_yield,3)) + '%'
     output_text += "\n最大单日盈利：" + str(max_single_win) + "%\n最大单日亏损：" + str(max_single_loss) + '%' + "\n策略分布：" + json.dumps(strategy_count)
@@ -151,10 +152,11 @@ def chat(origin_input):
   #marketObj = json.loads(marketString)
   marketObj = market
   marketObj["name"] = marketObj["name"].replace("Investing.com","")
-  if is_crypto:
-    sign_text = "——海龟11加密货币决策引擎\n广告位：\n虚位以待……"
-  else:
-    sign_text = "——海龟X量化交易决策引擎\n广告位：\n虚位以待……"
+  #if is_crypto:
+  #  sign_text = "——海龟11加密货币决策引擎\n广告位：\n虚位以待……"
+  #else:
+  #  sign_text = "——海龟X量化交易决策引擎\n广告位：\n虚位以待……"
+  sign_text = "——海龟11量化交易决策引擎\n广告位：\n虚位以待……"
   timestamp_list, price_list, openprice_list, highprice_list, lowprice_list = f50_market_spider.get_history_price(str(marketObj["pairId"]), marketObj["pair_type"], 400)
   if len(price_list) < input_days_len + 20 - 1:
     return "市场名："+marketObj["symbol"] + marketObj["name"] + \
@@ -162,10 +164,10 @@ def chat(origin_input):
     "天，不足"+str(input_days_len + 20 - 1)+"天，无法执行预测！\n" + sign_text
   turtlex_predict = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, 20, is_crypto)
   #Get profit of past 20 days
-  if is_crypto:
-    profit20 = f51_simulated_trading.get_past_profit11(turtlex_predict, -1, 20, False)
-  else:
-    profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, -1, 20, False)
+  #if is_crypto:
+  profit20 = f51_simulated_trading.get_past_profit11(turtlex_predict, -1, 20, False)
+  #else:
+  #  profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, -1, 20, False)
   time_end=time.time()
   comment = """
   注释：
@@ -201,34 +203,34 @@ def chat(origin_input):
   #price_down_120 = format(base_price / (1 + atr100/100*1.2),'.7g')
   #price_up_165 = format(base_price * (1 + atr100/100*1.65),'.7g')
   #price_down_165 = format(base_price / (1 + atr100/100*1.65),'.7g')
-  if is_crypto:
-      strategy_text_dict = {
-          0:"做空/上涨0.16倍ATR时("+ format(base_price * (1 + atr100/100*0.16),'.7g') +")止损",
-          1:"做多/下跌0.16倍ATR时("+ format(base_price / (1 + atr100/100*0.16),'.7g') +")止损",
-          2:"做空/上涨0.24倍ATR时("+ format(base_price * (1 + atr100/100*0.24),'.7g') +")止损",
-          3:"做多/下跌0.24倍ATR时("+ format(base_price / (1 + atr100/100*0.24),'.7g') +")止损",
-          4:"做空/上涨0.36倍ATR时("+ format(base_price * (1 + atr100/100*0.36),'.7g') +")止损",
-          5:"做多/下跌0.36倍ATR时("+ format(base_price / (1 + atr100/100*0.36),'.7g') +")止损",
-          6:"做空/上涨0.54倍ATR时("+ format(base_price * (1 + atr100/100*0.54),'.7g') +")止损",
-          7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
-          8:"网格/0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.3),'.7g') + "," + format(base_price * (1 + atr100/100*0.3),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*1.5),'.7g') + "," + format(base_price * (1 + atr100/100*1.5),'.7g') +")止损",
-          9:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*2.0),'.7g') + "," + format(base_price * (1 + atr100/100*2.0),'.7g') +")止损",
-          }
-  else:
-      strategy_text_dict = {
-          0:"做空/上涨0.16倍ATR时("+ format(base_price * (1 + atr100/100*0.16),'.7g') +")止损",
-          1:"做多/下跌0.16倍ATR时("+ format(base_price / (1 + atr100/100*0.16),'.7g') +")止损",
-          2:"做空/上涨0.24倍ATR时("+ format(base_price * (1 + atr100/100*0.24),'.7g') +")止损",
-          3:"做多/下跌0.24倍ATR时("+ format(base_price / (1 + atr100/100*0.24),'.7g') +")止损",
-          4:"做空/上涨0.36倍ATR时("+ format(base_price * (1 + atr100/100*0.36),'.7g') +")止损",
-          5:"做多/下跌0.36倍ATR时("+ format(base_price / (1 + atr100/100*0.36),'.7g') +")止损",
-          6:"做空/上涨0.54倍ATR时("+ format(base_price * (1 + atr100/100*0.54),'.7g') +")止损",
-          7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
-          8:"做空/上涨0.81倍ATR时("+ format(base_price * (1 + atr100/100*0.81),'.7g') +")止损",
-          9:"做多/下跌0.81倍ATR时("+ format(base_price / (1 + atr100/100*0.81),'.7g') +")止损",
-          10:"网格/0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.2),'.7g') + "," + format(base_price * (1 + atr100/100*0.2),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")止损",
-          11:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*0.8),'.7g') + "," + format(base_price * (1 + atr100/100*0.8),'.7g') +")止损",
-          }
+  #if is_crypto:
+  strategy_text_dict = {
+      0:"做空/上涨0.16倍ATR时("+ format(base_price * (1 + atr100/100*0.16),'.7g') +")止损",
+      1:"做多/下跌0.16倍ATR时("+ format(base_price / (1 + atr100/100*0.16),'.7g') +")止损",
+      2:"做空/上涨0.24倍ATR时("+ format(base_price * (1 + atr100/100*0.24),'.7g') +")止损",
+      3:"做多/下跌0.24倍ATR时("+ format(base_price / (1 + atr100/100*0.24),'.7g') +")止损",
+      4:"做空/上涨0.36倍ATR时("+ format(base_price * (1 + atr100/100*0.36),'.7g') +")止损",
+      5:"做多/下跌0.36倍ATR时("+ format(base_price / (1 + atr100/100*0.36),'.7g') +")止损",
+      6:"做空/上涨0.54倍ATR时("+ format(base_price * (1 + atr100/100*0.54),'.7g') +")止损",
+      7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
+      8:"网格/0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.3),'.7g') + "," + format(base_price * (1 + atr100/100*0.3),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*1.5),'.7g') + "," + format(base_price * (1 + atr100/100*1.5),'.7g') +")止损",
+      9:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*2.0),'.7g') + "," + format(base_price * (1 + atr100/100*2.0),'.7g') +")止损",
+      }
+  #else:
+  #    strategy_text_dict = {
+  #        0:"做空/上涨0.16倍ATR时("+ format(base_price * (1 + atr100/100*0.16),'.7g') +")止损",
+  #        1:"做多/下跌0.16倍ATR时("+ format(base_price / (1 + atr100/100*0.16),'.7g') +")止损",
+  #        2:"做空/上涨0.24倍ATR时("+ format(base_price * (1 + atr100/100*0.24),'.7g') +")止损",
+  #        3:"做多/下跌0.24倍ATR时("+ format(base_price / (1 + atr100/100*0.24),'.7g') +")止损",
+  #        4:"做空/上涨0.36倍ATR时("+ format(base_price * (1 + atr100/100*0.36),'.7g') +")止损",
+  #        5:"做多/下跌0.36倍ATR时("+ format(base_price / (1 + atr100/100*0.36),'.7g') +")止损",
+  #        6:"做空/上涨0.54倍ATR时("+ format(base_price * (1 + atr100/100*0.54),'.7g') +")止损",
+  #        7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
+  #        8:"做空/上涨0.81倍ATR时("+ format(base_price * (1 + atr100/100*0.81),'.7g') +")止损",
+  #        9:"做多/下跌0.81倍ATR时("+ format(base_price / (1 + atr100/100*0.81),'.7g') +")止损",
+  #        10:"网格/0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.2),'.7g') + "," + format(base_price * (1 + atr100/100*0.2),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")止损",
+  #        11:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*0.8),'.7g') + "," + format(base_price * (1 + atr100/100*0.8),'.7g') +")止损",
+  #        }
 
   strategy = turtlex_predict["strategy_list"][0]
   prob = turtlex_predict["prob_list"][0]
