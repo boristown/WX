@@ -81,7 +81,7 @@ def search_for_symbol(symbol):
 def get_best_market(marketList):
     is_crypto = False
     if len(marketList) > 0:
-        marketList = sorted(marketList, key = lambda marketList: marketList["exchangeID"])
+        marketList = sorted(marketList, key = lambda marketList: marketList["pairId"])
         if marketList[0]["pair_type"] == "equities":
             for market in marketList:
                 if market["flag"] == "China" and market["pair_type"] == "equities":
@@ -91,6 +91,16 @@ def get_best_market(marketList):
                     return market, is_crypto
             for market in marketList:
                 if market["flag"] == "USA" and market["pair_type"] == "equities":
+                    return market, is_crypto
+        if marketList[0]["pair_type"] == "indice":
+            for market in marketList:
+                if market["flag"] == "China" and market["pair_type"] == "indice":
+                    return market, is_crypto
+            for market in marketList:
+                if market["flag"] == "Hong_Kong" and market["pair_type"] == "indice":
+                    return market, is_crypto
+            for market in marketList:
+                if market["flag"] == "USA" and market["pair_type"] == "indice":
                     return market, is_crypto
         for market in marketList:
             is_crypto = market["isCrypto"] or (market["pair_type"] == "indice" and market["flag"] != "USA" and market["flag"] != "Hong_Kong" and market["flag"] != "China")
