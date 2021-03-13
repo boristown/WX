@@ -213,8 +213,8 @@ def chat(origin_input):
       5:"做多/下跌0.36倍ATR时("+ format(base_price / (1 + atr100/100*0.36),'.7g') +")止损",
       6:"做空/上涨0.54倍ATR时("+ format(base_price * (1 + atr100/100*0.54),'.7g') +")止损",
       7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
-      8:"网格/0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.3),'.7g') + "," + format(base_price * (1 + atr100/100*0.3),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*1.5),'.7g') + "," + format(base_price * (1 + atr100/100*1.5),'.7g') +")止损",
-      9:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*2.0),'.7g') + "," + format(base_price * (1 + atr100/100*2.0),'.7g') +")止损",
+      8:"网格/0.3倍ATR区间("+ format(base_price / (1 + atr100/100*0.3),'.7g') + "," + format(base_price * (1 + atr100/100*0.3),'.7g') +")挂单/突破1.5倍ATR("+ format(base_price / (1 + atr100/100*1.5),'.7g') + "," + format(base_price * (1 + atr100/100*1.5),'.7g') +")止损",
+      9:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破2.0倍ATR("+ format(base_price / (1 + atr100/100*2.0),'.7g') + "," + format(base_price * (1 + atr100/100*2.0),'.7g') +")止损",
       }
   #else:
   #    strategy_text_dict = {
