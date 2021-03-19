@@ -1517,9 +1517,9 @@ def get_past_profit11(predict_symbol, date_index, days_count, reversed):
         for active_order in active_orders:
             current_dynamic_balance += active_order["profit"]
             active_order["profit"] = 0
-        if strategy < 10:
+        if strategy < 8:
             active_orders.append(new_order)
-        elif strategy >= 10:
+        elif strategy >= 8:
             active_grids.append(new_order)
     profit_past = round((current_dynamic_balance / init_balance - 1) * 100, 2)
     #print("date:" + str(date_list[-1]) + " profit:" + str(profit_past))
