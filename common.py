@@ -4,6 +4,8 @@ import json
 import mypsw
 import mysql.connector
 
+stategy_mirror = {0:1, 1:0, 2:3, 3:2, 4:5, 5:4, 6:7, 7:6, 8:8, 9:9}
+
 def load_response(response):
     if response.status_code == 200:
         resultObj = json.loads(response.text)

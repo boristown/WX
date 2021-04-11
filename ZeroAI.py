@@ -20,6 +20,7 @@ import f52_db_simulated
 import asyncio
 import _thread
 import math
+import common
 
 class word_in_color(object):
   word_in_rising_major = ''
@@ -166,6 +167,12 @@ def chat(origin_input):
   #Get profit of past 20 days
   #if is_crypto:
   profit20 = f51_simulated_trading.get_past_profit11(turtlex_predict, -1, 20, False)
+
+  turtlex_predict_mirror = f50_market_spider.predict(marketObj["symbol"]+marketObj["name"], timestamp_list, [1/i for i in price_list], [1/i for i in openprice_list], [1/i for i in lowprice_list], [1/i for i in highprice_list], 20, is_crypto)
+  #Get profit of past 20 days
+  #if is_crypto:
+  profit20_mirror = f51_simulated_trading.get_past_profit11(turtlex_predict_mirror, -1, 20, False)
+
   #else:
   #  profit20 = f51_simulated_trading.get_past_profit(turtlex_predict, -1, 20, False)
   time_end=time.time()
@@ -205,16 +212,16 @@ def chat(origin_input):
   #price_down_165 = format(base_price / (1 + atr100/100*1.65),'.7g')
   #if is_crypto:
   strategy_text_dict = {
-      0:"做空/上涨0.16倍ATR时("+ format(base_price * (1 + atr100/100*0.16),'.7g') +")止损",
-      1:"做多/下跌0.16倍ATR时("+ format(base_price / (1 + atr100/100*0.16),'.7g') +")止损",
-      2:"做空/上涨0.24倍ATR时("+ format(base_price * (1 + atr100/100*0.24),'.7g') +")止损",
-      3:"做多/下跌0.24倍ATR时("+ format(base_price / (1 + atr100/100*0.24),'.7g') +")止损",
-      4:"做空/上涨0.36倍ATR时("+ format(base_price * (1 + atr100/100*0.36),'.7g') +")止损",
-      5:"做多/下跌0.36倍ATR时("+ format(base_price / (1 + atr100/100*0.36),'.7g') +")止损",
-      6:"做空/上涨0.54倍ATR时("+ format(base_price * (1 + atr100/100*0.54),'.7g') +")止损",
-      7:"做多/下跌0.54倍ATR时("+ format(base_price / (1 + atr100/100*0.54),'.7g') +")止损",
-      8:"网格/0.3倍ATR区间("+ format(base_price / (1 + atr100/100*0.3),'.7g') + "," + format(base_price * (1 + atr100/100*0.3),'.7g') +")挂单/突破1.5倍ATR("+ format(base_price / (1 + atr100/100*1.5),'.7g') + "," + format(base_price * (1 + atr100/100*1.5),'.7g') +")止损",
-      9:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破2.0倍ATR("+ format(base_price / (1 + atr100/100*2.0),'.7g') + "," + format(base_price * (1 + atr100/100*2.0),'.7g') +")止损",
+      0:"即将下跌，趋势追踪策略，卖出/做空，移动止损点：0.16ATR(止损价："+ format(base_price * (1 + atr100/100*0.16),'.7g') +")",
+      1:"即将上涨，趋势追踪策略，买入/做多，移动止损点：0.16ATR(止损价："+ format(base_price / (1 + atr100/100*0.16),'.7g') +")",
+      2:"即将下跌，趋势追踪策略，卖出/做空，移动止损点：0.24ATR(止损价:"+ format(base_price * (1 + atr100/100*0.24),'.7g') +")",
+      3:"即将上涨，趋势追踪策略，买入/做多，移动止损点：0.24ATR(止损价："+ format(base_price / (1 + atr100/100*0.24),'.7g') +")",
+      4:"即将下跌，趋势追踪策略，卖出/做空，移动止损点：0.36ATR(止损价："+ format(base_price * (1 + atr100/100*0.36),'.7g') +")",
+      5:"即将上涨，趋势追踪策略，买入/做多，移动止损点：0.36ATR(止损价："+ format(base_price / (1 + atr100/100*0.36),'.7g') +")",
+      6:"即将下跌，趋势追踪策略，卖出/做空，移动止损点：0.54ATR(止损价："+ format(base_price * (1 + atr100/100*0.54),'.7g') +")",
+      7:"即将上涨，趋势追踪策略，买入/做多，移动止损点：0.54ATR(止损价："+ format(base_price / (1 + atr100/100*0.54),'.7g') +")",
+      8:"震荡行情，网格策略，高抛低吸，以当前价格为基准，上下0.3ATR范围挂单，突破1.5ATR范围止损(买单："+ format(base_price / (1 + atr100/100*0.3),'.7g') + "，卖单：" + format(base_price * (1 + atr100/100*0.3),'.7g') +"，跌破止损："+ format(base_price / (1 + atr100/100*1.5),'.7g') + "，涨破止损：" + format(base_price * (1 + atr100/100*1.5),'.7g') +")",
+      9:"震荡行情，网格策略，高抛低吸，以当前价格为基准，上下0.4ATR范围挂单，突破2.0ATR范围止损(买单："+ format(base_price / (1 + atr100/100*0.4),'.7g') + "，卖单：" + format(base_price * (1 + atr100/100*0.4),'.7g') +"，跌破止损："+ format(base_price / (1 + atr100/100*2.0),'.7g') + "，涨破止损：" + format(base_price * (1 + atr100/100*2.0),'.7g') +")",
       }
   #else:
   #    strategy_text_dict = {
@@ -231,18 +238,26 @@ def chat(origin_input):
   #        10:"网格/0.2倍ATR区间("+ format(base_price / (1 + atr100/100*0.2),'.7g') + "," + format(base_price * (1 + atr100/100*0.2),'.7g') +")挂单/突破0.4倍ATR("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")止损",
   #        11:"网格/0.4倍ATR区间("+ format(base_price / (1 + atr100/100*0.4),'.7g') + "," + format(base_price * (1 + atr100/100*0.4),'.7g') +")挂单/突破0.8倍ATR("+ format(base_price / (1 + atr100/100*0.8),'.7g') + "," + format(base_price * (1 + atr100/100*0.8),'.7g') +")止损",
   #        }
-
+  
   strategy = turtlex_predict["strategy_list"][0]
   prob = turtlex_predict["prob_list"][0]
+
+  kline_type = "实体"
+  if profit20_mirror > profit20:
+    kline_type = "镜像"
+    strategy = common.stategy_mirror[turtlex_predict_mirror["strategy_list"][0]]
+    prob = turtlex_predict_mirror["prob_list"][0]
+    profit20 = profit20_mirror
+  
   return_text = "[" + marketObj["pair_type"] + "/" + marketObj["flag"] + "]" + marketObj["symbol"]+marketObj["name"] + \
+  "\n20日回测收益：" + str(profit20) + "%" + \
   "\n价格Price:" + str(turtlex_predict["price_list"][0]) + \
-  "\n策略" + str(strategy) + ":" + strategy_text_dict[strategy] + "[" + str(prob) +"%]" + \
+  "\n策略" + str(strategy) + "：" + strategy_text_dict[strategy] + \
+  "\nAI信心指数：" + str(prob) +"%" + \
   "\n均幅指标ATR:" + str(turtlex_predict["atr_list"][0]) + "%" + \
-  "\n仓位Position:" + str(round(float(turtlex_predict["position_list"][0]),2)) + "%" + \
-  "\n20日收益：" + str(profit20) + "%" + \
+  "\n每小时下单量:" + str(round(float(turtlex_predict["position_list"][0]/24),2)) + "%" + \
+  "\n本次决策使用了" + kline_type + "K线" + \
   '\n预测耗时cost time:' + str(round(time_end - time_start,3)) +"s\n" + sign_text
-  #return_text = '预测耗时cost time:' + str(round(time_end - time_start),3) +"s"
-  #print(return_text)
   return return_text
 
   origin_input = origin_input.strip().upper()

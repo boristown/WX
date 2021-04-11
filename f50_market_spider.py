@@ -177,9 +177,6 @@ REQUEST_URL_V11C = "http://47.94.154.29:8501/v1/models/crypto11:predict"
 REQUEST_URL_V11 = "http://47.94.154.29:8501/v1/models/turtle11:predict"
 
 def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, lowprice_list, predict_len, isCrypto):
-    #turtle7_predict = []
-    #turtlex_predict = []
-    #print("predicting")
     print("isCrypto:"+str(isCrypto))
     timestamp_list = timestamp_list[0:input_days_len+predict_len-1]
     price_list = price_list[0:input_days_len+predict_len-1]
@@ -208,18 +205,9 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
                     lowprice_list[absolute_price_index])
             inputObj["Prices"].append(priceObj)
         HEADER = {'Content-Type':'application/json; charset=utf-8'}
-        #print(json.dumps(inputObj))
-        #print(json.dumps(requestDict))
-        #if isCrypto:
         inputpricelist = getInputPriceList11(inputObj)
         requestDict = {"instances": inputpricelist}
         rsp_vx = requests.post(REQUEST_URL_V11, data=json.dumps(requestDict), headers=HEADER)
-        #rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
-        #else:
-        #    inputpricelist = getInputPriceList(inputObj)
-        #    requestDict = {"instances": inputpricelist}
-        #    rsp_vx = requests.post(REQUEST_URL_VX, data=json.dumps(requestDict), headers=HEADER)
-        #print(json.loads(rsp_vx.text))
         riseProb_vx = GetPredictResult11(symbol, json.loads(rsp_vx.text), inputObj, "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
         riseProb_vx_list.append(riseProb_vx)
     global time_start

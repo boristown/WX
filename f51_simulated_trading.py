@@ -1284,9 +1284,6 @@ def get_past_profit11(predict_symbol, date_index, days_count, reversed):
     date_end_index = date_index + 1
     date_begin_index = date_index + days_count
     if date_begin_index >= total_len:
-        #print("date_begin_index:" + str(date_begin_index))
-        #print("total_len:" + str(total_len))
-        #print("total_len >= total_len")
         return 0
     #活动订单
     active_orders = []
@@ -1335,10 +1332,6 @@ def get_past_profit11(predict_symbol, date_index, days_count, reversed):
             side = ""
             #position = round(risk_factor / atr / (order_range - stop_loss), 2)
             position = round(risk_factor * 2 / ((atr * (stop_loss - order_range)) * (1 - fee_rate) + fee_rate * 2), 2)
-        #if score > 0:
-        #    stop_price = entry_price / (1 + atr / 100 / 2)
-        #else:
-        #    stop_price = entry_price * (1 + atr / 100 / 2)
         new_order = {"strategy":strategy, "side": side, "atr":atr, "entry_price":close_price, "high_price":close_price, 
                      "low_price":close_price, "position":position, "stop_price":stop_price, "stop_loss": stop_loss, 
                      "order_range": order_range, "sell_order_executed":False,"buy_order_executed":False}
@@ -1371,28 +1364,6 @@ def get_past_profit11(predict_symbol, date_index, days_count, reversed):
                     exit_amount = entry_amount / entry_price * close_price
                     #计算收益时，考虑交易手续费fee_ratio
                     active_order["profit"] = exit_amount * (1 - fee_ratio) - entry_amount * (1 + fee_ratio)
-
-                ##先用当日最低价判断是否止损，再用当日最高价更新止损价
-                #if low_price < active_order["stop_price"]:
-                #    active_order["stop_flag"] = 'X'
-                #    #entry_price = active_order["entry_price"]
-                #    stop_price = active_order["stop_price"]
-                #    #计算离场金额
-                #    exit_amount = entry_amount / entry_price * stop_price
-                #    #计算收益时，考虑交易手续费fee_ratio
-                #    active_order["profit"] = exit_amount * (1 - fee_ratio) - entry_amount * (1 + fee_ratio)
-                #    #更新静态余额
-                #    current_balance += active_order["profit"]
-                #    #删除活动订单
-                #    active_orders.remove(active_order)
-                #else:
-                #    if high_price > active_order["high_price"]:
-                #        active_order["high_price"] = high_price
-                #        active_order["stop_price"] = high_price / (1 + atr / 100 * active_order["stop_loss"])
-                #    #计算离场金额
-                #    exit_amount = entry_amount / entry_price * entry_price
-                #    #计算收益时，考虑交易手续费fee_ratio
-                #    active_order["profit"] = exit_amount * (1 - fee_ratio) - entry_amount * (1 + fee_ratio)
             #做空订单
             else:
                 
@@ -1417,28 +1388,6 @@ def get_past_profit11(predict_symbol, date_index, days_count, reversed):
                     exit_amount = entry_amount / entry_price * close_price
                     #计算收益时，考虑交易手续费fee_ratio
                     active_order["profit"] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)   
-
-                ##先用当日最高价判断是否止损，再用当日最低价更新止损价
-                #if high_price > active_order["stop_price"]:
-                #    active_order["stop_flag"] = 'X'
-                #    #entry_price = active_order["entry_price"]
-                #    stop_price = active_order["stop_price"]
-                #    #计算离场金额
-                #    exit_amount = entry_amount / entry_price * stop_price
-                #    #计算收益时，考虑交易手续费fee_ratio
-                #    active_order["profit"] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)
-                #    #更新静态余额
-                #    current_balance += active_order["profit"]
-                #    #删除活动订单
-                #    active_orders.remove(active_order)
-                #else:
-                #    if low_price < active_order["low_price"]:
-                #        active_order["low_price"] = low_price
-                #        active_order["stop_price"] = low_price * (1 + atr / 100 * active_order["stop_loss"])
-                #    #计算离场金额
-                #    exit_amount = entry_amount / entry_price * entry_price
-                #    #计算收益时，考虑交易手续费fee_ratio
-                #    active_order["profit"] = entry_amount * (1 - fee_ratio) - exit_amount * (1 + fee_ratio)   
         #遍历活动网格(倒序循环时才能删除元素)
         for active_grid in active_grids[::-1]:
             #获取当前市场数据
