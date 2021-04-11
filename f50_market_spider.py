@@ -183,6 +183,9 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
     openprice_list = openprice_list[0:input_days_len+predict_len-1]
     highprice_list = highprice_list[0:input_days_len+predict_len-1]
     lowprice_list = lowprice_list[0:input_days_len+predict_len-1]
+    price_log_list = [math.log(i) if i > 0 else 0 for i in price_list]
+    highprice_log_list = [math.log(i) if i > 0 else 0 for i in highprice_list]
+    lowprice_log_list = [math.log(i) if i > 0 else 0 for i in lowprice_list]
     price_len = len(price_list)
     predict_len = price_len - input_days_len + 1
     predict_batch_count = math.ceil(float(predict_len)/predict_batch)
@@ -190,11 +193,13 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
     for predict_batch_index in range(predict_batch_count):
         print(symbol + " predicting " + str(predict_batch_index+1) + " of " + str(predict_batch_count))
         inputObj = {"Prices":[]}
+        price_list_obj = []
         for predict_index in range(predict_batch):
             absolute_predict_index = predict_batch_index*predict_batch+predict_index
             if absolute_predict_index >= predict_len:
                 break
             priceObj = {"Close":[],"High":[],"Low":[]}
+            priceObj_log = {"Close":[],"High":[],"Low":[]}
             for price_index in range(input_days_len):
                 absolute_price_index = absolute_predict_index + price_index
                 priceObj["Close"].append(
@@ -203,12 +208,21 @@ def predict(symbol, timestamp_list, price_list, openprice_list, highprice_list, 
                     highprice_list[absolute_price_index])
                 priceObj["Low"].append(
                     lowprice_list[absolute_price_index])
+                priceObj_log["Close"].append(
+                    price_log_list[absolute_price_index])
+                priceObj_log["High"].append(
+                    highprice_log_list[absolute_price_index])
+                priceObj_log["Low"].append(
+                    lowprice_log_list[absolute_price_index])
             inputObj["Prices"].append(priceObj)
+            price_list_obj.append(priceObj_log)
         HEADER = {'Content-Type':'application/json; charset=utf-8'}
-        inputpricelist = getInputPriceList11(inputObj)
+        #inputpricelist = getInputPriceList11(inputObj)
+        inputpricelist = getInputPriceList11(price_list_obj)
         requestDict = {"instances": inputpricelist}
         rsp_vx = requests.post(REQUEST_URL_V11, data=json.dumps(requestDict), headers=HEADER)
-        riseProb_vx = GetPredictResult11(symbol, json.loads(rsp_vx.text), inputObj, "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
+        #riseProb_vx = GetPredictResult11(symbol, json.loads(rsp_vx.text), inputObj["Prices"], "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
+        riseProb_vx = GetPredictResult11(symbol, json.loads(rsp_vx.text), inputObj["Prices"], "X", timestamp_list[predict_batch_index*predict_batch:predict_batch_index*predict_batch+input_days_len])
         riseProb_vx_list.append(riseProb_vx)
     global time_start
     time_end=time.time()
@@ -241,17 +255,22 @@ def getInputPriceList(inputObj):
     return inputPriceListSymbols2
 
 
-def getInputPriceList11(inputObj):
-    pricelistsymbols = inputObj["Prices"]
+#def getInputPriceList11(inputObj):
+def getInputPriceList11(price_list_obj):
+    #pricelistsymbols = inputObj["Prices"]
+    pricelistsymbols = price_list_obj
     inputPriceListSymbols = []
     inputPriceListSymbols2 = []
     symbolCount = len(pricelistsymbols)
     dayscount = len(pricelistsymbols[0]["Close"])
     for pricelistsymbol in pricelistsymbols:
         #Desc by date
-        closelist = [math.log(closePrice) if closePrice > 0 else 0 for closePrice in pricelistsymbol["Close"]]
-        highlist = [math.log(highPrice) if highPrice > 0 else 0 for highPrice in pricelistsymbol["High"]]
-        lowlist = [math.log(lowPrice) if lowPrice > 0 else 0 for lowPrice in pricelistsymbol["Low"]]
+        #closelist = [math.log(closePrice) if closePrice > 0 else 0 for closePrice in pricelistsymbol["Close"]]
+        #highlist = [math.log(highPrice) if highPrice > 0 else 0 for highPrice in pricelistsymbol["High"]]
+        #lowlist = [math.log(lowPrice) if lowPrice > 0 else 0 for lowPrice in pricelistsymbol["Low"]]
+        closelist = pricelistsymbol["Close"]
+        highlist = pricelistsymbol["High"]
+        lowlist = pricelistsymbol["Low"]
         maxprice = max(highlist)
         minprice = min(lowlist)
         rangePrice = maxprice - minprice
@@ -404,7 +423,7 @@ def GetPredictResult(symbol, predictRsp, price_data, version, timestamp_list):
                       "version" : version}
     return outputRiseProb
 
-def GetPredictResult11(symbol, predictRsp, price_data, version, timestamp_list):
+def GetPredictResult11(symbol, predictRsp, price_obj, version, timestamp_list):
     date_list = []
     side_list = []
     strategy_list = []
@@ -416,19 +435,14 @@ def GetPredictResult11(symbol, predictRsp, price_data, version, timestamp_list):
     position_list = []
     high_list = []
     low_list = []
-    predict_len = len(price_data["Prices"])
-    #print(str(predictRsp))
-    #for probitem in predictRsp["predictions"]:
-    #    print(json.dumps(probitem))
-        #probitem = list(map(float, probitem))
+    predict_len = len(price_obj)
     #Get Best Strategy
     maxproblist = [max(probitem["probabilities"][:10]) for probitem in predictRsp["predictions"]]
-    #maxproblist = [max(probitem["probabilities"][:12]) for probitem in predictRsp["predictions"]]
     problist = [predictRsp["predictions"][probitemindex]["probabilities"].index(maxproblist[probitemindex]) for probitemindex in range(len(predictRsp["predictions"]))]
     for predict_index in range(predict_len):
         date = datetime.datetime.fromtimestamp(timestamp_list[predict_index])
         datestr = date.strftime("%Y-%m-%d")
-        prices = price_data["Prices"][predict_index]
+        prices = price_obj[predict_index]
         closes = prices["Close"][:atr_len]
         highs = prices["High"][:atr_len]
         lows = prices["Low"][:atr_len]
@@ -446,8 +460,6 @@ def GetPredictResult11(symbol, predictRsp, price_data, version, timestamp_list):
         prob = maxproblist[predict_index]
         strategy = problist[predict_index]
         
-        #riseProb = 1 - riseProb #反转AI
-
         side = ""
         stop_price = 0
         stop_loss = 0
