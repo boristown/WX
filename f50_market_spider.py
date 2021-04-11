@@ -5,6 +5,7 @@ import re
 import datetime
 import time
 import math
+import common
 #import f51_simulated_trading
 
 #一次爬取所有市场的爬虫程序
@@ -64,19 +65,59 @@ spiral_matrix  = [
   42,  41,   40,   39,   38,  37,    36,   35,   34,   33,   32,   31,   30,  29,  28
   ]
 
+def save_symbol_search(symbol, response):
+    myconnector, mycursor = common.init_mycursor()
+    statement = '''
+    insert into
+    `symbol_search` ( `symbol`, `response` )
+    values ( %s, %s )
+    ON DUPLICATE KEY UPDATE
+    `symbol` = VALUES(`symbol`), 
+    `response` = VALUES(`response`)
+    ;
+    '''
+    #print(simulate_result)
+    mycursor.execute(statement, (symbol, response))
+    myconnector.commit()
+    return mycursor.rowcount
+
+def read_symbol_search(symbol):
+    myconnector, mycursor = common.init_mycursor()
+    statement = '''
+    select
+    `symbol`,
+    `response`
+    from 
+    `symbol_search`
+    where 
+    `symbol` = %s
+    ;
+    '''
+    mycursor.execute(statement, (symbol, ))
+    list_results = mycursor.fetchall()
+    response = ""
+    for list_result in list_results:
+        response = str(list_result[1])
+    return response
+
 def search_for_symbol(symbol):
-    url = "https://cn.investing.com/search/?q=" + symbol
-    headers={"user-agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
-    response = requests.get(url, headers=headers)
-    marketListString = ""
-    if response.status_code == 200:
-        string = response.text
-        #print(string)
-        pattern = 'allResultsQuotesDataArray\s+?=\s+?(\[.+?\]);\s+?</script>'
-        searchObj = re.search(pattern, string, flags=0)
-        if searchObj:
-            marketListString = searchObj.group(1)
-        return marketListString
+    response = read_symbol_search(symbol)
+    if len(response) == 0: 
+        url = "https://cn.investing.com/search/?q=" + symbol
+        headers={"user-agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
+        response = requests.get(url, headers=headers)
+        marketListString = ""
+        if response.status_code == 200:
+            string = response.text
+            #print(string)
+            pattern = 'allResultsQuotesDataArray\s+?=\s+?(\[.+?\]);\s+?</script>'
+            searchObj = re.search(pattern, string, flags=0)
+            if searchObj:
+                marketListString = searchObj.group(1)
+            save_symbol_search(symbol, marketListString)
+            return marketListString
+    else:
+        return response
 
 def get_best_market(marketList):
     is_crypto = False

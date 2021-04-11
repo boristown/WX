@@ -27,3 +27,15 @@ def init_mycursor():
       )
     mycursor = myconnector.cursor()
     return myconnector, mycursor
+
+def init_localcursor():
+    myconnector = mysql.connector.connect(
+      host=mypsw.loacalhost,
+      user=mypsw.loacaluser,
+      passwd=mypsw.loacalpasswd,
+      database=mypsw.loacaldatabase,
+      auth_plugin='mysql_native_password'
+      )
+    mycursor = myconnector.cursor()
+    return myconnector, mycursor
+    
