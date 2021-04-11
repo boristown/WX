@@ -250,14 +250,13 @@ def chat(origin_input):
     profit20 = profit20_mirror
   
   return_text = "[" + marketObj["pair_type"] + "/" + marketObj["flag"] + "]" + marketObj["symbol"]+marketObj["name"] + \
-  "\n20日回测收益：" + str(profit20) + "%" + \
-  "\n价格Price:" + str(turtlex_predict["price_list"][0]) + \
-  "\n策略" + str(strategy) + "：" + strategy_text_dict[strategy] + \
+  "\n20日回测收益：" + str(profit20) + "%（单日最大风险：1.5%）" + \
+  "\n当前价格：" + str(turtlex_predict["price_list"][0]) + \
+  "\n交易策略" + str(strategy) + "：" + strategy_text_dict[strategy] + \
   "\nAI信心指数：" + str(prob) +"%" + \
-  "\n均幅指标ATR:" + str(turtlex_predict["atr_list"][0]) + "%" + \
-  "\n每小时下单量:" + str(round(float(turtlex_predict["position_list"][0]/24),2)) + "%" + \
+  "\n均幅指标ATR：" + str(turtlex_predict["atr_list"][0]) + "%" + \
   "\n本次决策使用了" + kline_type + "K线" + \
-  '\n预测耗时cost time:' + str(round(time_end - time_start,3)) +"s\n" + sign_text
+  '\n响应耗时：' + str(round(time_end - time_start,3)) +"s\n" + sign_text
   return return_text
 
   origin_input = origin_input.strip().upper()
