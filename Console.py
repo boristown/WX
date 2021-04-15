@@ -8,5 +8,5 @@ import sys
 while True:
   print ('input :')
   value = sys.stdin.readline()
-  #print (ZeroAI.chat(value))
-  profile.run("ZeroAI.chat(value)")
+  print (ZeroAI.chat(value))
+  #profile.run("ZeroAI.chat(value)")
