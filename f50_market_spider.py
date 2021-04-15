@@ -169,12 +169,14 @@ def get_history_price(pairId, pair_type, startdays):
     st_date_str = (datetime.datetime.utcnow() + datetime.timedelta(days = -startdays)).strftime(dateformat).replace("-","%2F")
     end_date_str = (datetime.datetime.utcnow()).strftime(dateformat).replace("-","%2F")
     payload = "action=historical_data&curr_id="+ pairId +"&end_date=" + end_date_str + "&header=null&interval_sec=Daily&smlID=" + smlID_str + "&sort_col=date&sort_ord=DESC&st_date=" + st_date_str
+    print(payload)
     try:
         response = requests.request("POST", url, data=payload, headers=headers, verify=False, timeout=40)
     except Exception as e:
         time.sleep(7)
     if response == None:
         pass
+    print(response.text)
     table_pattern = r'<tr>.+?<td.+?data-real-value="([^><"]+?)".+?</td>' \
             '.+?data-real-value="([^><"]+?)".+?</td>.+?data-real-value="([^><"]+?)".+?</td>'  \
             '.+?data-real-value="([^><"]+?)".+?</td>.+?data-real-value="([^><"]+?)".+?</td>'  \

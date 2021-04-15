@@ -129,7 +129,7 @@ def chat(origin_input):
   marketListString = ""
   #while len(origin_input) > 0 and len(marketListString) == 0:
   marketListString  = f50_market_spider.search_for_symbol(origin_input)
-  if len(marketListString) == 0:
+  if not marketListString or len(marketListString) == 0:
       for char_index in range(len(origin_input)):
           char_index_end = len(origin_input) - char_index - 1
           if char_index == 0:
@@ -139,7 +139,7 @@ def chat(origin_input):
           else:
               new_input = origin_input[:char_index] + origin_input[-char_index_end:]
           marketListString  = f50_market_spider.search_for_symbol(new_input)
-          if len(marketListString) > 0:
+          if marketListString and len(marketListString) > 0:
               break
       #new_input = origin_input[:-1]
       origin_input = new_input
