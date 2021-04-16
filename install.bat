@@ -5,4 +5,5 @@ pip install matplotlib
 pip install pypinyin
 pip install requests
 pip install wordcloud
+pip install cfscrape
 pause
