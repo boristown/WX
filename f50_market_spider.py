@@ -191,6 +191,34 @@ def get_best_market(marketList):
             return market, is_crypto
     return None, is_crypto
 
+def get_all_markets(marketList):
+    myconnector, mycursor = common.init_aitradin_cursor()
+    statement = '''
+    insert into
+    `symbol_json` ( `symbol_id`, `symbol_json` )
+    values ( %s, %s )
+    ON DUPLICATE KEY UPDATE
+    `symbol_id` = VALUES(`symbol_id`), 
+    `symbol_json` = VALUES(`symbol_json`)
+    ;
+    '''
+    #print(simulate_result)
+    insert_val = []
+    market_index = 0
+    response_text = "市场清单："
+    for market in marketList:
+        market_index += 1
+        url = "api.aitrad.in/strategy?id=" + str(market["pairId"])
+        name = market["name"].replace("Investing.com","")
+        exchange = market["exchange"]
+        response_text += "\n" + str(market_index) + " " + name + " " + exchange + ":\n" + url
+        insert_val.append((str(market["pairId"]), json.dumps(market)))
+    sign_text = "——海龟11量化交易决策引擎\n广告位：\n虚位以待……"
+    response_text += "\n请复制链接到浏览器中查看决策结果！\n"+sign_text
+    mycursor.executemany(statement, insert_val)
+    myconnector.commit()
+    return response_text
+
 def get_history_price(pairId, pair_type, startdays):
     priceList = []
     if pair_type == "currency":
