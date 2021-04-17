@@ -6,6 +6,9 @@ import datetime
 import time
 import math
 import common
+import asyncio
+#from pyppeteer import launch
+
 #import f51_simulated_trading
 
 #一次爬取所有市场的爬虫程序
@@ -116,6 +119,46 @@ def search_for_symbol(symbol):
                 marketListString = searchObj.group(1)
             save_symbol_search(symbol, marketListString)
             return marketListString
+    else:
+        return response
+
+def screen_size():
+    """使用tkinter获取屏幕大小"""
+    import tkinter
+    tk = tkinter.Tk()
+    width = tk.winfo_screenwidth()
+    height = tk.winfo_screenheight()
+    tk.quit()
+    return width, height
+
+async def search_for_symbol_pyppeteer(symbol):
+    response = read_symbol_search(symbol)
+    if len(response) == 0:
+        from pyppeteer import launch
+        url = "https://cn.investing.com/search/?q=" + symbol
+        headers={"user-agent":"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
+        width, height = screen_size()
+        browser = await launch(headless=False, args=[f'--window-size={width},{height}'])
+        page = await browser.newPage()
+        await page.setViewport({'width': width, 'height': height})
+        await page.setJavaScriptEnabled(enabled=True)
+        await page.goto(url)
+        await asyncio.sleep(10)
+        response = await page.content()
+        print(response)
+        browser.close()
+        #response = requests.get(url, headers=headers)
+        marketListString = ""
+        #if response.status_code == 200:
+            #string = response.text
+        string = response.text
+        #print(string)
+        pattern = 'allResultsQuotesDataArray\s+?=\s+?(\[.+?\]);\s+?</script>'
+        searchObj = re.search(pattern, string, flags=0)
+        if searchObj:
+            marketListString = searchObj.group(1)
+        save_symbol_search(symbol, marketListString)
+        return marketListString
     else:
         return response
 

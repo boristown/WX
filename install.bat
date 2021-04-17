@@ -6,4 +6,5 @@ pip install pypinyin
 pip install requests
 pip install wordcloud
 pip install cfscrape
+pip install pyppeteer
 pause
