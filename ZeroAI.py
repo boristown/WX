@@ -21,6 +21,7 @@ import asyncio
 import _thread
 import math
 import common
+import requests
 
 class word_in_color(object):
   word_in_rising_major = ''
@@ -108,8 +109,43 @@ def simulated_end(input_text):
         result = "模拟结果未生成，请稍后查询！"
     return result
 
+def get_prediction_text(exchange, symbol, prediction):
+  text = "交易所：" + exchange + "；市场：" + symbol + '\n' \
+    '操作方向：' + ('网格' if prediction["strategy"]["trend_grid"] < 0.5 else ('做多' if prediction["strategy"]["long_short"] >= 0.5 else '做空')) + '\n' \
+    '信心指数：' + str(round(prediction["strategy"]["trade"]*100.0,3)) + '%\n' \
+    '技术信息：\n' \
+    '策略：' + str(prediction["strategy"]) + '\n' \
+    '订单：' + str(prediction["orders"]) + '\n' \
+    '——AI海龟∞（编号：'+str(prediction["strategy"]["ai"])+'；回测年化：'+str(round(prediction["strategy"]["validation"]*100.0,2))+'%）'
+  return text
+
+def get_v1_prediction(exchange, symbol):
+  url = "https://aitrad.in/api/v1/predict?exchange=" + exchange + "&symbol=" + symbol
+  response = requests.get(url)
+  prediction = json.loads(response.text)
+  if prediction["code"] == 200:
+    return get_prediction_text(exchange, symbol, prediction)
+  else:
+    return prediction["msg"]
+
 def chat(origin_input):
   time_start=time.time()
+  if '@' in origin_input and len(origin_input) >= 3:
+    origin_input = origin_input.strip()
+    # 替换空格
+    origin_input = origin_input.replace(' ', '')
+    # 替换换行
+    origin_input = origin_input.replace('\n', '')
+    # 替换换行
+    origin_input = origin_input.replace('\r', '')
+    split_str_list = origin_input.split('@',1)
+    symbol = split_str_list[0]
+    exchange = split_str_list[1]
+    if symbol and exchange:
+      return get_v1_prediction(exchange, symbol)
+    else:
+      return "请输入'市场@交易所'执行预测，例如：'BTCUSDT@binance'。"
+    
   if origin_input[:2] == "模拟":
       max_id = f52_db_simulated.get_max_id()
       next_id = max_id + 1
