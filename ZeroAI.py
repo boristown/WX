@@ -113,13 +113,20 @@ def get_prediction_text(exchange, symbol, prediction):
   order_item = None
   for order_key in prediction["orders"]:
     order_item = prediction["orders"][order_key][0]
-  stop_loss_str = ('止损价：' + str(order_item["stop_loss_price"]) + '('+ str(order_item["stop_loss"]) +'ATR)') if prediction["strategy"]["trend_grid"] >= 0.5 else ('止损价：' + str(prediction["strategy"]['stop_loss_price']))
-  text = "交易所：" + order_item["exchange"] + "\n市场：" + order_item["symbol"] + '\n' \
-    '入场价：' + str(order_item["entry_price"]) + '\n' \
-    '操作方向：' + ('网格' if prediction["strategy"]["trend_grid"] < 0.5 else ('做多' if prediction["strategy"]["long_short"] >= 0.5 else '做空')) + '\n' \
-    '信心指数：' + str(round(prediction["strategy"]["trade"]*100.0,3)) + '%\n' \
-    'ATR：' + str(round(order_item["atr"],3)) + '%\n' + str(stop_loss_str) + '\n' \
-    '——AI海龟∞（编号：'+str(prediction["strategy"]["ai"])+'；回测年化：'+str(round(prediction["strategy"]["validation"]*100.0,2))+'%）'
+  if order_item:
+    stop_loss_str = ('止损价：' + str(order_item["stop_loss_price"]) + '('+ str(order_item["stop_loss"]) +'ATR)') if prediction["strategy"]["trend_grid"] >= 0.5 else ('止损价：' + str(prediction["strategy"]['stop_loss_price']))
+    text = "交易所：" + order_item["exchange"] + "\n市场：" + order_item["symbol"] + '\n' \
+      '入场价：' + str(order_item["entry_price"]) + '\n' \
+      '操作方向：' + ('网格' if prediction["strategy"]["trend_grid"] < 0.5 else ('做多' if prediction["strategy"]["long_short"] >= 0.5 else '做空')) + '\n' \
+      '信心指数：' + str(round(prediction["strategy"]["trade"]*100.0,3)) + '%\n' \
+      'ATR：' + str(round(order_item["atr"],3)) + '%\n' + str(stop_loss_str) + '\n' \
+      '仓位：' + str(round(order_item["amount"],3)) + '%\n镜像K线：' + ('是' if prediction["strategy"]["mirror"] else '否') + '\n' \
+      '——AI海龟∞（编号：'+str(prediction["strategy"]["ai"])+'；回测年化：'+str(round(prediction["strategy"]["validation"]*100.0,2))+'%）'
+  else:
+    text = "交易所：" + exchange + "\n市场：" + symbol + '\n' \
+      '操作方向：无操作\n' \
+      '信心指数：' + str(round(prediction["strategy"]["trade"]*100.0,3)) + '%\n镜像K线：' + ('是' if prediction["strategy"]["mirror"] else '否') + '\n' \
+      '——AI海龟∞（编号：'+str(prediction["strategy"]["ai"])+'；回测年化：'+str(round(prediction["strategy"]["validation"]*100.0,2))+'%）'
   return text
 
 def get_v1_prediction(exchange, symbol):
