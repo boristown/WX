@@ -110,9 +110,9 @@ def simulated_end(input_text):
     return result
 
 def get_prediction_text(exchange, symbol, prediction):
-  order_item = None
-  for order_key in prediction["orders"]:
-    order_item = prediction["orders"][order_key][0]
+  order_item = prediction["orders"]
+  #for order_key in prediction["orders"]:
+  #  order_item = prediction["orders"][order_key][0]
   timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
   timeArray = time.localtime(timeStamp)
   otherStyleTime = time.strftime("%Y年%m月%d日 %H时%M分%S秒".encode('unicode_escape').decode('utf8'), timeArray).encode('utf-8').decode('unicode_escape')
