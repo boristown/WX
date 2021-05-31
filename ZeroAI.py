@@ -119,7 +119,7 @@ def get_prediction_text(exchange, symbol, prediction):
   sign_text = 'p.s. 海龟∞AI正在无限进化中……\n' \
     '最后进化时间：' + otherStyleTime + '\n' \
     '训练集年化：' + str(round(prediction["strategy"]["fitness"]*100.0,2)) + '%\n' \
-    '验证集年化：' + str(round(prediction["strategy"]["validation"]*100.0,2)) + '%\n'
+    '验证集年化：' + str(round(prediction["strategy"]["validation"]*100.0,2)) + '%'
     
   if order_item:
     stop_loss_str = ('止损价：' + str(order_item["stop_loss_price"]) + '('+ str(order_item["stop_loss"]) +'ATR)') if prediction["strategy"]["trend_grid"] >= 0.5 else ('止损价：' + str(prediction["strategy"]['stop_loss_price']))
