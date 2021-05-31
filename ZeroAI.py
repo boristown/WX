@@ -113,10 +113,10 @@ def get_prediction_text(exchange, symbol, prediction):
   order_item = None
   for order_key in prediction["orders"]:
     order_item = prediction["orders"][order_key][0]
-  timeStamp = int(prediction["strategy"]["ai"])
+  timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
   timeArray = time.localtime(timeStamp)
-  otherStyleTime = time.strftime("%Y年%月%d日%H时%M分%S秒", timeArray)
-  sign_text = 'P.S.海龟∞AI正在无限进化中……\n' \
+  otherStyleTime = time.strftime("%Y年%m月%d日 %H时%M分%S秒".encode('unicode_escape').decode('utf8'), timeArray).encode('utf-8').decode('unicode_escape')
+  sign_text = 'p.s. 海龟∞AI正在无限进化中……\n' \
     '最后进化时间：' + otherStyleTime + '\n' \
     '训练集年化：' + str(round(prediction["strategy"]["fitness"]*100.0,2)) + '%\n' \
     '验证集年化：' + str(round(prediction["strategy"]["validation"]*100.0,2)) + '%\n'
