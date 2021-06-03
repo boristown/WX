@@ -116,8 +116,8 @@ def get_prediction_text(exchange, symbol, prediction):
   timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
   timeArray = time.localtime(timeStamp)
   otherStyleTime = time.strftime("%Y年%m月%d日 %H时%M分%S秒".encode('unicode_escape').decode('utf8'), timeArray).encode('utf-8').decode('unicode_escape')
-  sign_text = 'p.s. 海龟∞AI正在无限进化中……\n' \
-    '于'+otherStyleTime+'完成了第'+str(prediction["strategy"]['epoch'])+'轮进化……\n' \
+  sign_text = 'p.s. 海龟∞AI正在无限进化中，' \
+    '他于'+otherStyleTime+'完成了第'+str(prediction["strategy"]['epoch'])+'轮演化。\n' \
     '训练集年化：' + str(round(prediction["strategy"]["fitness"]*100.0,2)) + '%\n' \
     '验证集年化：' + str(round(prediction["strategy"]["validation"]*100.0,2)) + '%'
     
