@@ -117,7 +117,7 @@ def get_prediction_text(exchange, symbol, prediction):
   timeArray = time.localtime(timeStamp)
   otherStyleTime = time.strftime("%Y年%m月%d日 %H时%M分%S秒".encode('unicode_escape').decode('utf8'), timeArray).encode('utf-8').decode('unicode_escape')
   sign_text = 'p.s. 海龟∞AI正在无限进化中，' \
-    '他于'+otherStyleTime+'完成了第'+str(prediction["strategy"]['epoch'])+'轮演化。\n' \
+    '于'+otherStyleTime+'完成了第'+str(prediction["strategy"]['epoch'])+'轮演化。\n' \
     '训练集年化：' + str(round(prediction["strategy"]["fitness"]*100.0,2)) + '%\n' \
     '验证集年化：' + str(round(prediction["strategy"]["validation"]*100.0,2)) + '%'
     
@@ -126,7 +126,7 @@ def get_prediction_text(exchange, symbol, prediction):
     text = "交易所：" + order_item["exchange"] + "\n市场：" + order_item["symbol"] + '\n' \
       '入场价：' + str(order_item["entry_price"]) + '\n' \
       '操作：' + ('网格' if prediction["strategy"]["trend_grid"] < 0.5 else ('做多' if prediction["strategy"]["long_short"] >= 0.5 else '做空')) + '\n' \
-      '信心指数：' + str(round(prediction["strategy"]["trade"]*100.0,3)) + '%\n' \
+      '信心指数：' + str(round(prediction["strategy"]["trade"]*100.0,5)) + '%(选择该指数最强的市场下单)\n' \
       'ATR：' + str(round(order_item["atr"],3)) + '%\n' + str(stop_loss_str) + '\n' \
       '仓位：' + str(round(order_item["amount"],3)) + '%\n镜像K线：' + ('是' if prediction["strategy"]["mirror"] else '否') + '\n' + sign_text
       #'——AI海龟∞（编号：'+str(prediction["strategy"]["ai"])+'；回测年化：'+str(round(prediction["strategy"]["validation"]*100.0,2))+'%）'
