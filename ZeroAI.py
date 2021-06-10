@@ -128,7 +128,7 @@ def get_prediction_text(exchange, symbol, prediction):
       '操作：' + ('网格' if prediction["strategy"]["trend_grid"] < 0.5 else ('做多' if prediction["strategy"]["long_short"] >= 0.5 else '做空')) + '\n' \
       '信心指数：' + str(round(prediction["strategy"]["trade"]*100.0,5)) + '%(选择该指数最强的市场下单)\n' \
       'ATR：' + str(round(order_item["atr"],3)) + '%\n' + str(stop_loss_str) + '\n' \
-      '仓位：' + str(round(order_item["amount"],3)) + '%\n镜像K线：' + ('是' if prediction["strategy"]["mirror"] else '否') + '\n' + sign_text
+      '头寸（仓位）：' + str(round(order_item["amount"],3)) + '%/天（使用高频交易时，头寸应除以交易频率）\n镜像K线：' + ('是' if prediction["strategy"]["mirror"] else '否') + '\n' + sign_text
       #'——AI海龟∞（编号：'+str(prediction["strategy"]["ai"])+'；回测年化：'+str(round(prediction["strategy"]["validation"]*100.0,2))+'%）'
   else:
     text = "交易所：" + exchange + "\n市场：" + symbol + '\n' \
