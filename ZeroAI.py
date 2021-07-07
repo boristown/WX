@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 # filename: ZeroAI.py
 
-from wordcloud import WordCloud, STOPWORDS
+#from wordcloud import WordCloud, STOPWORDS
 import mysql.connector
 import mypsw
 import time
@@ -109,6 +109,33 @@ def simulated_end(input_text):
         result = "模拟结果未生成，请稍后查询！"
     return result
 
+def get_predict_info(exchange, symbol, prediction):
+  strategy = prediction["strategy"]
+  order_item = prediction["orders"]
+  timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
+  timeArray = datetime.datetime.utcfromtimestamp(timeStamp)
+  #timeArray = time.localtime(timeStamp)
+  otherStyleTime = time.strftime("%Y-%m-%d %H:%M:%S UTC".encode('unicode_escape').decode('utf8'), timeArray).encode('utf-8').decode('unicode_escape')
+  
+  sign_text = '\n——预言家/Prophet\n诞生Birth:' + otherStyleTime + '\n纪元Epoch:'+strategy['epoch'] + \
+    '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
+    '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%'
+
+  text = "市场Symbol:" + symbol + \
+    '\n标准日期UTCDate:' + strategy["date"] + \
+    '\n评分Score:' + str(strategy["score"]) + \
+    '\n方向Side:' + strategy["side"] + \
+    '\n止损Stop:' + str(strategy["stop"]) + "ATR" \
+    '\n最高价HighPrice:' + str(strategy["high_price"]) + \
+    '\n最低价LowPrice:' + str(strategy["low_price"]) + \
+    '\n最新价ClosePrice:' + str(strategy["close_price"]) + \
+    '\n均幅指标Atr20:' + str(strategy["atr"]) + "%" \
+    '\n头寸大小Position:' + str(strategy["amount"]) + "%" \
+    '\n镜像Mirror:' + str(strategy["mirror"]) + \
+    '\n时间戳Timestamp:' + str(strategy["predict_timestamp"]) + \
+    sign_text
+  return text
+
 def get_prediction_text(exchange, symbol, prediction):
   order_item = prediction["orders"]
   #for order_key in prediction["orders"]:
@@ -142,7 +169,7 @@ def get_v1_prediction(exchange, symbol):
   response = requests.get(url)
   prediction = json.loads(response.text)
   if prediction["code"] == 200:
-    return get_prediction_text(exchange, symbol, prediction)
+    return get_predict_info(exchange, symbol, prediction)
   else:
     return prediction["msg"][:600]
 
