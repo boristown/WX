@@ -115,14 +115,14 @@ def get_predict_info(exchange, symbol, prediction):
   timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
   timeArray = datetime.datetime.utcfromtimestamp(timeStamp)
   #timeArray = time.localtime(timeStamp)
-  otherStyleTime = time.strftime("%Y-%m-%d %H:%M:%S UTC".encode('unicode_escape').decode('utf8'), timeArray).encode('utf-8').decode('unicode_escape')
+  otherStyleTime = timeArray.strftime("%Y-%m-%d %H:%M:%S")
   
-  sign_text = '\n——预言家/Prophet\n诞生Birth:' + otherStyleTime + '\n纪元Epoch:'+strategy['epoch'] + \
+  sign_text = '\n——预言家/Prophet\n诞生Birth:' + otherStyleTime + '\n纪元Epoch:' + str(strategy['epoch']) + \
     '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
     '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%'
 
   text = "市场Symbol:" + symbol + \
-    '\n标准日期UTCDate:' + strategy["date"] + \
+    '\n日期UTC:' + strategy["date"] + \
     '\n评分Score:' + str(strategy["score"]) + \
     '\n方向Side:' + strategy["side"] + \
     '\n止损Stop:' + str(strategy["stop"]) + "ATR" \
