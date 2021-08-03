@@ -117,7 +117,8 @@ def search_for_symbol(symbol):
             searchObj = re.search(pattern, string, flags=0)
             if searchObj:
                 marketListString = searchObj.group(1)
-            save_symbol_search(symbol, marketListString)
+            if marketListString:
+                save_symbol_search(symbol, marketListString)
             return marketListString
     else:
         return response
