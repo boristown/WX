@@ -208,12 +208,12 @@ def get_all_markets(marketList):
     response_text = "市场清单："
     for market in marketList:
         market_index += 1
-        url = "api.aitrad.in/strategy?id=" + str(market["pairId"])
+        url = "aitrad.in/api/v1/predict?category=1&symbol=" + str(market["pairId"])
         name = market["name"].replace("Investing.com","")
         exchange = market["exchange"]
         response_text += "\n" + str(market_index) + " " + name + " " + exchange + ":\n" + url
         insert_val.append((str(market["pairId"]), json.dumps(market)))
-    sign_text = "——海龟11量化交易决策引擎\n广告位：\n虚位以待……"
+    sign_text = "——预言家/Prophet\n"
     response_text += "\n请复制链接到浏览器中查看决策结果！\n"+sign_text
     mycursor.executemany(statement, insert_val)
     myconnector.commit()
