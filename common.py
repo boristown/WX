@@ -30,10 +30,10 @@ def init_mycursor():
 
 def local_cursor():
     myconnector = mysql.connector.connect(
-      host=mypsw.wechatadmin.host,
-      user=mypsw.wechatadmin.user,
-      passwd=mypsw.wechatadmin.passwd,
-      database=mypsw.wechatadmin.database,
+      host=mypsw.localserver.host,
+      user=mypsw.localserver.user,
+      passwd=mypsw.localserver.passwd,
+      database=mypsw.localserver.database,
       auth_plugin='mysql_native_password'
       )
     mycursor = myconnector.cursor()

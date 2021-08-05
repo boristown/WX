@@ -69,6 +69,7 @@ spiral_matrix  = [
   ]
 
 def save_symbol_search(symbol, response):
+    print("Saving " + symbol + str(response))
     myconnector, mycursor = common.local_cursor()
     statement = '''
     insert into
@@ -85,6 +86,7 @@ def save_symbol_search(symbol, response):
     return mycursor.rowcount
 
 def read_symbol_search(symbol):
+    print("Reading " + symbol)
     myconnector, mycursor = common.local_cursor()
     statement = '''
     select
