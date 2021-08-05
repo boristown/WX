@@ -28,6 +28,16 @@ def init_mycursor():
     mycursor = myconnector.cursor()
     return myconnector, mycursor
 
+def local_cursor():
+    myconnector = mysql.connector.connect(
+      host=mypsw.wechatadmin.host,
+      user=mypsw.wechatadmin.user,
+      passwd=mypsw.wechatadmin.passwd,
+      database=mypsw.wechatadmin.database,
+      auth_plugin='mysql_native_password'
+      )
+    mycursor = myconnector.cursor()
+    return myconnector, mycursor
 
 def init_aitradin_cursor():
     myconnector = mysql.connector.connect(
