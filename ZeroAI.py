@@ -109,33 +109,6 @@ def simulated_end(input_text):
         result = "模拟结果未生成，请稍后查询！"
     return result
 
-def get_predict_info(exchange, symbol, prediction):
-  strategy = prediction["strategy"]
-  order_item = prediction["orders"]
-  timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
-  timeArray = datetime.datetime.utcfromtimestamp(timeStamp)
-  #timeArray = time.localtime(timeStamp)
-  otherStyleTime = timeArray.strftime("%Y-%m-%d %H:%M:%S")
-  
-  sign_text = '\n——预言家/Prophet\n诞生Birth:' + otherStyleTime + '\n纪元Epoch:' + str(strategy['epoch']) + \
-    '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
-    '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%'
-
-  text = "市场Symbol:" + symbol + \
-    '\n日期UTC:' + strategy["date"] + \
-    '\n评分Score:' + str(strategy["score"]) + \
-    '\n方向Side:' + strategy["side"] + \
-    '\n止损Stop:' + str(strategy["stop"]) + "ATR" \
-    '\n最高价HighPrice:' + str(strategy["high_price"]) + \
-    '\n最低价LowPrice:' + str(strategy["low_price"]) + \
-    '\n最新价ClosePrice:' + str(strategy["close_price"]) + \
-    '\n均幅指标Atr20:' + str(strategy["atr"]) + "%" \
-    '\n头寸大小Position:' + str(strategy["amount"]) + "%" \
-    '\n镜像Mirror:' + str(strategy["mirror"]) + \
-    '\n时间戳Timestamp:' + str(strategy["predict_timestamp"]) + \
-    sign_text
-  return text
-
 def get_prediction_text(exchange, symbol, prediction):
   order_item = prediction["orders"]
   #for order_key in prediction["orders"]:
@@ -164,18 +137,18 @@ def get_prediction_text(exchange, symbol, prediction):
       #'——AI海龟∞（编号：'+str(prediction["strategy"]["ai"])+'；回测年化：'+str(round(prediction["strategy"]["validation"]*100.0,2))+'%）'
   return text
 
-def get_v1_prediction(exchange, symbol):
-  url = "https://aitrad.in/api/v1/predict?exchange=" + exchange + "&symbol=" + symbol
-  response = requests.get(url)
-  prediction = json.loads(response.text)
-  if prediction["code"] == 200:
-    return get_predict_info(exchange, symbol, prediction)
-  else:
-    return prediction["msg"][:600]
-
 def chat(origin_input):
   time_start=time.time()
   if '@' in origin_input and len(origin_input) >= 3:
+    return get_exchange_symbol_response(origin_input)
+  if origin_input[:2] == "模拟":
+    return get_simulation_response(origin_input)
+  if origin_input[:2] == "结果":
+    return simulated_end(origin_input[2:])
+  marketListString = get_marketListString(origin_input)
+  return f50_market_spider.get_best_response(json.loads(marketListString))
+
+def get_exchange_symbol_response(origin_input):
     origin_input = origin_input.strip()
     # 替换空格
     origin_input = origin_input.replace(' ', '')
@@ -187,21 +160,21 @@ def chat(origin_input):
     symbol = split_str_list[0]
     exchange = split_str_list[1]
     if symbol and exchange:
-      return get_v1_prediction(exchange, symbol)
+      return f50_market_spider.get_v1_prediction(exchange, symbol, 5, exchange, symbol)
     else:
       return "请输入'市场@交易所'执行预测，例如：'BTCUSDT@binance'。"
-    
-  if origin_input[:2] == "模拟":
-      max_id = f52_db_simulated.get_max_id()
-      next_id = max_id + 1
-      symbols_str = origin_input[2:].strip()
-      symbol_list = symbols_str.split(' ')
-      if len(symbol_list) == 0:
-          return "请输入模拟+市场名1+市场名2+市场名3……市场名用空格分隔。"
-      _thread.start_new_thread( simulated_begin, (next_id, symbols_str) )
-      return "模拟开始，"+str(len(symbol_list)*5)+"分钟后输入'结果" + str(next_id) + "'查询模拟结果。"
-  if origin_input[:2] == "结果":
-      return simulated_end(origin_input[2:])
+
+def get_simulation_response(origin_input):
+  max_id = f52_db_simulated.get_max_id()
+  next_id = max_id + 1
+  symbols_str = origin_input[2:].strip()
+  symbol_list = symbols_str.split(' ')
+  if len(symbol_list) == 0:
+      return "请输入模拟+市场名1+市场名2+市场名3……市场名用空格分隔。"
+  _thread.start_new_thread( simulated_begin, (next_id, symbols_str) )
+  return "模拟开始，"+str(len(symbol_list)*5)+"分钟后输入'结果" + str(next_id) + "'查询模拟结果。"
+
+def get_marketListString(origin_input):
   marketListString = ""
   marketListString  = f50_market_spider.search_for_symbol(origin_input)
   if not marketListString or len(marketListString) == 0:
@@ -217,8 +190,7 @@ def chat(origin_input):
           if marketListString and len(marketListString) > 0:
               break
       origin_input = new_input
-  response_result = f50_market_spider.get_all_markets(json.loads(marketListString))
-  return response_result
+  return marketListString
 
 def draw_single(aiera_version, input_text, alias_results, mycursor, params, origin_input):
     if aiera_version == "V1":

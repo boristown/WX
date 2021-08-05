@@ -194,19 +194,69 @@ def get_best_market(marketList):
             return market, is_crypto
     return None, is_crypto
 
+def get_v1_prediction(exchange, symbol, category, exchange_text, symbol_text):
+  url = "https://aitrad.in/api/v1/predict?category=" + str(category) + "&exchange=" + exchange + "&symbol=" + symbol
+  response = requests.get(url)
+  prediction = json.loads(response.text)
+  if prediction["code"] == 200:
+    return get_predict_info(exchange_text, symbol_text, prediction)
+  else:
+    return prediction["msg"][:600]
+
+def get_best_response(marketList):
+    market_index = 0
+    response_text = "市场清单："
+    for market in marketList:
+        market_index += 1
+        name = market["name"].replace("Investing.com","")
+        exchange = market["exchange"]
+        return get_v1_prediction("exchange",str(market["pairId"]),1,exchange,name)
+
+def side_text(side):
+    if str(side).upper() == 'BUY':
+        return "买入Buy"
+    return "卖出Sell"
+
+def get_predict_info(exchange_text, symbol_text, prediction):
+  strategy = prediction["strategy"]
+  order_item = prediction["orders"]
+  timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
+  timeArray = datetime.datetime.utcfromtimestamp(timeStamp)
+  #timeArray = time.localtime(timeStamp)
+  otherStyleTime = timeArray.strftime("%Y-%m-%d %H:%M:%S")
+  
+  sign_text = '\n——预言家/Prophet\n诞生Birth:' + otherStyleTime + '\n纪元Epoch:' + str(strategy['epoch']) + \
+    '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
+    '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%'
+
+  text = "市场Symbol:" + symbol_text + \
+    '\n日期UTC:' + strategy["date"] + \
+    '\n评分Score:' + str(strategy["score"]) + \
+    '\n方向Side:' + side_text(strategy["side"]) + \
+    '\n止损Stop:' + str(strategy["stop"]) + "ATR" \
+    '\n最高价HighPrice:' + str(strategy["high_price"]) + \
+    '\n最低价LowPrice:' + str(strategy["low_price"]) + \
+    '\n最新价ClosePrice:' + str(strategy["close_price"]) + \
+    '\n均幅指标Atr20:' + str(strategy["atr"]) + "%" \
+    '\n头寸大小Position:' + str(strategy["amount"]) + "%" \
+    '\n镜像Mirror:' + str(strategy["mirror"]) + \
+    '\n时间戳Timestamp:' + str(strategy["predict_timestamp"]) + \
+    sign_text
+  return text
+
 def get_all_markets(marketList):
-    myconnector, mycursor = common.init_aitradin_cursor()
-    statement = '''
-    insert into
-    `symbol_json` ( `symbol_id`, `symbol_json` )
-    values ( %s, %s )
-    ON DUPLICATE KEY UPDATE
-    `symbol_id` = VALUES(`symbol_id`), 
-    `symbol_json` = VALUES(`symbol_json`)
-    ;
-    '''
+    #myconnector, mycursor = common.init_aitradin_cursor()
+    #statement = '''
+    #insert into
+    #`symbol_json` ( `symbol_id`, `symbol_json` )
+    #values ( %s, %s )
+    #ON DUPLICATE KEY UPDATE
+    #`symbol_id` = VALUES(`symbol_id`), 
+    #`symbol_json` = VALUES(`symbol_json`)
+    #;
+    #'''
     #print(simulate_result)
-    insert_val = []
+    #insert_val = []
     market_index = 0
     response_text = "市场清单："
     for market in marketList:
@@ -215,11 +265,11 @@ def get_all_markets(marketList):
         name = market["name"].replace("Investing.com","")
         exchange = market["exchange"]
         response_text += "\n" + str(market_index) + " " + name + " " + exchange + ":\n" + url
-        insert_val.append((str(market["pairId"]), json.dumps(market)))
+        #insert_val.append((str(market["pairId"]), json.dumps(market)))
     sign_text = "——预言家/Prophet\n"
     response_text += "\n请复制链接到浏览器中查看决策结果！\n"+sign_text
-    mycursor.executemany(statement, insert_val)
-    myconnector.commit()
+    #mycursor.executemany(statement, insert_val)
+    #myconnector.commit()
     return response_text
 
 def get_history_price(pairId, pair_type, startdays):
