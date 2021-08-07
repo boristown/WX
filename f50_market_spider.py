@@ -217,6 +217,12 @@ def side_text(side):
         return "买入Buy"
     return "卖出Sell"
 
+def bool_text(bl):
+    if bl:
+        return "是True"
+    else:
+        return "否False"
+
 def get_predict_info(exchange_text, symbol_text, prediction):
   strategy = prediction["strategy"]
   order_item = prediction["orders"]
@@ -228,7 +234,8 @@ def get_predict_info(exchange_text, symbol_text, prediction):
   sign_text = '\n——预言家/Prophet\n诞生Birth:' + otherStyleTime + '\n纪元Epoch:' + str(strategy['epoch']) + \
     '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
     '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%' \
-    '\n以上预测基于128日K线由“预言家”AI自动生成，仅供参考，请在浮动亏损超过0.5ATR或本金的1%时止损。'
+    '\n提示Tips：' + \
+    '\n以上预测结果由“预言家”AI基于128日K线自动生成，仅供参考。\n请结合多个市场的预测结果，以评分Score超过50分且最高的预测结果为准。\n请在浮动亏损超过0.5ATR或本金的1%时止损。'
 
   text = "市场Symbol:" + symbol_text + \
     '\n交易所Exchange:' + exchange_text +\
@@ -240,7 +247,7 @@ def get_predict_info(exchange_text, symbol_text, prediction):
     '\n最新价ClosePrice:' + str(strategy["close_price"]) + \
     '\n均幅指标ATR(20):' + str(strategy["atr"]) + "%" \
     '\n头寸大小Position:' + str(strategy["amount"]) + "%" \
-    '\n镜像Mirror:' + str(strategy["mirror"]) + \
+    '\n镜像Mirror:' + bool_text(strategy["mirror"]) + \
     '\n时间戳Timestamp:' + str(strategy["predict_timestamp"]) + \
     sign_text
   return text
