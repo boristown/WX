@@ -227,17 +227,18 @@ def get_predict_info(exchange_text, symbol_text, prediction):
   
   sign_text = '\n——预言家/Prophet\n诞生Birth:' + otherStyleTime + '\n纪元Epoch:' + str(strategy['epoch']) + \
     '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
-    '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%'
+    '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%' \
+    '\n以上预测基于128日K线由“预言家”AI自动生成，仅供参考，请在浮动亏损超过0.5ATR或本金的1%时止损。'
 
   text = "市场Symbol:" + symbol_text + \
+    '\n交易所Exchange:' + exchange_text +\
     '\n日期UTC:' + strategy["date"] + \
     '\n评分Score:' + str(strategy["score"]) + \
     '\n方向Side:' + side_text(strategy["side"]) + \
-    '\n止损Stop:' + str(strategy["stop"]) + "ATR" \
     '\n最高价HighPrice:' + str(strategy["high_price"]) + \
     '\n最低价LowPrice:' + str(strategy["low_price"]) + \
     '\n最新价ClosePrice:' + str(strategy["close_price"]) + \
-    '\n均幅指标Atr20:' + str(strategy["atr"]) + "%" \
+    '\n均幅指标ATR(20):' + str(strategy["atr"]) + "%" \
     '\n头寸大小Position:' + str(strategy["amount"]) + "%" \
     '\n镜像Mirror:' + str(strategy["mirror"]) + \
     '\n时间戳Timestamp:' + str(strategy["predict_timestamp"]) + \
