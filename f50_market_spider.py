@@ -225,6 +225,9 @@ def bool_text(bl):
 
 def get_predict_info(exchange_text, symbol_text, prediction):
   strategy = prediction["strategy"]
+  if not exchange_text:
+      exchange_text = strategy["exchange"]
+      symbol_text = strategy["symbol"]
   order_item = prediction["orders"]
   timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
   timeArray = datetime.datetime.utcfromtimestamp(timeStamp)

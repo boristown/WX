@@ -139,19 +139,19 @@ def get_prediction_text(exchange, symbol, prediction):
 
 def chat(origin_input):
   time_start=time.time()
+  origin_input = origin_input.strip()
+  origin_input = origin_input.replace(' ', '')
   if '@' in origin_input and len(origin_input) >= 3:
     return get_exchange_symbol_response(origin_input)
   if origin_input[:2] == "模拟":
     return get_simulation_response(origin_input)
   if origin_input[:2] == "结果":
     return simulated_end(origin_input[2:])
+  return f50_market_spider.get_v1_prediction("exchange", origin_input, "1", "", "")
   marketListString = get_marketListString(origin_input)
   return f50_market_spider.get_best_response(json.loads(marketListString))
 
 def get_exchange_symbol_response(origin_input):
-    origin_input = origin_input.strip()
-    # 替换空格
-    origin_input = origin_input.replace(' ', '')
     # 替换换行
     origin_input = origin_input.replace('\n', '')
     # 替换换行
