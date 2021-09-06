@@ -239,7 +239,7 @@ def get_predict_info(exchange_text, symbol_text, prediction):
     '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
     '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%' \
     '\n提示Tips：' + \
-    '\n以上预测结果由“预言家”AI基于128日K线自动生成，仅供参考。\n请结合多个市场的预测结果，以评分Score超过50分且最高的预测结果为准。\n请在浮动亏损超过0.5ATR或本金的1%时止损。'
+    '\n以上预测结果由“预言家II”AI基于128日K线自动生成，仅供参考。\n请结合多个市场的预测结果，以评分Score超过50分的预测结果为准。\n请在浮动亏损超过0.5ATR或本金的1%时止损。'
 
   text = "市场Symbol:" + symbol_text + \
     '\n交易所Exchange:' + exchange_text +\
