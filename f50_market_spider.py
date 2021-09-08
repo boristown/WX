@@ -224,18 +224,21 @@ def bool_text(bl):
     else:
         return "否False"
 
+def timestampToLocal(ts):
+    return time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(float(ts)/1000))
+
 def get_predict_info(exchange_text, symbol_text, prediction):
   strategy = prediction["strategy"]
   if not exchange_text:
       exchange_text = strategy["exchange"]
       symbol_text = strategy["symbol"]
   order_item = prediction["orders"]
-  timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
-  timeArray = datetime.datetime.utcfromtimestamp(timeStamp)
+  #timeStamp = int(float(prediction["strategy"]["ai"])/1000.0)
+  #timeArray = datetime.datetime.utcfromtimestamp(timeStamp)
   #timeArray = time.localtime(timeStamp)
-  otherStyleTime = timeArray.strftime("%Y-%m-%d %H:%M:%S")
+  #otherStyleTime = timeArray.strftime("%Y-%m-%d %H:%M:%S")
   
-  sign_text = '\n——预言家/Prophet\n诞生Birth:' + otherStyleTime + '\n纪元Epoch:' + str(strategy['epoch']) + \
+  sign_text = '\n——预言家/Prophet\n诞生Birth:' + timestampToLocal(strategy["ai"]) + '\n纪元Epoch:' + str(strategy['epoch']) + \
     '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
     '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%' \
     '\n提示Tips：' + \
@@ -253,7 +256,7 @@ def get_predict_info(exchange_text, symbol_text, prediction):
     '\n头寸大小Position:' + str(strategy["amount"]) + "%" \
     '\n交易率TradeProb:' + str(float(strategy["trade_prob"])*100) + "%" \
     '\n镜像Mirror:' + bool_text(strategy["mirror"]) + \
-    '\n预测时间PredictAt(UTC+8):' +  time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(float(strategy["predict_timestamp"])/1000)) + \
+    '\n预测时间PredictAt:' + timestampToLocal(strategy["predict_timestamp"]) + \
     sign_text
   return text
 
