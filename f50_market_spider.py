@@ -239,8 +239,8 @@ def get_predict_info(exchange_text, symbol_text, prediction):
   #otherStyleTime = timeArray.strftime("%Y-%m-%d %H:%M:%S")
   
   sign_text = '\n——预言家/Prophet\n诞生Birth:' + timestampToLocal(strategy["ai"]) + '\n纪元Epoch:' + str(strategy['epoch']) + \
-    '\n训练集Training:' + str(round(strategy["fitness"]*100.0,2)) + '%' \
-    '\n验证集Validation:' + str(round(strategy["validation"]*100.0,2)) + '%' \
+    '\n训练集Training:' + str(round(strategy["fitness"]*100.0,5)) + '%' \
+    '\n验证集Validation:' + str(round(strategy["validation"]*100.0,5)) + '%' \
     '\n提示Tips：' + \
     '\n以上预测结果由“预言家II”AI基于128日K线自动生成，仅供参考。\n请结合多个市场的预测结果，以评分Score超过50分的预测结果为准。\n请在浮动亏损超过0.5ATR或本金的1%时止损。'
 
