@@ -246,13 +246,14 @@ def get_predict_info(exchange_text, symbol_text, prediction):
     '\n日期UTC:' + strategy["date"] + \
     '\n评分Score:' + str(strategy["score"]) + \
     '\n方向Side:' + side_text(strategy["side"]) + \
-    '\n最高价HighPrice:' + str(strategy["high_price"]) + \
-    '\n最低价LowPrice:' + str(strategy["low_price"]) + \
     '\n最新价ClosePrice:' + str(strategy["close_price"]) + \
+    '\n当日最高价HighPrice:' + str(strategy["high_price"]) + \
+    '\n当日最低价LowPrice:' + str(strategy["low_price"]) + \
     '\n均幅指标ATR(20):' + str(strategy["atr"]) + "%" \
     '\n头寸大小Position:' + str(strategy["amount"]) + "%" \
+    '\n交易率TradeProb:' + str(float(strategy["trade_prob"])*100) + "%" \
     '\n镜像Mirror:' + bool_text(strategy["mirror"]) + \
-    '\n时间戳Timestamp:' + str(strategy["predict_timestamp"]) + \
+    '\n预测时间PredictAt(UTC+8):' +  time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(float(strategy["predict_timestamp"])/1000)) + \
     sign_text
   return text
 
