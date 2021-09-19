@@ -238,11 +238,11 @@ def get_predict_info(exchange_text, symbol_text, prediction):
   #timeArray = time.localtime(timeStamp)
   #otherStyleTime = timeArray.strftime("%Y-%m-%d %H:%M:%S")
   
-  sign_text = '\n——预言家/Prophet\n诞生Birth:' + timestampToLocal(strategy["ai"]) + '\n纪元Epoch:' + str(strategy['epoch']) + \
+  sign_text = '\n——预言家III/ProphetIII\n诞生Birth:' + timestampToLocal(strategy["ai"]) + '\n纪元Epoch:' + str(strategy['epoch']) + \
     '\n训练集Training:' + str(round(strategy["fitness"]*100.0,5)) + '%' \
     '\n验证集Validation:' + str(round(strategy["validation"]*100.0,5)) + '%' \
     '\n提示Tips：' + \
-    '\n以上预测结果由预言家II基于128日K线自动生成，仅供参考。\n当选择0.5ATR作为移动止损点时，每日头寸总和=本金*1%*评分%/(0.5*ATR%)。\n该公式可以控制每日的最大风险值不超过本金的1%。'
+    '\n以上预测结果基于最近128日K线自动生成，仅供参考。\n头寸大小应该与评分成正比，并与ATR成反比。\n更正式的：当选择0.5ATR作为移动止损点时，每日头寸总和=本金*1%*评分%/(0.5*ATR%)。\n该公式可以控制每日的最大风险值不超过本金的1%。'
 
   text = "市场Symbol:" + symbol_text + \
     '\n交易所Exchange:' + exchange_text +\
