@@ -242,7 +242,7 @@ def get_predict_info(exchange_text, symbol_text, prediction):
     '\n训练集Training:' + str(round(strategy["fitness"]*100.0,5)) + '%' \
     '\n验证集Validation:' + str(round(strategy["validation"]*100.0,5)) + '%' \
     '\n提示Tips：' + \
-    '\n以上预测结果由“预言家II”AI基于128日K线自动生成，仅供参考。\n请结合多个市场的预测结果，以评分Score超过50分的预测结果为准。\n请在浮动亏损超过0.5ATR或本金的1%时止损。'
+    '\n以上预测结果由预言家II基于128日K线自动生成，仅供参考。\n当选择0.5ATR作为移动止损点时，每日头寸总和=本金*1%*评分%/(0.5*ATR%)。\n该公式可以控制每日的最大风险值不超过本金的1%。'
 
   text = "市场Symbol:" + symbol_text + \
     '\n交易所Exchange:' + exchange_text +\
@@ -252,12 +252,12 @@ def get_predict_info(exchange_text, symbol_text, prediction):
     '\n最新价ClosePrice:' + str(strategy["close_price"]) + \
     '\n当日最高价HighPrice:' + str(strategy["high_price"]) + \
     '\n当日最低价LowPrice:' + str(strategy["low_price"]) + \
-    '\n均幅指标ATR(20):' + str(strategy["atr"]) + "%" \
+    '\nATR:' + str(strategy["atr"]) + "%" \
     '\n头寸大小Position:' + str(strategy["amount"]) + "%" \
     '\n交易率TradeProb:' + str(float(strategy["trade_prob"])*100) + "%" \
-    '\n镜像Mirror:' + bool_text(strategy["mirror"]) + \
     '\n预测时间PredictAt:' + timestampToLocal(strategy["predict_timestamp"]) + \
     sign_text
+    #'\n镜像Mirror:' + bool_text(strategy["mirror"]) + 
   return text
 
 def get_all_markets(marketList):
