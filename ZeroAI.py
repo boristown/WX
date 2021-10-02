@@ -22,6 +22,7 @@ import _thread
 import math
 import common
 import requests
+import predict_batch
 
 class word_in_color(object):
   word_in_rising_major = ''
@@ -138,6 +139,9 @@ def get_prediction_text(exchange, symbol, prediction):
   return text
 
 def chat(origin_input):
+  '''
+  微信公众号，自动回复，入口函数
+  '''
   time_start=time.time()
   origin_input = origin_input.strip()
   origin_input = origin_input.replace(' ', '')
@@ -147,9 +151,10 @@ def chat(origin_input):
     return get_simulation_response(origin_input)
   if origin_input[:2] == "结果":
     return simulated_end(origin_input[2:])
+  upper_input = origin_input.upper()
+  if upper_input in predict_batch.group_set:
+    return predict_batch.get_prediction(upper_input)
   return f50_market_spider.get_v1_prediction("exchange", origin_input, "1", "", "")
-  marketListString = get_marketListString(origin_input)
-  return f50_market_spider.get_best_response(json.loads(marketListString))
 
 def get_exchange_symbol_response(origin_input):
     # 替换换行
