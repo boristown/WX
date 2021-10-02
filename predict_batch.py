@@ -31,9 +31,9 @@ def get_batch_predict_info(group, prediction):
     text+="排序/市场/方向/评分\n"
     for i,strategy in enumerate(strategies):
         text+=str(i+1)+" "+ str(strategy["symbol"]).replace("/","")
-        if group_set[group] == '5':
+        if group_set[group] == 5:
             text+="@"+str(strategy["exchange"])
-        text+=" " + side_text_zh() + " " + str(strategy["score"]) + "\n"
+        text+=" " + side_text_zh(strategy["side"]) + " " + str(strategy["score"]) + "\n"
     text +="提示Tips：\n"
     text +="输入市场名查询详细预测结果。\n"
     text +="预测结果基于最近128日K线自动生成，仅供参考。\n"
