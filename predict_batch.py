@@ -25,7 +25,7 @@ def get_batch_predict_info(group, prediction):
     n=len(strategies)
     if n>10: #截取前10个市场
         n=10
-        strategies = strategies[:5]
+        strategies = strategies[:10]
     text=group+"批量预测 by 预言家III\n"
     text+="按评分倒序排列\n"
     text+="市场/方向/评分\n"
