@@ -2,10 +2,10 @@
 binance或BINANCE（后台自动转大写）
 
 公众号返回信息：
-批量预测 by 预言家III
-组：binance
-排序/市场/方向/评分
-1 btcusdt@binance 卖出 3.5130315164814735e-06
-提示Tips：
+binance批量预测 by 预言家III
+按评分倒序排列
+市场/方向/评分
+btcusdt@binance 卖出 3.51
+ethusdt@binance 卖出 2.11
 输入市场名查询详细预测结果。
 预测结果基于最近128日K线自动生成，仅供参考。
