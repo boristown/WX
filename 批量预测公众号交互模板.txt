@@ -1,11 +1,22 @@
+场景1：批量预测
+~~~~~~~~~~~~~~
 用户输入：
 binance或BINANCE（后台自动转大写）
-
 公众号返回信息：
 binance批量预测 by 预言家III
 按评分倒序排列
 市场/方向/评分
-btcusdt@binance 卖出 3.51
-ethusdt@binance 卖出 2.11
+btcusdt@binance 卖出 99.51
+ethusdt@binance 卖出 88.11
 输入市场名查询详细预测结果。
 预测结果基于最近128日K线自动生成，仅供参考。
+今日剩余免费查询次数：1次。
+当前余额1000AIP（可执行1000次查询）。
+
+
+场景2：充值AIP
+~~~~~~~~~~~~~~
+用户输入：
+充值码：XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+公众号返回信息：
+您已成功充值1000AIP，当前余额1000AIP，可执行1000次查询，感谢您对AI纪元的支持！
