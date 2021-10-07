@@ -138,7 +138,7 @@ def get_prediction_text(exchange, symbol, prediction):
       #'——AI海龟∞（编号：'+str(prediction["strategy"]["ai"])+'；回测年化：'+str(round(prediction["strategy"]["validation"]*100.0,2))+'%）'
   return text
 
-def chat(origin_input):
+def chat(origin_input, openID):
   '''
   微信公众号，自动回复，入口函数
   '''
@@ -146,17 +146,17 @@ def chat(origin_input):
   origin_input = origin_input.strip()
   origin_input = origin_input.replace(' ', '')
   if '@' in origin_input and len(origin_input) >= 3:
-    return get_exchange_symbol_response(origin_input)
+    return get_exchange_symbol_response(origin_input, openID)
   if origin_input[:2] == "模拟":
     return get_simulation_response(origin_input)
   if origin_input[:2] == "结果":
     return simulated_end(origin_input[2:])
   upper_input = origin_input.upper()
   if upper_input in predict_batch.group_set:
-    return predict_batch.get_prediction(upper_input)
-  return f50_market_spider.get_v1_prediction("exchange", origin_input, "1", "", "")
+    return predict_batch.get_prediction(upper_input,openID)
+  return f50_market_spider.get_v1_prediction("exchange", origin_input, "1", "", "", openID)
 
-def get_exchange_symbol_response(origin_input):
+def get_exchange_symbol_response(origin_input, openID):
     # 替换换行
     origin_input = origin_input.replace('\n', '')
     # 替换换行
@@ -165,7 +165,7 @@ def get_exchange_symbol_response(origin_input):
     symbol = split_str_list[0]
     exchange = split_str_list[1]
     if symbol and exchange:
-      return f50_market_spider.get_v1_prediction(exchange, symbol, 5, exchange, symbol)
+      return f50_market_spider.get_v1_prediction(exchange, symbol, 5, exchange, symbol, openID)
     else:
       return "请输入'市场@交易所'执行预测，例如：'BTCUSDT@binance'。"
 

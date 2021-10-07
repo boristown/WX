@@ -195,7 +195,7 @@ def get_best_market(marketList):
             return market, is_crypto
     return None, is_crypto
 
-def get_v1_prediction(exchange, symbol, category, exchange_text, symbol_text):
+def get_v1_prediction(exchange, symbol, category, exchange_text, symbol_text, openID):
   url = "https://aitrad.in/api/v1/predict?category=" + str(category) + "&exchange=" + exchange + "&symbol=" + symbol + "&secret=" + mypsw.api_secret
   response = requests.get(url)
   prediction = json.loads(response.text)

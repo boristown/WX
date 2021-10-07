@@ -4,7 +4,7 @@ import mypsw
 
 group_set = {"BINANCE":5}
 
-def get_prediction(group):
+def get_prediction(group,openID):
     if group not in group_set:
         return ""
     url = "https://aitrad.in/api/v1/predict_batch?group=" + str(group) + "&secret=" + mypsw.api_secret

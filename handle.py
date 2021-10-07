@@ -49,7 +49,7 @@ class Handle(object):
                 toUser = recMsg.FromUserName
                 fromUser = recMsg.ToUserName
                 print (recMsg.Content.decode('utf-8'))
-                content = ZeroAI.chat(recMsg.Content.decode('utf-8'))
+                content = ZeroAI.chat(recMsg.Content.decode('utf-8'),recMsg.FromUserName)
                 if '价' in content or '请' in content or '歉' in content or '市场' in content or 'price' in content or '模拟' in content or '无' in content:
                     replyMsg = reply.TextMsg(toUser, fromUser, content)
                 else:
