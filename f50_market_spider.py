@@ -8,6 +8,7 @@ import math
 import common
 import asyncio
 import mypsw
+import urllib3
 #from pyppeteer import launch
 
 #import f51_simulated_trading
@@ -196,8 +197,9 @@ def get_best_market(marketList):
     return None, is_crypto
 
 def get_v1_prediction(exchange, symbol, category, exchange_text, symbol_text, openID):
-  url = "https://aitrad.in/api/v1/predict?category=" + str(category) + "&exchange=" + exchange + "&symbol=" + symbol + "&secret=" + mypsw.api_secret
-  response = requests.get(url)
+  urllib3.disable_warnings()
+  url = "https://35.236.157.42/api/v1/predict?category=" + str(category) + "&exchange=" + exchange + "&symbol=" + symbol + "&secret=" + mypsw.api_secret
+  response = requests.get(url,verify=False)
   prediction = json.loads(response.text)
   if prediction["code"] == 200:
     return get_predict_info(exchange_text, symbol_text, prediction)
@@ -261,11 +263,12 @@ def get_predict_info(exchange_text, symbol_text, prediction):
   return text
 
 def get_all_markets(marketList):
+    urllib3.disable_warnings()
     market_index = 0
     response_text = "市场清单："
     for market in marketList:
         market_index += 1
-        url = "aitrad.in/api/v1/predict?category=1&symbol=" + str(market["pairId"]) + "&secret=" + mypsw.api_secret
+        url = "35.236.157.42/api/v1/predict?category=1&symbol=" + str(market["pairId"]) + "&secret=" + mypsw.api_secret
         name = market["name"].replace("Investing.com","")
         exchange = market["exchange"]
         response_text += "\n" + str(market_index) + " " + name + " " + exchange + ":\n" + url

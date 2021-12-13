@@ -1,14 +1,16 @@
 import requests
 import json
 import mypsw
+import urllib3
 
 group_set = {"BINANCE":5}
 
 def get_prediction(group,openID):
+    urllib3.disable_warnings()
     if group not in group_set:
         return ""
-    url = "https://aitrad.in/api/v1/predict_batch?group=" + str(group) + "&secret=" + mypsw.api_secret
-    response = requests.get(url)
+    url = "https://35.236.157.42/api/v1/predict_batch?group=" + str(group) + "&secret=" + mypsw.api_secret
+    response = requests.get(url,verify=False)
     prediction = json.loads(response.text)
     if prediction["code"] == 200:
         return get_batch_predict_info(group, prediction)
