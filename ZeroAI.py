@@ -6,14 +6,14 @@ import mysql.connector
 import mypsw
 import time
 import datetime
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from basic import Basic
 #from poster.streaminghttp import register_openers
 import requests
 from requests.packages.urllib3.filepost import encode_multipart_formdata
 import json
 import glob
-import forcastline
+#import forcastline
 import f50_market_spider
 import f51_simulated_trading
 import f52_db_simulated
@@ -197,28 +197,28 @@ def get_marketListString(origin_input):
       origin_input = new_input
   return marketListString
 
-def draw_single(aiera_version, input_text, alias_results, mycursor, params, origin_input):
-    if aiera_version == "V1":
-        return draw_single_v1(input_text, alias_results, mycursor)
-    if aiera_version == "V2":
-        return forcastline.draw_single_v2(input_text, alias_results, mycursor, params, origin_input)
+# def draw_single(aiera_version, input_text, alias_results, mycursor, params, origin_input):
+#     if aiera_version == "V1":
+#         return draw_single_v1(input_text, alias_results, mycursor)
+#     if aiera_version == "V2":
+#         return forcastline.draw_single_v2(input_text, alias_results, mycursor, params, origin_input)
 
-def draw_single_v1(input_text, alias_results, mycursor):
-    output_text = ""
-    alias_result = alias_results[0]
-    select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
-    #print(select_predictions_statment)
-    mycursor.execute(select_predictions_statment)
-    predictions_results = mycursor.fetchall()
-    if len(predictions_results) == 0:
-      output_text = forcastline.text_no_market(input_text)
-      return None, output_text
-    select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
-    #print(select_prices_statment)
-    mycursor.execute(select_prices_statment)
-    prices_results = mycursor.fetchall()
-    picture_name = draw_market_v1(alias_result, prices_results, predictions_results)
-    return picture_name, output_text
+# def draw_single_v1(input_text, alias_results, mycursor):
+#     output_text = ""
+#     alias_result = alias_results[0]
+#     select_predictions_statment = "SELECT * FROM predictions WHERE symbol = '" + alias_result[1] + "' ORDER BY time DESC"
+#     #print(select_predictions_statment)
+#     mycursor.execute(select_predictions_statment)
+#     predictions_results = mycursor.fetchall()
+#     if len(predictions_results) == 0:
+#       output_text = forcastline.text_no_market(input_text)
+#       return None, output_text
+#     select_prices_statment = "SELECT * FROM price WHERE symbol = '" + alias_result[1] + "'"
+#     #print(select_prices_statment)
+#     mycursor.execute(select_prices_statment)
+#     prices_results = mycursor.fetchall()
+#     picture_name = draw_market_v1(alias_result, prices_results, predictions_results)
+#     return picture_name, output_text
 
 def help_text():
     output_text = '您好！欢迎来到AI纪元，我是通向未来之路的向导。\n' \
@@ -346,117 +346,117 @@ def picture_url(picture_name):
     #print(murlResp)
     return murlResp
 
-def draw_market_v1(alias_result, prices_results, predictions_results):
-    plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
+# def draw_market_v1(alias_result, prices_results, predictions_results):
+#     plt.figure(figsize=(6.4,6.4), dpi=100, facecolor='black')
 
-    predictions_result = predictions_results[0]
+#     predictions_result = predictions_results[0]
     
-    #plt.subplot(211)
+#     #plt.subplot(211)
 
-    plt.style.use('dark_background')
+#     plt.style.use('dark_background')
 
-    x=[i for i in range(1,122)]
-    y=[prices_results[0][121-price_index] for price_index in range(120)]
+#     x=[i for i in range(1,122)]
+#     y=[prices_results[0][121-price_index] for price_index in range(120)]
     
-    plt.title( alias_result[2] + ":" + alias_result[0] + " " 
-              + predictions_result[1].strftime('%Y-%m-%d %H:%M') 
-              + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V1") #图标题 
+#     plt.title( alias_result[2] + ":" + alias_result[0] + " " 
+#               + predictions_result[1].strftime('%Y-%m-%d %H:%M') 
+#               + " UTC\n微信公众号：AI纪元 WeChat Public Account: AI Era V1") #图标题 
     
-    #plt.xlabel(u'过去120天收盘价') #X轴标签
-    prediction_text, nextprice = forcastline.day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
-    plt.xlabel( prediction_text ) #X轴标签
+#     #plt.xlabel(u'过去120天收盘价') #X轴标签
+#     prediction_text, nextprice = forcastline.day_prediction_text(predictions_result[2],float(prices_results[0][2]),float(prices_results[0][122]))
+#     plt.xlabel( prediction_text ) #X轴标签
     
-    #plt.plot(x,y,"green",linewidth=1, label=u"价格")
-    y.append(nextprice)
-    currentprice = prices_results[0][2]
-    if nextprice >= currentprice:
-      plt.plot(x,y,"white",label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
-      plt.fill_between(x,min(y),y,facecolor="white",alpha=0.3)
-      plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
-    else:
-      plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
-      plt.fill_between(x,min(y),y,facecolor="red",alpha=0.3)
-      plt.plot(x,[currentprice] * 121, "r--", label="Price:"+str(currentprice))
+#     #plt.plot(x,y,"green",linewidth=1, label=u"价格")
+#     y.append(nextprice)
+#     currentprice = prices_results[0][2]
+#     if nextprice >= currentprice:
+#       plt.plot(x,y,"white",label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
+#       plt.fill_between(x,min(y),y,facecolor="white",alpha=0.3)
+#       plt.plot(x,[currentprice] * 121, "w--", label="Price:"+str(currentprice))
+#     else:
+#       plt.plot(x,y,"red", label="ATR:"+ str(float(prices_results[0][122])*100) + "%" )
+#       plt.fill_between(x,min(y),y,facecolor="red",alpha=0.3)
+#       plt.plot(x,[currentprice] * 121, "r--", label="Price:"+str(currentprice))
   
-    plt.annotate(xy=[122,currentprice], s=currentprice, bbox=None)
+#     plt.annotate(xy=[122,currentprice], s=currentprice, bbox=None)
 
-    if nextprice >= currentprice:
-      bbox_props = dict(boxstyle='round',fc='white', ec='k',lw=1)
-      plt.annotate(xy=[122,nextprice], s=nextprice, color='white', bbox=None)
-    else:
-      bbox_props = dict(boxstyle='round',fc='red', ec='k',lw=1)
-      plt.annotate(xy=[122,nextprice], s=nextprice, color='red', bbox=None)
+#     if nextprice >= currentprice:
+#       bbox_props = dict(boxstyle='round',fc='white', ec='k',lw=1)
+#       plt.annotate(xy=[122,nextprice], s=nextprice, color='white', bbox=None)
+#     else:
+#       bbox_props = dict(boxstyle='round',fc='red', ec='k',lw=1)
+#       plt.annotate(xy=[122,nextprice], s=nextprice, color='red', bbox=None)
     
-    plt.legend(loc = 2)
+#     plt.legend(loc = 2)
     
-    picture_name = 'Img/' + forcastline.pinyin(alias_result[0]) + "_V1" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.jpg'
-    plt.savefig(picture_name, facecolor='black')
-    return picture_name
+#     picture_name = 'Img/' + forcastline.pinyin(alias_result[0]) + "_V1" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.jpg'
+#     plt.savefig(picture_name, facecolor='black')
+#     return picture_name
 
-def draw_tag(aiera_version, input_text, alias_results):
-    stopwords = set(STOPWORDS) 
-    word_frequencies = {}
-    market_list = []
-    for alias_result in alias_results:
-      predictions_result = alias_result
-      x=[0,1]
-      y=[0.0, score(predictions_result[2])]
+# def draw_tag(aiera_version, input_text, alias_results):
+#     stopwords = set(STOPWORDS) 
+#     word_frequencies = {}
+#     market_list = []
+#     for alias_result in alias_results:
+#       predictions_result = alias_result
+#       x=[0,1]
+#       y=[0.0, score(predictions_result[2])]
 
-      maxvalue = max(y)
-      minvalue = min(y)
-      if abs(maxvalue) >= abs(minvalue):
-        bestvalue = maxvalue
-        bestindex = y.index(maxvalue)
-      else:
-        bestvalue = minvalue
-        bestindex = y.index(minvalue)
+#       maxvalue = max(y)
+#       minvalue = min(y)
+#       if abs(maxvalue) >= abs(minvalue):
+#         bestvalue = maxvalue
+#         bestindex = y.index(maxvalue)
+#       else:
+#         bestvalue = minvalue
+#         bestindex = y.index(minvalue)
       
-      word_single = predictions_result[3]
-      word_single = "/" + word_single + "/"
-      market_list.append((word_single, bestvalue))
-      wordcount = abs(bestvalue)
-      if bestvalue >= 0:
-        word_in_color.word_in_rising_minor.append(word_single)
-      else:
-        word_in_color.word_in_falling_minor.append(word_single)
+#       word_single = predictions_result[3]
+#       word_single = "/" + word_single + "/"
+#       market_list.append((word_single, bestvalue))
+#       wordcount = abs(bestvalue)
+#       if bestvalue >= 0:
+#         word_in_color.word_in_rising_minor.append(word_single)
+#       else:
+#         word_in_color.word_in_falling_minor.append(word_single)
       
         
-      word_frequencies[word_single] = wordcount
-    market_list.sort(key=lambda x:x[1], reverse=False)
-    time_str = "Time:"+max( [alias_result[1] for alias_result in alias_results] ).strftime('%Y-%m-%d') + "_UTC"
-    if abs(market_list[0][1]) > abs(market_list[-1][1]):
-      word_in_color.word_in_falling_major = market_list[0][0]
-      comment_frequency = int(abs(market_list[0][1]))
-    else:
-      word_in_color.word_in_rising_major = market_list[-1][0]
-      comment_frequency = int(abs(market_list[-1][1]))
-    word_in_color.word_in_comments = ['输入：'+input_text,time_str,'微信公众号：AI纪元']
-    word_frequencies[word_in_color.word_in_comments[0]] = comment_frequency
-    word_frequencies[word_in_color.word_in_comments[1]] = comment_frequency
-    word_frequencies[word_in_color.word_in_comments[2]] = comment_frequency
+#       word_frequencies[word_single] = wordcount
+#     market_list.sort(key=lambda x:x[1], reverse=False)
+#     time_str = "Time:"+max( [alias_result[1] for alias_result in alias_results] ).strftime('%Y-%m-%d') + "_UTC"
+#     if abs(market_list[0][1]) > abs(market_list[-1][1]):
+#       word_in_color.word_in_falling_major = market_list[0][0]
+#       comment_frequency = int(abs(market_list[0][1]))
+#     else:
+#       word_in_color.word_in_rising_major = market_list[-1][0]
+#       comment_frequency = int(abs(market_list[-1][1]))
+#     word_in_color.word_in_comments = ['输入：'+input_text,time_str,'微信公众号：AI纪元']
+#     word_frequencies[word_in_color.word_in_comments[0]] = comment_frequency
+#     word_frequencies[word_in_color.word_in_comments[1]] = comment_frequency
+#     word_frequencies[word_in_color.word_in_comments[2]] = comment_frequency
     
-    market_index = 0
-    y_market = [market[0] for market in market_list]
-    x_score = [market[1] for market in market_list]
-    y_pos = [i for i, _ in enumerate(y_market)]
+#     market_index = 0
+#     y_market = [market[0] for market in market_list]
+#     x_score = [market[1] for market in market_list]
+#     y_pos = [i for i, _ in enumerate(y_market)]
     
-    wordcloud = WordCloud(width = 700, height = 700, 
-                background_color ='black', 
-                color_func=color_word,
-                stopwords = stopwords,
-                font_path='simhei.ttf',
-                collocations=False
-                ).generate_from_frequencies(word_frequencies)
+#     wordcloud = WordCloud(width = 700, height = 700, 
+#                 background_color ='black', 
+#                 color_func=color_word,
+#                 stopwords = stopwords,
+#                 font_path='simhei.ttf',
+#                 collocations=False
+#                 ).generate_from_frequencies(word_frequencies)
     
-    plt.figure(figsize = (7.0, 7.0), facecolor = None) 
-    plt.imshow(wordcloud, interpolation="bilinear") 
-    plt.axis("off") 
-    plt.margins(x=0, y=0) 
-    plt.tight_layout(pad = 0) 
+#     plt.figure(figsize = (7.0, 7.0), facecolor = None) 
+#     plt.imshow(wordcloud, interpolation="bilinear") 
+#     plt.axis("off") 
+#     plt.margins(x=0, y=0) 
+#     plt.tight_layout(pad = 0) 
     
-    picture_name = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.jpg'
-    plt.savefig(picture_name)
-    return picture_name
+#     picture_name = 'Img/' + forcastline.pinyin(input_text) + "_" +  aiera_version + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.jpg'
+#     plt.savefig(picture_name)
+#     return picture_name
 
 def score(prediction_result):
   return (prediction_result * 2 - 1) * 100
