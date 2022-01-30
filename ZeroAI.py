@@ -146,46 +146,37 @@ def process_auto_state(openID, state, input):
     or state == "start.1" and input == '5' \
     or state == "start.2" and input == '6':
     next_state = 'start'
-    ctt = '''
-    您好，欢迎使用自动交易内测版。
+    ctt = '''您好，欢迎使用自动交易内测版。
     请选择要进行的操作：
     1 模拟交易；
     2 自动交易；
-    3 退出。
-    '''
+    3 退出。'''
   elif state == "start" and input == '3':
     next_state = ''
-    ctt = '''
-    您已退出自动交易内测版。
-    输入"auto"重新进入自动交易内测版。
-    '''
+    ctt = '''您已退出自动交易内测版。
+    输入"auto"重新进入自动交易内测版。'''
   elif state == "start" and input == '1':
     next_state = 'start.1'
-    ctt = '''
-    您已选择模拟交易。
+    ctt = '''您已选择模拟交易。
     请选择要进行的操作：
     1 模拟账户余额；
     2 模拟账户持仓；
     3 模拟交易日志;
     4 模拟交易预告;
-    5 返回。
-    '''
+    5 返回。'''
   elif state == "start" and input == '2':
     next_state = 'start.2'
-    ctt = '''
-    您已选择自动交易。
+    ctt = '''您已选择自动交易。
     请选择要进行的操作：
     1 绑定/解绑手机号；
     2 绑定/解绑交易所;
     3 查询自动交易状态;
     4 自动交易参数设置;
     5 开启/中止自动交易;
-    6 返回。
-    '''
+    6 返回。'''
   elif state == 'start.1' and input in ['1','2','3','4']:
     next_state = 'start.1'
-    ctt = '''
-    该功能正在开发中，敬请期待！
+    ctt = '''请访问电报机器人t.me/itrdbot进行后续操作！
     
     您已选择模拟交易。
     请选择要进行的操作：
@@ -193,12 +184,10 @@ def process_auto_state(openID, state, input):
     2 模拟账户持仓；
     3 模拟交易日志;
     4 模拟交易预告;
-    5 返回。
-    '''
+    5 返回。'''
   elif state == 'start.2' and input in ['1','2','3','4','5']:
     next_state = state
-    ctt = '''
-    该功能正在开发中，敬请期待！
+    ctt = '''请访问电报机器人t.me/itrdbot进行后续操作！
     
     您已选择自动交易。
     请选择要进行的操作：
@@ -207,11 +196,10 @@ def process_auto_state(openID, state, input):
     3 查询自动交易状态;
     4 自动交易参数设置;
     5 开启/中止自动交易;
-    6 返回。
-    '''
+    6 返回。'''
   elif state == 'start.1':
-    ctt = '''
-    对不起，暂不支持该指令。
+    next_state = state
+    ctt = '''对不起，暂不支持该指令。
     
     您已选择模拟交易。
     请选择要进行的操作：
@@ -219,11 +207,10 @@ def process_auto_state(openID, state, input):
     2 模拟账户持仓；
     3 模拟交易日志;
     4 模拟交易预告;
-    5 返回。
-    '''
+    5 返回。'''
   elif state == 'start.2':
-    ctt = '''
-    对不起，暂不支持该指令。
+    next_state = state
+    ctt = '''对不起，暂不支持该指令。
     
     您已选择自动交易。
     请选择要进行的操作：
@@ -232,18 +219,16 @@ def process_auto_state(openID, state, input):
     3 查询自动交易状态;
     4 自动交易参数设置;
     5 开启/中止自动交易;
-    6 返回。
-    '''
+    6 返回。'''
   elif state == 'start':
-    ctt = '''
-    对不起，暂不支持该指令。
+    next_state = state
+    ctt = '''对不起，暂不支持该指令。
     
     您好，欢迎使用自动交易内测版。
     请选择要进行的操作：
     1 模拟交易；
     2 自动交易；
-    3 退出。
-    '''
+    3 退出。'''
   auto_state[openID] = next_state
   return ctt
 
