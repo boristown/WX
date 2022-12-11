@@ -1,0 +1,2 @@
+python maintain.py
+pause
