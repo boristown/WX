@@ -1,10 +1,11 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # filename: handle.py
 
 import werobot
 import werobot.client
 import werobot.replies
 import re
+import binance_api
 from pymouse import PyMouse
 from pykeyboard import PyKeyboard
 from time import sleep,time
@@ -19,8 +20,11 @@ pic_url = ""
 def process_task(s,user):
     m = PyMouse()
     k = PyKeyboard()
+    m.click(60,95,1,1)
     pyperclip.copy(s)
-    sleep(0.1)
+    sleep(1)
+    m.click(585,550,1,1)
+    sleep(1)
     k.press_key(k.control_key)
     k.tap_key('v')
     k.release_key(k.control_key)
@@ -28,7 +32,7 @@ def process_task(s,user):
 
 def save_img(user,target,ts):
     filename ='img/temp'+str(time.time()*1000)+'.jpg'
-    im = ImageGrab.grab()
+    im = ImageGrab.grab((450,70,1090,490))
     im.save(filename)
     im.close()
     pic_url = picture_url(filename)
@@ -40,13 +44,14 @@ patternc = r"c\s+(\d+)\s+(\d+)"
 
 def screen_shot(user,target,ts,x1, y1, x2, y2):
     filename ='img/temp'+str(time.time()*1000)+'.jpg'
-    im = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+    #print(x1,y1,x2,y2)
+    im = ImageGrab.grab(tuple(map(int,(x1, y1, x2, y2))))
     im.save(filename)
     im.close()
     pic_url = picture_url(filename)
     #return pic_url
     return werobot.replies.ImageReply(media_id=pic_url,target=user,source=target,time=ts)
-   
+    
 def chat(s,user,target,ts):
     if s == '1':
         return save_img(user,target,ts)
