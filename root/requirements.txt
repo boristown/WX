@@ -1,0 +1,6 @@
+werobot
+pypiwin32
+pyuserinput
+pyperclip
+pyscreenshot
+pillow
