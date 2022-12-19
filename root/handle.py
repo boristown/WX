@@ -23,6 +23,8 @@ import datetime
 import plotly.express as px
 #import matplotlib.pyplot as plt
 import pandas as pd
+from files import *
+from Binance import *
 
 pic_url = ""
 
@@ -74,86 +76,7 @@ contest_dict = {}
 #默认有一个虚拟的基准线选手参赛，基准线选手不发起交易，收益0，等级分1000。
 #比赛结束后，根据每个参赛选手的资金余额，进行排名。
 #除了基准线选手，其他选手的等级分根据ELO规则进行更新。
-def load_reg_set():
-    fname = 'data/reg_set'+str(current_contest)+'.json'
-    fexist = os.path.exists(fname)
-    if fexist:
-        with open(fname, 'r+') as f:
-            #如果文件f不为空，则载入到reg_set中，否则新建一个set
-            reg_set = set(json.load(f))
-    else:
-        reg_set = set()
-    return reg_set
 
-def save_reg_set(reg_set):
-    fname = 'data/reg_set'+str(current_contest)+'.json'
-    print("save:"+fname)
-    with open(fname, 'w+') as f:
-        json.dump(list(reg_set), f)
-
-def load_contest_rank():
-    fname = 'data/contest_rank'+str(current_contest)+'.json'
-    fexist = os.path.exists(fname)
-    if fexist:
-        with open(fname, 'r+') as f:
-            #如果文件f不为空，则载入到contest_rank中，否则新建一个dict
-            contest_rank = json.load(f)
-    else:
-        contest_rank = []
-    return contest_rank
-
-def save_contest_rank(contest_rank):
-    fname = 'data/contest_rank'+str(current_contest)+'.json'
-    with open(fname, 'w+') as f:
-        json.dump(contest_rank, f)
-
-def load_name_dict():
-    fname = 'data/name_dict.json'
-    fexist = os.path.exists(fname)
-    if fexist:
-        with open(fname, 'r+') as f:
-            #如果文件f不为空，则载入到name_dict中，否则新建一个dict
-            name_dict = json.load(f)
-    else:
-        name_dict = {}
-    return name_dict
-
-def save_name_dict(name_dict):
-    fname = 'data/name_dict.json'
-    with open(fname, 'w+') as f:
-        json.dump(name_dict, f)
-
-def load_elo_dict():
-    fname = 'data/elo_dict.json'
-    fexist = os.path.exists(fname)
-    if fexist:
-        with open(fname, 'r+') as f:
-            #如果文件f不为空，则载入到elo_dict中，否则新建一个dict
-            elo_dict = json.load(f)
-    else:
-        elo_dict = {}
-    return elo_dict
-
-def save_elo_dict(elo_dict):
-    fname = 'data/elo_dict.json'
-    with open(fname, 'w+') as f:
-        json.dump(elo_dict, f)
-
-def load_elo_list():
-    fname = 'data/elo_list.json'
-    fexist = os.path.exists(fname)
-    if fexist:
-        with open(fname, 'r+') as f:
-            elo_list = SortedList(json.load(f))
-    else:
-        elo_list = SortedList()
-    return elo_list
-
-def save_elo_list(elo_list):
-    fname = 'data/elo_list.json'
-    with open(fname, 'w+') as f:
-        json.dump(elo_list[:], f)
-    
 def chat_register(s,user):
     #如果输入信息为“注册比赛 [用户名]”,则将该用户名添加到user对应的字典reg_dict中,然后用json序列化并存储到本地文件reg_dict.data中
     match = re.match(r"注册比赛\s+(\S+)", s)
@@ -209,27 +132,6 @@ def chat_register(s,user):
     else:
         return None
 
-def get_price():
-    # 获取当前BTCUSDT价格
-    url = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
-    r = requests.get(url)
-    price = float(r.json()['price'])
-    #输出格式：Binance交易所的当前BTCUSDT价格为：price
-    #北京时间：2020年12月25日 15:00:00
-    return 'Binance交易所的当前BTCUSDT价格为：' + str(price) + '\n' +\
-    '北京时间：' + str(datetime.datetime.now().strftime('%Y年%m月%d日 %H:%M:%S'))
-
-
-kline_cnt = 4*24*5
-
-def get_ohlcv_list():
-    # 获取最近五天的BTCUSDT 15分钟K线数据
-    url = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=' + str(kline_cnt)
-    #url = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=72'
-    r = requests.get(url)
-    ohlcv_list = r.json()
-    return ohlcv_list
-
 def draw_price_chart(user,target,ts):
     # 绘制BTCUSDT价格走势图(最近三天，1小时K线)，保存到img/btcusdt.png
     ohlcv_list = get_ohlcv_list()
@@ -239,7 +141,7 @@ def draw_price_chart(user,target,ts):
     df['close_time'] = pd.to_datetime(df['close_time'], unit='ms')
     df = df.set_index('time')
     df = df[['open', 'high', 'low', 'close', 'volume']]
-    df = df.iloc[-kline_cnt:]
+    df = df.iloc
     df['close'] = df['close'].astype(float)
     #print(df['close'])
     #填充为实心图
@@ -259,7 +161,7 @@ def chat_command(s,user,target,ts):
     if s == '指令':
         return '可用指令：\n' +\
         '1.输入"价格"，查询当前binance交易所的BTCUSDT市场价格。\n' +\
-        '2.输入"价格图表"，查询最近三天的价格曲线。\n' +\
+        '2.输入"价格图表"，查询最近五天的价格曲线。\n' +\
         '2.输入"买入 金额"，例如"买入 10000"，表示买入价值10000USDT的BTC。\n' +\
         '3.输入"卖出 数量"，例如"卖出 1"，表示卖出1个BTC。\n' +\
         '4.输入"做多 金额"，例如"做多 10000"，表示做多价值10000USDT的BTC。\n' +\
@@ -302,25 +204,10 @@ def chat_command(s,user,target,ts):
         return '输入"指令"查看可用指令。'
 
 def chat(s,user,target,ts):
-    #if s == '1':
-    #    return save_img(user,target,ts)
-    #else:
-        res = chat_register(s,user)
-        if res: return res
-        res = chat_command(s,user,target,ts)
-        if res: return res
-    #     match1 = re.match(pattern1, s)
-    #     if match1:
-    #         x1, y1, x2, y2 = match1.groups()
-    #         return screen_shot(user,target,ts,x1, y1, x2, y2)
-    #     matchc = re.match(patternc, s)
-    #     if matchc:
-    #         x,y = matchc.groups()
-    #         LClick(x,y)
-    #         return
-    #     process_task(s,user)
-    # ans = "您的输入信息已经发送给ChatGPT，输入'1'查看截图。"# + str(user)
-    # return ans
+    res = chat_register(s,user)
+    if res: return res
+    res = chat_command(s,user,target,ts)
+    if res: return res
 
 def LClick(x, y):
     mouse = PyMouse()
