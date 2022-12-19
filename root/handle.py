@@ -19,6 +19,10 @@ from collections import *
 from sortedcontainers import SortedList
 import bisect
 import os
+import datetime
+import plotly.express as px
+#import matplotlib.pyplot as plt
+import pandas as pd
 
 pic_url = ""
 
@@ -87,6 +91,22 @@ def save_reg_set(reg_set):
     with open(fname, 'w+') as f:
         json.dump(list(reg_set), f)
 
+def load_contest_rank():
+    fname = 'data/contest_rank'+str(current_contest)+'.json'
+    fexist = os.path.exists(fname)
+    if fexist:
+        with open(fname, 'r+') as f:
+            #如果文件f不为空，则载入到contest_rank中，否则新建一个dict
+            contest_rank = json.load(f)
+    else:
+        contest_rank = []
+    return contest_rank
+
+def save_contest_rank(contest_rank):
+    fname = 'data/contest_rank'+str(current_contest)+'.json'
+    with open(fname, 'w+') as f:
+        json.dump(contest_rank, f)
+
 def load_name_dict():
     fname = 'data/name_dict.json'
     fexist = os.path.exists(fname)
@@ -142,6 +162,7 @@ def chat_register(s,user):
         name_dict = load_name_dict()
         elo_dict = load_elo_dict()
         elo_list = load_elo_list()
+        contest_rank = load_contest_rank()
         username = match.group(1)
         #判断该用户名是否已经被其它用户注册
         if username in name_dict:
@@ -164,6 +185,8 @@ def chat_register(s,user):
         if username not in elo_dict:
             elo_dict[username] = 1500
             elo_list.add(elo_dict[username])
+        contest_rank.append([username,1000000])
+        save_contest_rank(contest_rank)
         rank = elo_list.bisect_left(elo_dict[username]) + 1
         save_elo_dict(elo_dict)
         save_elo_list(elo_list)
@@ -186,11 +209,103 @@ def chat_register(s,user):
     else:
         return None
 
+def get_price():
+    # 获取当前BTCUSDT价格
+    url = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
+    r = requests.get(url)
+    price = float(r.json()['price'])
+    #输出格式：Binance交易所的当前BTCUSDT价格为：price
+    #北京时间：2020年12月25日 15:00:00
+    return 'Binance交易所的当前BTCUSDT价格为：' + str(price) + '\n' +\
+    '北京时间：' + str(datetime.datetime.now().strftime('%Y年%m月%d日 %H:%M:%S'))
+
+
+kline_cnt = 4*24*5
+
+def get_ohlcv_list():
+    # 获取最近五天的BTCUSDT 15分钟K线数据
+    url = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=' + str(kline_cnt)
+    #url = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=72'
+    r = requests.get(url)
+    ohlcv_list = r.json()
+    return ohlcv_list
+
+def draw_price_chart(user,target,ts):
+    # 绘制BTCUSDT价格走势图(最近三天，1小时K线)，保存到img/btcusdt.png
+    ohlcv_list = get_ohlcv_list()
+    #print(ohlcv_list)
+    df = pd.DataFrame(ohlcv_list, columns=['time', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'])
+    df['time'] = pd.to_datetime(df['time'], unit='ms')
+    df['close_time'] = pd.to_datetime(df['close_time'], unit='ms')
+    df = df.set_index('time')
+    df = df[['open', 'high', 'low', 'close', 'volume']]
+    df = df.iloc[-kline_cnt:]
+    df['close'] = df['close'].astype(float)
+    #print(df['close'])
+    #填充为实心图
+    fig = df['close'].plot.line(figsize=(16, 9), title='BTCUSDT 5 Days\n' +\
+        str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    ).get_figure()
+    filename = 'img/btcusdt.png'
+    fig.savefig(filename)
+    pic_url = picture_url(filename)
+    #清空变量
+    df = None
+    fig = None
+    ohlcv_list = None
+    return werobot.replies.ImageReply(media_id=pic_url,target=user,source=target,time=ts)
+
+def chat_command(s,user,target,ts):
+    if s == '比赛指令':
+        return '比赛指令：\n' +\
+        '1.输入"价格"，查询当前binance交易所的BTCUSDT市场价格。\n' +\
+        '2.输入"价格图表"，查询最近三天的价格曲线。\n' +\
+        '2.输入"买入 金额"，例如"买入 10000"，表示买入价值10000USDT的BTC。\n' +\
+        '3.输入"卖出 数量"，例如"卖出 1"，表示卖出1个BTC。\n' +\
+        '4.输入"做多 金额"，例如"做多 10000"，表示做多价值10000USDT的BTC。\n' +\
+        '5.输入"做空 数量"，例如"做空 1"，表示做空1个BTC。\n' +\
+        '6.输入"持仓"，查看当前持仓。\n' +\
+        '7.输入"资金"，查看当前资金。\n' +\
+        '8.输入"比赛排名"，查看比赛排名。'
+    elif s == '比赛排名':
+        contest_rank = load_contest_rank()
+        reg_set = load_reg_set()
+        #contest_rank是一个list，每个元素是一个tuple，tuple的第一个元素是账号，第二个元素是余额
+        #返回Top10排名
+        #输出格式：比赛排名：\n1.账号1 余额1\n2.账号2 余额2\n...
+        rank = 1
+        res = '比赛排名：\n'
+        #抬头信息
+        res += '排名' + ' ' + '账号' + ' ' + '余额' + '\n'
+        for name,profit in contest_rank:
+            if name in reg_set:
+                res += str(rank) + '.' + name + ' ' + str(profit) + '\n'
+                rank += 1
+            if rank > 10: break
+        return res
+    elif s == '取消注册比赛':
+        reg_set = load_reg_set()
+        name_dict = load_name_dict()
+        for reg_name in reg_set:
+            if name_dict[reg_name] == user:
+                reg_set.remove(reg_name)
+                save_reg_set(reg_set)
+                return '您的参赛账号"' + reg_name + '"已取消注册比赛。'
+        return '您未注册比赛。'
+    elif s == '价格':
+        return get_price()
+    elif s == '价格图表':
+        return draw_price_chart(user,target,ts)
+    else:
+        return None
+
 def chat(s,user,target,ts):
     if s == '1':
         return save_img(user,target,ts)
     else:
         res = chat_register(s,user)
+        if res: return res
+        res = chat_command(s,user,target,ts)
         if res: return res
         match1 = re.match(pattern1, s)
         if match1:
