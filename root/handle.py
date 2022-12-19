@@ -198,14 +198,14 @@ def chat_register(s,user):
             '欢迎注册AI纪元第' + str(current_contest) + '场量化交易比赛，您是本场比赛的第' + str(len(reg_set)) + '位注册选手，您的当前等级分是' + str(elo_dict[username]) + '分（全球第' + str(rank) + '/' + str(len(name_dict)) + '名）。\n' +\
             '比赛开始时间北京时间：' + str(start_time) +'8点，持续时间' + str(duration) + '天。\n' +\
             '本场比赛支持的交易品种是BTCUSDT（交易所Binance），初始资金为1000000 USDT，最大杠杆为10倍，交易手续费为0.1%。\n' +\
-            '输入"比赛指令"查看交易指令，输入"比赛排名"查看比赛排名，输入“取消注册比赛”取消注册比赛。'
+            '输入"指令"查看交易指令，输入"比赛排名"查看比赛排名，输入“取消注册比赛”取消注册比赛。'
         else:
             return str(username) + ',您好！\n' +\
             '欢迎注册AI纪元第' + str(current_contest) + '场量化交易比赛。\n您的参赛账号"' + last_name + '"已切换为"' + username + '"\n' +\
             '您是本场比赛的第' + str(len(reg_set)) + '位注册选手，您的当前等级分是' + str(elo_dict[username]) + '分（全球第' + str(rank) + '/' + str(len(name_dict)) + '名）。\n' +\
             '比赛开始时间北京时间：' + str(start_time) +'8点，持续时间' + str(duration) + '天。\n' +\
             '本场比赛支持的交易品种是BTCUSDT（交易所Binance），初始资金为1000000 USDT，最大杠杆为10倍，交易手续费为0.1%。\n' +\
-            '输入"比赛指令"查看交易指令，输入"比赛排名"查看比赛排名，输入“取消注册比赛”取消注册比赛。'
+            '输入"指令"查看交易指令，输入"比赛排名"查看比赛排名，输入“取消注册比赛”取消注册比赛。'
     else:
         return None
 
@@ -256,8 +256,8 @@ def draw_price_chart(user,target,ts):
     return werobot.replies.ImageReply(media_id=pic_url,target=user,source=target,time=ts)
 
 def chat_command(s,user,target,ts):
-    if s == '比赛指令':
-        return '比赛指令：\n' +\
+    if s == '指令':
+        return '可用指令：\n' +\
         '1.输入"价格"，查询当前binance交易所的BTCUSDT市场价格。\n' +\
         '2.输入"价格图表"，查询最近三天的价格曲线。\n' +\
         '2.输入"买入 金额"，例如"买入 10000"，表示买入价值10000USDT的BTC。\n' +\
@@ -266,7 +266,9 @@ def chat_command(s,user,target,ts):
         '5.输入"做空 数量"，例如"做空 1"，表示做空1个BTC。\n' +\
         '6.输入"持仓"，查看当前持仓。\n' +\
         '7.输入"资金"，查看当前资金。\n' +\
-        '8.输入"比赛排名"，查看比赛排名。'
+        '8.输入"比赛排名"，查看比赛排名。\n' +\
+        '9.输入"注册比赛 用户名"，注册比赛或切换用户名。\n' +\
+        '10.输入"取消注册比赛"，取消注册比赛。'
     elif s == '比赛排名':
         contest_rank = load_contest_rank()
         reg_set = load_reg_set()
@@ -297,28 +299,28 @@ def chat_command(s,user,target,ts):
     elif s == '价格图表':
         return draw_price_chart(user,target,ts)
     else:
-        return None
+        return '输入"指令"查看可用指令。'
 
 def chat(s,user,target,ts):
-    if s == '1':
-        return save_img(user,target,ts)
-    else:
+    #if s == '1':
+    #    return save_img(user,target,ts)
+    #else:
         res = chat_register(s,user)
         if res: return res
         res = chat_command(s,user,target,ts)
         if res: return res
-        match1 = re.match(pattern1, s)
-        if match1:
-            x1, y1, x2, y2 = match1.groups()
-            return screen_shot(user,target,ts,x1, y1, x2, y2)
-        matchc = re.match(patternc, s)
-        if matchc:
-            x,y = matchc.groups()
-            LClick(x,y)
-            return
-        process_task(s,user)
-    ans = "您的输入信息已经发送给ChatGPT，输入'1'查看截图。"# + str(user)
-    return ans
+    #     match1 = re.match(pattern1, s)
+    #     if match1:
+    #         x1, y1, x2, y2 = match1.groups()
+    #         return screen_shot(user,target,ts,x1, y1, x2, y2)
+    #     matchc = re.match(patternc, s)
+    #     if matchc:
+    #         x,y = matchc.groups()
+    #         LClick(x,y)
+    #         return
+    #     process_task(s,user)
+    # ans = "您的输入信息已经发送给ChatGPT，输入'1'查看截图。"# + str(user)
+    # return ans
 
 def LClick(x, y):
     mouse = PyMouse()
