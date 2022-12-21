@@ -362,26 +362,28 @@ class elo:
             plyers[i]['rank'] = rk
 
     #表现分计算公式：表现分 = 其他选手的等级分的平均值 + 400 * ln(1 / 相对于其它选手的胜率 - 1) if 0 < 相对于其它选手的胜率 < 1
-    def get_performance_list(plyers):
+    def calc_performance(plyers):
         n = len(plyers)
         rate_sum = sum(plyers[i]['rate'] for i in range(n))
         rank_list = [plyers[i]['rank'] for i in range(n)]
         for i in range(n):
-            plyers[i]['rate_other_avg'] = (rate_sum - plyers[i]['rate']) / (n - 1)
+            rate_other_avg = (rate_sum - plyers[i]['rate']) / (n - 1)
             p1 = bisect.bisect_left(rank_list, plyers[i]['rank'])
             p2 = bisect.bisect_right(rank_list, plyers[i]['rank'])
             win_cnt = n-p2
             draw_cnt = p2-p1-1
             win_rate = (win_cnt+0.5*draw_cnt)/(n-1)
-            plyers[i]['performance'] = plyers[i]['rate_other_avg'] + elo.get_rate_diff_by_win_rate(win_rate)
-            x = sum(elo.get_win_rate(plyers[j]-plyers[i]) for j in range(n) if j != i)
+            plyers[i]['performance'] = rate_other_avg - elo.get_rate_diff_by_win_rate(win_rate)
+            x = sum(elo.get_win_rate(plyers[j]['rate']-plyers[i]['rate']) for j in range(n) if j != i)
             plyers[i]['new_rate'] = plyers[i]['rate'] + 30 * (win_cnt + 0.5 * draw_cnt - x)
-
+            plyers[i]['new_rate'] = round(plyers[i]['new_rate'],2)
+            plyers[i]["performance"] = round(plyers[i]["performance"],2)
 
 def show_contest_rank():
     contest_rank = load_contest_rank()
     reg_set = load_reg_set()
     name_dict = load_name_dict()
+    rate_dict = load_elo_dict()
     #contest_rank是一个list，每个元素是一个tuple，tuple的第一个元素是账号，第二个元素是余额
     #返回Top10排名
     #输出格式：比赛排名：\n1.账号1 余额1\n2.账号2 余额2\n...
@@ -389,20 +391,26 @@ def show_contest_rank():
     res = get_contest_text() + '\n比赛排名：\n'
     price = get_price_btc()
     #抬头信息
-    res += '排名' + ' ' + '账号' + ' ' + '余额' + '\n'
+    res += '排名' + ' ' + '账号' + ' ' + '余额' + ' ' + '表现分' + ' ' + 'ELO分' + '\n'
     contest_rank_new = []
     for name,profit in contest_rank:
         #if name in reg_set:
         user_account = load_user_account(name_dict[name])
-        contest_rank_new.append((name,user_account['BTC']*price + user_account['USDT']))
+        score = user_account['BTC']*price + user_account['USDT']
+        rate = rate_dict[name]
+        contest_rank_new.append({'name':name,'rate':rate,'score':score})
             #res += str(rank) + '.' + name + ' ' + str(profit) + '\n'
             #rank += 1
         #if rank > 10: break
-    contest_rank_new.sort(key=lambda x:x[1],reverse=True)
-    save_contest_rank(contest_rank_new)
-    for name,profit in contest_rank_new:
-        if name in reg_set:
-            res += str(rank) + '.' + name + ' ' + str(profit) + '\n'
+    elo.init_players(contest_rank_new)
+    elo.calc_performance(contest_rank_new)
+    #contest_rank_new.sort(key=lambda x:x[1],reverse=True)
+    save_contest_rank([[plyer["name"],plyer["score"]] for plyer in contest_rank_new])
+    for plyer in contest_rank_new:
+        if plyer['name'] in reg_set:
+            delta = plyer['new_rate'] - plyer['rate']
+            SIGN = '+' if delta >= 0 else ''
+            res += str(plyer['rank']) + ' ' + plyer['name'] + ' ' + str(round(plyer['score'],2)) + ' ' + str(plyer['performance']) + ' ' + str(plyer['new_rate'])+'('+SIGN+str(delta)+')' + '\n'
             rank += 1
         if rank > 10: break
     return res
