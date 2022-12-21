@@ -141,7 +141,7 @@ def draw_price_chart(user,target,ts):
     df['close_time'] = pd.to_datetime(df['close_time'], unit='ms')
     df = df.set_index('time')
     df = df[['open', 'high', 'low', 'close', 'volume']]
-    df = df.iloc
+    df = df.iloc[:]
     df['close'] = df['close'].astype(float)
     #print(df['close'])
     #填充为实心图
@@ -162,31 +162,16 @@ def chat_command(s,user,target,ts):
         return '可用指令：\n' +\
         '1.输入"价格"，查询当前binance交易所的BTCUSDT市场价格。\n' +\
         '2.输入"价格图表"，查询最近五天的价格曲线。\n' +\
-        '2.输入"买入 金额"，例如"买入 10000"，表示买入价值10000USDT的BTC。\n' +\
-        '3.输入"卖出 数量"，例如"卖出 1"，表示卖出1个BTC。\n' +\
-        '4.输入"做多 金额"，例如"做多 10000"，表示做多价值10000USDT的BTC。\n' +\
-        '5.输入"做空 数量"，例如"做空 1"，表示做空1个BTC。\n' +\
-        '6.输入"持仓"，查看当前持仓。\n' +\
-        '7.输入"资金"，查看当前资金。\n' +\
+        '3.输入"买入/做多 金额U"，例如"买入 10000U"，表示买入价值10000USDT的BTC（买入时默认此单位）。\n' +\
+        '4.输入"买入/做多 数量B"，例如"做多 1B"，表示做多1个BTC。\n' +\
+        '5.输入"卖出/做空 金额U"，例如"卖出 10000U"，表示卖出价值10000USDT的BTC。\n' +\
+        '6.输入"卖出/做空 数量B"，例如"做空 1B"，表示做空1个BTC。（卖出时默认此单位）\n' +\
+        '7.输入"持仓"或"资金"，查看当前持仓和资金。\n' +\
         '8.输入"比赛排名"，查看比赛排名。\n' +\
         '9.输入"注册比赛 用户名"，注册比赛或切换用户名。\n' +\
         '10.输入"取消注册比赛"，取消注册比赛。'
-    elif s == '比赛排名':
-        contest_rank = load_contest_rank()
-        reg_set = load_reg_set()
-        #contest_rank是一个list，每个元素是一个tuple，tuple的第一个元素是账号，第二个元素是余额
-        #返回Top10排名
-        #输出格式：比赛排名：\n1.账号1 余额1\n2.账号2 余额2\n...
-        rank = 1
-        res = '比赛排名：\n'
-        #抬头信息
-        res += '排名' + ' ' + '账号' + ' ' + '余额' + '\n'
-        for name,profit in contest_rank:
-            if name in reg_set:
-                res += str(rank) + '.' + name + ' ' + str(profit) + '\n'
-                rank += 1
-            if rank > 10: break
-        return res
+    elif s == '比赛排名' or s == '排名' or s == '排行榜' or s == '排行' or s == '比赛排行':
+        return show_contest_rank()
     elif s == '取消注册比赛':
         reg_set = load_reg_set()
         name_dict = load_name_dict()
@@ -198,10 +183,329 @@ def chat_command(s,user,target,ts):
         return '您未注册比赛。'
     elif s == '价格':
         return get_price()
-    elif s == '价格图表':
+    elif s == '持仓' or s == '资金':
+        return get_position(user)
+    elif s == '价格图表' or s == '价格曲线':
         return draw_price_chart(user,target,ts)
+    elif s == '重置比赛':
+        return reset_contest(user)
+    #买入 金额
+    elif s[:2] == '买入':
+        try:
+            amount = float(s[2:])
+            return buy(user,amount,"U")
+        except:
+            try:
+                amount = float(s[2:-1])
+                return buy(user,amount,s[-1])
+            except:
+                return '输入金额格式错误。'
+    #卖出 数量
+    elif s[:2] == '卖出':
+        try:
+            amount = float(s[2:])
+            return sell(user,amount,"B")
+        except:
+            try:
+                amount = float(s[2:-1])
+                return sell(user,amount,s[-1])
+            except:
+                return '输入数量格式错误。'
+    #做多 金额
+    elif s[:2] == '做多':
+        try:
+            amount = float(s[2:])
+            return long(user,amount,"U")
+        except:
+            try:
+                amount = float(s[2:-1])
+                return long(user,amount,s[-1])
+            except:
+                return '输入金额格式错误。'
+    #做空 数量
+    elif s[:2] == '做空':
+        try:
+            amount = float(s[2:])
+            return short(user,amount,"B")
+        except:
+            try:
+                amount = float(s[2:-1])
+                return short(user,amount,s[-1])
+            except:
+                return '输入数量格式错误。'
     else:
         return '输入"指令"查看可用指令。'
+
+def reset_contest(user):
+    #重置比赛
+    #只有用户"AI纪元"可以使用此指令
+    #输出格式：重置成功
+    #效果：重置所有用户的余额为1000000USDT
+    #抬头信息
+    reg_set = load_reg_set()
+    name_dict = load_name_dict()
+    contest_rank = load_contest_rank()
+    if name_dict["AI纪元"] != user:
+        return '您无权使用此指令。'
+    for reg_name in reg_set:
+        user_id = name_dict[reg_name]
+        user_account = load_user_account(user_id)
+        user_account['USDT'] = 1000000
+        user_account['BTC'] = 0
+        save_user_account(user_id,user_account)
+    n = len(contest_rank)
+    for i in range(n):
+        contest_rank[i][1] = 1000000
+    save_contest_rank(contest_rank)
+    return '重置成功。'
+
+def get_position(user):
+    #返回用户的持仓和资金
+    #输出格式：用户：用户名：\nBTC:数量\nUSDT:余额\n估值：估值\n杠杆率：杠杆率
+    #抬头信息
+    reg_set = load_reg_set()
+    name_dict = load_name_dict()
+    user_name = ""
+    for reg_name in reg_set:
+        if name_dict[reg_name] == user:
+            user_name = reg_name
+            break
+    if user_name == "":
+        return '您未注册比赛，输入"注册比赛 用户名"注册比赛。'
+    user_account = load_user_account(user)
+    #格式：{'BTC':0,'USDT':1000}
+    price = get_price_btc()
+    #格式：{'BTC':10000,'USDT':1}
+    res = get_contest_text() + '\n'
+    res += '用户：' + user_name + '\n'
+    res += 'BTC：' + str(user_account['BTC']) + '\n'
+    res += 'USDT：' + str(user_account['USDT']) + '\n'
+    res += '估值：' + str(user_account['BTC']*price + user_account['USDT']) + '\n'
+    res += '杠杆率：' + str(get_leverage(user_account))
+    return res
+
+def get_contest_text():
+    #返回比赛信息
+    #输出格式：第几轮比赛，第几分钟，距离比赛结束还有几分钟
+    #抬头信息
+    start_date = current_contest_start_date #开始日期UTC时间：格式：'20200101'
+    duration = current_contest_duration #天数，格式：'1'
+    #计算比赛持续的时间
+    start_date = datetime.datetime.strptime(start_date,'%Y%m%d')
+    end_date = start_date + datetime.timedelta(days=int(duration))
+    #根据当前时间计算比赛进行到第几分钟
+    now = datetime.datetime.utcnow()
+    if now < start_date:
+        return '比赛还未开始。'
+    if now > end_date:
+        return '比赛已经结束。'
+    delta = now - start_date
+    delta_minutes = delta.days*24*60 + delta.seconds//60
+    #计算比赛还有多少分钟
+    left_minutes = 60*24*int(duration) - delta_minutes
+    contest_text = '第' + str(current_contest) + '轮比赛，第' + str(delta_minutes) + '分钟，距离比赛结束还有' + str(left_minutes) + '分钟。'
+    return contest_text
+
+def show_contest_rank():
+    contest_rank = load_contest_rank()
+    reg_set = load_reg_set()
+    name_dict = load_name_dict()
+    #contest_rank是一个list，每个元素是一个tuple，tuple的第一个元素是账号，第二个元素是余额
+    #返回Top10排名
+    #输出格式：比赛排名：\n1.账号1 余额1\n2.账号2 余额2\n...
+    rank = 1
+    res = get_contest_text() + '\n比赛排名：\n'
+    price = get_price_btc()
+    #抬头信息
+    res += '排名' + ' ' + '账号' + ' ' + '余额' + '\n'
+    contest_rank_new = []
+    for name,profit in contest_rank:
+        #if name in reg_set:
+        user_account = load_user_account(name_dict[name])
+        contest_rank_new.append((name,user_account['BTC']*price + user_account['USDT']))
+            #res += str(rank) + '.' + name + ' ' + str(profit) + '\n'
+            #rank += 1
+        #if rank > 10: break
+    contest_rank_new.sort(key=lambda x:x[1],reverse=True)
+    save_contest_rank(contest_rank_new)
+    for name,profit in contest_rank_new:
+        if name in reg_set:
+            res += str(rank) + '.' + name + ' ' + str(profit) + '\n'
+            rank += 1
+        if rank > 10: break
+    return res
+
+def buy(user,amount,currency):
+    currency = currency.upper()
+    #买入amount USDT的BTC
+    #返回买入成功或失败的信息
+    reg_set = load_reg_set()
+    name_dict = load_name_dict()
+    user_name = ""
+    for reg_name in reg_set:
+        if name_dict[reg_name] == user:
+            user_name = reg_name
+            break
+    if user_name == "":
+        return '您未注册比赛，输入"注册比赛 用户名"注册比赛。'
+    user_account = load_user_account(user)
+    #格式：{'BTC':0,'USDT':1000}
+    #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
+    if user_account['USDT'] < amount:
+        return '余额不足。(余额：' + str(user_account['USDT']) + ')'
+    price = get_price_btc()
+    if currency == 'B':
+        amount = amount * price
+    fee = amount * 0.001
+    act_amount = amount - fee
+    #杠杆率不能超过20倍
+    if get_leverage({
+        "USDT":user_account['USDT'] - amount,
+        "BTC":user_account['BTC'] + act_amount / price}) > 20:
+        return '杠杆率超过20倍，无法买入。'
+    #执行交易
+    user_account['USDT'] -= amount
+    user_account['BTC'] += act_amount / price
+    save_user_account(user, user_account)
+    update_contest_rank(user_name, user_account, price)
+    return '买入成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+        '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
+
+def long(user,amount,currency):
+    currency = currency.upper()
+    #做多amount USDT的BTC
+    #返回做多成功或失败的信息
+    reg_set = load_reg_set()
+    name_dict = load_name_dict()
+    user_name = ""
+    for reg_name in reg_set:
+        if name_dict[reg_name] == user:
+            user_name = reg_name
+            break
+    if user_name == "":
+        return '您未注册比赛，输入"注册比赛 用户名"注册比赛。'
+    user_account = load_user_account(user)
+    #格式：{'BTC':0,'USDT':1000}
+    #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
+    #做多允许用户持有的USDT为负数，因此不需要判断余额
+    #if user_account['USDT'] < amount:
+    #    return '余额不足。(余额：' + str(user_account['USDT']) + ')'
+    price = get_price_btc()
+    if currency == 'B':
+        amount = amount * price
+    fee = amount * 0.001
+    act_amount = amount - fee
+    #杠杆率不能超过20倍
+    if get_leverage({
+        "USDT":user_account['USDT'] - amount,
+        "BTC":user_account['BTC'] + act_amount / price}) > 20:
+        return '杠杆率超过20倍，无法做多。'
+    #执行交易
+    user_account['USDT'] -= amount
+    user_account['BTC'] += act_amount / price
+    save_user_account(user, user_account)
+    update_contest_rank(user_name, user_account, price)
+    return '做多成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+        '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
+
+def get_leverage(user_account):
+    #杠杆率
+    #本金 = USDT余额 + BTC数量*当前价格
+    # 当USDT余额为负数时，杠杆率为:abs(USDT余额)/本金
+    # 当BTC数量为负数时，杠杆率为:abs(BTC数量)*当前价格/本金
+    leverage = 0
+    price = get_price_btc()
+    balance = user_account['USDT'] + user_account['BTC'] * price
+    if user_account['USDT'] < 0:
+        leverage = abs(user_account['USDT']) / balance
+    elif user_account['BTC'] < 0:
+        leverage = abs(user_account['BTC']) * price / balance
+    return leverage
+
+def sell(user,amount,currency):
+    currency = currency.upper()
+    #卖出amount个BTC
+    #返回卖出成功或失败的信息
+    reg_set = load_reg_set()
+    name_dict = load_name_dict()
+    user_name = ""
+    for reg_name in reg_set:
+        if name_dict[reg_name] == user:
+            user_name = reg_name
+            break
+    if user_name == "":
+        return '您未注册比赛，输入"注册比赛 用户名"注册比赛。'
+    user_account = load_user_account(user)
+    #格式：{'BTC':0,'USDT':1000}
+    #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
+    if user_account['BTC'] < amount:
+        return '余额不足。(余额：' + str(user_account['BTC']) + ')'
+    price = get_price_btc()
+    if currency == 'U':
+        amount = amount / price
+    fee = amount * 0.001
+    act_amount = amount - fee
+    #杠杆率不能超过20倍
+    if get_leverage({
+        "BTC":user_account['BTC'] - amount,
+        "USDT":user_account['USDT'] + act_amount * price}) > 20:
+        return '杠杆率超过20倍，无法卖出。'
+    #执行交易
+    user_account['BTC'] -= amount
+    user_account['USDT'] += act_amount * price
+    save_user_account(user, user_account)
+    update_contest_rank(user_name, user_account, price)
+    return '卖出成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+        '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
+
+def short(user,amount,currency):
+    currency = currency.upper()
+    #做空amount个USDT
+    #返回做空成功或失败的信息
+    reg_set = load_reg_set()
+    name_dict = load_name_dict()
+    user_name = ""
+    for reg_name in reg_set:
+        if name_dict[reg_name] == user:
+            user_name = reg_name
+            break
+    if user_name == "":
+        return '您未注册比赛，输入"注册比赛 用户名"注册比赛。'
+    user_account = load_user_account(user)
+    #格式：{'BTC':0,'USDT':1000}
+    #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
+    #做空允许用户持有的BTC为负数，因此不需要判断余额
+    #if user_account['BTC'] < amount:
+    #    return '余额不足。(余额：' + str(user_account['BTC']) + ')'
+    price = get_price_btc()
+    if currency == 'U':
+        amount = amount / price
+    fee = amount * 0.001
+    act_amount = amount - fee
+    #杠杆率不能超过20倍
+    if get_leverage({
+        "BTC":user_account['BTC'] - amount,
+        "USDT":user_account['USDT'] + act_amount * price}) > 20:
+        return '杠杆率超过20倍，无法做空。'
+    #执行交易
+    user_account['BTC'] -= amount
+    user_account['USDT'] += act_amount * price
+    save_user_account(user, user_account)
+    update_contest_rank(user_name, user_account, price)
+    return '做空成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+        '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
+
+def update_contest_rank(user_name, user_account, price):
+    #更新比赛排名
+    #contest_rank是一个list，每个元素是一个tuple，tuple的第一个元素是账号，第二个元素是余额
+    value = user_account['USDT'] + user_account['BTC'] * price
+    contest_rank = load_contest_rank()
+    for i in range(len(contest_rank)):
+        if contest_rank[i][0] == user_name:
+            contest_rank[i][1] = value
+            break
+    contest_rank.sort(key=lambda x:x[1],reverse=True)
+    save_contest_rank(contest_rank)
 
 def chat(s,user,target,ts):
     res = chat_register(s,user)
