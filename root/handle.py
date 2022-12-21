@@ -25,6 +25,8 @@ import plotly.express as px
 import pandas as pd
 from files import *
 from Binance import *
+from elo import *
+import math
 
 pic_url = ""
 
@@ -65,7 +67,7 @@ def screen_shot(user,target,ts,x1, y1, x2, y2):
 
 current_contest = 1
 current_contest_start_date = '20221221'
-current_contest_duration = 3
+current_contest_duration = 5
 
 contest_dict = {}
 
@@ -84,7 +86,7 @@ def chat_register(s,user):
         reg_set = load_reg_set()
         name_dict = load_name_dict()
         elo_dict = load_elo_dict()
-        elo_list = load_elo_list()
+        #elo_list = load_elo_list()
         contest_rank = load_contest_rank()
         username = match.group(1)
         #判断该用户名是否已经被其它用户注册
@@ -105,14 +107,17 @@ def chat_register(s,user):
                 break
         reg_set.add(username)
         save_reg_set(reg_set)
+        elo_list = []
         if username not in elo_dict:
             elo_dict[username] = 1500
-            elo_list.add(elo_dict[username])
+        for username in elo_dict:
+            elo_list.append(elo_dict[username])
+        elo_list.sort()
         contest_rank.append([username,1000000])
         save_contest_rank(contest_rank)
         rank = elo_list.bisect_left(elo_dict[username]) + 1
         save_elo_dict(elo_dict)
-        save_elo_list(elo_list)
+        #save_elo_list(elo_list)
         start_time = current_contest_start_date
         start_time = start_time[:4] + "年" + start_time[4:6] + "月" + start_time[6:] + "日"
         duration = current_contest_duration
@@ -303,8 +308,75 @@ def get_contest_text():
     delta_minutes = delta.days*24*60 + delta.seconds//60
     #计算比赛还有多少分钟
     left_minutes = 60*24*int(duration) - delta_minutes
-    contest_text = '第' + str(current_contest) + '轮比赛，第' + str(delta_minutes) + '分钟，距离比赛结束还有' + str(left_minutes) + '分钟。'
+    #计算比赛还有多少天
+    left_days = left_minutes//(24*60)
+    left_hours = (left_minutes - left_days*24*60)//60
+    left_minutes = left_minutes - left_days*24*60 - left_hours*60
+    #计算比赛进行到第几天
+    delta_days = delta_minutes//(24*60)
+    delta_hours = (delta_minutes - delta_days*24*60)//60
+    delta_minutes = delta_minutes - delta_days*24*60 - delta_hours*60
+
+    contest_text = '第' + str(current_contest) + '轮比赛，第' + str(delta_days) + '天' \
+    + str(delta_hours) + '小时' + str(delta_minutes) + '分钟，距离比赛结束还有' \
+    + str(left_days) + '天' + str(left_hours) + '小时' + str(left_minutes) + '分钟。'
     return contest_text
+
+class elo:
+    #等级分差 = 对手等级分 - 自己等级分
+    def get_rate_diff(rate_other, rate_self):
+        return rate_other - rate_self
+
+    #胜率计算公式：胜率 = 1 / (1 + 10 ^ (等级分差 / 400))
+    def get_win_rate(rate_diff):
+        return 1 / (1 + math.pow(10, rate_diff / 400))
+
+    #通过以上函数的反函数计算等级分差：等级分差 = 400 * ln(1 / 胜率 - 1)
+    def get_rate_diff_by_win_rate(win_rate):
+        if win_rate == 1:
+            return -float("inf")
+        if win_rate == 0:
+            return float("inf")
+        return 400 * math.log(1 / win_rate - 1, 10)
+    
+    #其他选手的等级分的平均值 = 所有其他选手的等级分的和 / 所有其他选手的数量
+    def get_rate_other_avg(rate_other_list):
+        return sum(rate_other_list) / len(rate_other_list)
+    
+    #相对于其它选手的胜率 = 相对于其它选手的胜出次数 / 所有其他选手的数量
+    def get_win_rate_other(win_rate_other_list):
+        return sum(win_rate_other_list) / len(win_rate_other_list)
+    
+    def init_players(plyers):
+        #格式：[{'name': '选手1', 'rate': 1000, 'score': 100.0}, {'name': '选手2', 'rate': 1000, 'score': 99.0}, {'name': '选手3', 'rate': 1000, 'score': 101.0}]
+        n = len(plyers)
+        if n == 1:
+            n = 2
+            plyers.append({'name': '选手2', 'rate': 1000, 'score': 1000000})
+        plyers.sort(key=lambda x: x['score'], reverse=True)
+        lst = float('inf')
+        for i in range(n):
+            if plyers[i]['score'] != lst:
+                lst = plyers[i]['score']
+                rk = i + 1
+            plyers[i]['rank'] = rk
+
+    #表现分计算公式：表现分 = 其他选手的等级分的平均值 + 400 * ln(1 / 相对于其它选手的胜率 - 1) if 0 < 相对于其它选手的胜率 < 1
+    def get_performance_list(plyers):
+        n = len(plyers)
+        rate_sum = sum(plyers[i]['rate'] for i in range(n))
+        rank_list = [plyers[i]['rank'] for i in range(n)]
+        for i in range(n):
+            plyers[i]['rate_other_avg'] = (rate_sum - plyers[i]['rate']) / (n - 1)
+            p1 = bisect.bisect_left(rank_list, plyers[i]['rank'])
+            p2 = bisect.bisect_right(rank_list, plyers[i]['rank'])
+            win_cnt = n-p2
+            draw_cnt = p2-p1-1
+            win_rate = (win_cnt+0.5*draw_cnt)/(n-1)
+            plyers[i]['performance'] = plyers[i]['rate_other_avg'] + elo.get_rate_diff_by_win_rate(win_rate)
+            x = sum(elo.get_win_rate(plyers[j]-plyers[i]) for j in range(n) if j != i)
+            plyers[i]['new_rate'] = plyers[i]['rate'] + 30 * (win_cnt + 0.5 * draw_cnt - x)
+
 
 def show_contest_rank():
     contest_rank = load_contest_rank()
