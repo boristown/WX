@@ -67,7 +67,7 @@ def screen_shot(user,target,ts,x1, y1, x2, y2):
 
 current_contest = 1
 current_contest_start_date = '20221221'
-current_contest_duration = 5
+current_contest_duration = 4
 
 contest_dict = {}
 
@@ -309,7 +309,8 @@ def get_contest_text():
         return '比赛还未开始。'
     #if now > end_date:
     #    return '比赛已经结束。'
-    roundx = math.ceil((now - end_date).days/7) + 1
+    print((now - end_date).seconds)
+    roundx = math.ceil((now - end_date).seconds/(7*24*60*60)) + 1
     if roundx > 1:
         start_date = end_date + datetime.timedelta(days=(roundx-2)*7)
     if status["settled"] < roundx - 1:
@@ -339,15 +340,6 @@ def settle_contest(roundx):
     #contest_rank = load_contest_rank()
     elo_dict = load_elo_dict()
     contest_history = load_contest_history()
-    for reg_name in reg_set:
-        user_id = name_dict[reg_name]
-        user_account = load_user_account(user_id)
-        for currency in user_account:
-            if currency == 'USDT':
-                user_account[currency] = 1000000
-            else:
-                user_account[currency] = 0
-        save_user_account(user_id,user_account)
     #计算ELO分
     price = get_price_btc()
     contest_rank_new = []
@@ -359,15 +351,22 @@ def settle_contest(roundx):
         contest_rank_new.append({'name':name,'rate':rate,'score':score})
     elo.init_players(contest_rank_new)
     elo.calc_performance(contest_rank_new)
-
     for player in contest_rank_new:
         elo_dict[player['name']] = player['new_rate']
-
+    del contest_history[roundx]
     contest_history[roundx] = contest_rank_new
     save_contest_history(contest_history)
-
     save_elo_dict(elo_dict)
-    reset_contest()
+    for reg_name in reg_set:
+        user_id = name_dict[reg_name]
+        user_account = load_user_account(user_id)
+        for currency in user_account:
+            if currency == 'USDT':
+                user_account[currency] = 1000000
+            else:
+                user_account[currency] = 0
+        save_user_account(user_id,user_account)
+    #reset_contest()
     status = load_status()
     status["settled"] = roundx
     save_status(status)
@@ -473,6 +472,7 @@ def buy(user,amount,currency):
     #返回买入成功或失败的信息
     reg_set = load_reg_set()
     name_dict = load_name_dict()
+    T = get_contest_text()
     user_name = ""
     for reg_name in reg_set:
         if name_dict[reg_name] == user:
@@ -500,7 +500,7 @@ def buy(user,amount,currency):
     user_account['BTC'] += act_amount / price
     save_user_account(user, user_account)
     #update_contest_rank(user_name, user_account, price)
-    return '买入成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+    return T + '\n买入成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
 def long(user,amount,currency):
@@ -509,6 +509,7 @@ def long(user,amount,currency):
     #返回做多成功或失败的信息
     reg_set = load_reg_set()
     name_dict = load_name_dict()
+    T = get_contest_text()
     user_name = ""
     for reg_name in reg_set:
         if name_dict[reg_name] == user:
@@ -537,7 +538,7 @@ def long(user,amount,currency):
     user_account['BTC'] += act_amount / price
     save_user_account(user, user_account)
     #update_contest_rank(user_name, user_account, price)
-    return '做多成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+    return T + '\n做多成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
 def get_leverage(user_account):
@@ -561,6 +562,7 @@ def sell(user,amount,currency):
     reg_set = load_reg_set()
     name_dict = load_name_dict()
     user_name = ""
+    T = get_contest_text()
     for reg_name in reg_set:
         if name_dict[reg_name] == user:
             user_name = reg_name
@@ -587,7 +589,7 @@ def sell(user,amount,currency):
     user_account['USDT'] += act_amount * price
     save_user_account(user, user_account)
     #update_contest_rank(user_name, user_account, price)
-    return '卖出成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+    return T + '\n卖出成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
 def short(user,amount,currency):
@@ -596,6 +598,7 @@ def short(user,amount,currency):
     #返回做空成功或失败的信息
     reg_set = load_reg_set()
     name_dict = load_name_dict()
+    T = get_contest_text()
     user_name = ""
     for reg_name in reg_set:
         if name_dict[reg_name] == user:
@@ -624,7 +627,7 @@ def short(user,amount,currency):
     user_account['USDT'] += act_amount * price
     save_user_account(user, user_account)
     #update_contest_rank(user_name, user_account, price)
-    return '做空成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+    return T + '\n做空成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
 # def update_contest_rank(user_name, user_account, price):
