@@ -66,9 +66,10 @@ def get_price():
 
 kline_cnt = 4*24*5
 
-def get_ohlcv_list():
+def get_ohlcv_list(symbol='BTCUSDT'):
+    symbol = symbol.upper()
     # 获取最近五天的BTCUSDT 15分钟K线数据
-    url = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=' + str(kline_cnt)
+    url = 'https://api.binance.com/api/v3/klines?symbol='+ symbol +'&interval=15m&limit=' + str(kline_cnt)
     #url = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=72'
     r = requests.get(url)
     ohlcv_list = r.json()
