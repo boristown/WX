@@ -174,7 +174,8 @@ def chat_command(s,user,target,ts):
         '7.输入"持仓"或"资金"，查看当前持仓和资金。\n' +\
         '8.输入"比赛排名"，查看比赛排名。\n' +\
         '9.输入"注册比赛 用户名"，注册比赛或切换用户名。\n' +\
-        '10.输入"取消注册比赛"，取消注册比赛。'
+        '10.输入"取消注册比赛"，取消注册比赛。\n' +\
+        '11.输入"比赛结果"，查看最近一轮比赛结果。'
     elif s == '比赛排名' or s == '排名' or s == '排行榜' or s == '排行' or s == '比赛排行':
         return show_contest_rank()
     elif s == '取消注册比赛':
@@ -238,8 +239,50 @@ def chat_command(s,user,target,ts):
                 return short(user,amount,s[-1])
             except:
                 return '输入数量格式错误。'
+    elif s == '比赛结果':
+        return show_contest_result()
     else:
         return '输入"指令"查看可用指令。'
+
+def show_contest_result():
+    roundx = str(get_current_round() - 1)
+    ch = load_contest_history()
+    reg_set = load_reg_set()
+    if roundx in ch:
+        contest = ch[roundx]
+        #显示排行榜
+        res = '第' + roundx + '轮比赛结果：\n'
+        res += '排名' + ' ' + '账号' + ' ' + '余额' + ' ' + '表现分' + ' ' + 'ELO分' + '\n'
+        rank = 0
+        for plyer in contest:
+            if plyer['name'] in reg_set:
+                delta = plyer['new_rate'] - plyer['rate']
+                SIGN = '+' if delta >= 0 else ''
+                res += str(plyer['rank']) + ' ' + plyer['name'] + ' ' + str(round(plyer['score'],2)) + ' ' + str(plyer['performance']) + ' ' + str(plyer['new_rate'])+'('+SIGN+str(delta)+')' + '\n'
+                rank += 1
+            if rank > 10: break
+        return res
+    else:
+        print(ch)
+        return str(roundx) + '轮比赛尚未结束。'
+
+
+def get_current_round():
+    #获取当前轮数
+    #输出格式：当前轮数
+    #效果：返回当前轮数
+    start_date = current_contest_start_date #开始日期UTC时间：格式：'20200101'
+    duration = current_contest_duration #天数，格式：'1'
+    #计算比赛持续的时间
+    start_date = datetime.datetime.strptime(start_date,'%Y%m%d')
+    end_date = start_date + datetime.timedelta(days=int(duration))
+    #根据当前时间计算比赛进行到第几分钟
+    now = datetime.datetime.utcnow()
+    #if now > end_date:
+    #    return '比赛已经结束。'
+    #print((now - end_date).seconds)
+    roundx = math.ceil((now - end_date).seconds/(7*24*60*60)) + 1
+    return roundx
 
 def reset_contest(user):
     #重置比赛
@@ -309,7 +352,7 @@ def get_contest_text():
         return '比赛还未开始。'
     #if now > end_date:
     #    return '比赛已经结束。'
-    print((now - end_date).seconds)
+    #print((now - end_date).seconds)
     roundx = math.ceil((now - end_date).seconds/(7*24*60*60)) + 1
     if roundx > 1:
         start_date = end_date + datetime.timedelta(days=(roundx-2)*7)
@@ -442,7 +485,7 @@ def show_contest_rank():
     res = get_contest_text() + '\n比赛排名：\n'
     price = get_price_btc()
     #抬头信息
-    res += '排名' + ' ' + '账号' + ' ' + '余额' + ' ' + '表现分' + ' ' + 'ELO分' + '\n'
+    
     contest_rank_new = []
     for name in reg_set:
         #if name in reg_set:
@@ -457,6 +500,7 @@ def show_contest_rank():
     elo.calc_performance(contest_rank_new)
     #contest_rank_new.sort(key=lambda x:x[1],reverse=True)
     #save_contest_rank([[plyer["name"],plyer["score"]] for plyer in contest_rank_new])
+    res += '排名' + ' ' + '账号' + ' ' + '余额' + ' ' + '表现分' + ' ' + 'ELO分' + '\n'
     for plyer in contest_rank_new:
         if plyer['name'] in reg_set:
             delta = plyer['new_rate'] - plyer['rate']
