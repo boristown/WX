@@ -165,17 +165,16 @@ def draw_price_chart(user,target,ts):
 def chat_command(s,user,target,ts):
     if s == '指令':
         return '可用指令：\n' +\
-        '1.输入"价格"，查询当前binance交易所的BTCUSDT市场价格。\n' +\
-        '2.输入"价格图表"，查询最近五天的价格曲线。\n' +\
-        '3.输入"买入/做多 金额U"，例如"买入 10000U"，表示买入价值10000USDT的BTC（买入时默认此单位）。\n' +\
-        '4.输入"买入/做多 数量B"，例如"做多 1B"，表示做多1个BTC。\n' +\
-        '5.输入"卖出/做空 金额U"，例如"卖出 10000U"，表示卖出价值10000USDT的BTC。\n' +\
-        '6.输入"卖出/做空 数量B"，例如"做空 1B"，表示做空1个BTC。（卖出时默认此单位）\n' +\
-        '7.输入"持仓"或"资金"，查看当前持仓和资金。\n' +\
-        '8.输入"比赛排名"，查看比赛排名。\n' +\
-        '9.输入"注册比赛 用户名"，注册比赛或切换用户名。\n' +\
-        '10.输入"取消注册比赛"，取消注册比赛。\n' +\
-        '11.输入"比赛结果"，查看最近一轮比赛结果。'
+        '【BTCUSDT价格】：查询BTCUSDT市场最近五天的价格曲线。\n' +\
+        '【买入/做多 BTCUSDT 金额U】：例如"买入 10000U"，表示买入价值10000USDT的BTC（买入时默认此单位）。\n' +\
+        '【买入/做多 BTCUSDT 数量B】：例如"做多 1B"，表示做多1个BTC。\n' +\
+        '【卖出/做空 BTCUSDT 金额U】：例如"卖出 10000U"，表示卖出价值10000USDT的BTC。\n' +\
+        '【卖出/做空 BTCUSDT 数量B】：例如"做空 1B"，表示做空1个BTC。（卖出时默认此单位）\n' +\
+        '【持仓】或【资金】：查看当前持仓和资金。\n' +\
+        '【比赛排名】：查看比赛排名。\n' +\
+        '【注册比赛 用户名】：注册比赛或切换用户名。\n' +\
+        '【取消注册比赛】：取消注册比赛。\n' +\
+        '【比赛结果】：查看最近一轮比赛结果。'
     elif s == '比赛排名' or s == '排名' or s == '排行榜' or s == '排行' or s == '比赛排行':
         return show_contest_rank()
     elif s == '取消注册比赛':
@@ -195,54 +194,71 @@ def chat_command(s,user,target,ts):
         return draw_price_chart(user,target,ts)
     elif s == '重置比赛':
         return reset_contest(user)
-    #买入 金额
-    elif s[:2] == '买入':
-        try:
-            amount = float(s[2:])
-            return buy(user,amount,"U")
-        except:
-            try:
-                amount = float(s[2:-1])
-                return buy(user,amount,s[-1])
-            except:
-                return '输入金额格式错误。'
-    #卖出 数量
-    elif s[:2] == '卖出':
-        try:
-            amount = float(s[2:])
-            return sell(user,amount,"B")
-        except:
-            try:
-                amount = float(s[2:-1])
-                return sell(user,amount,s[-1])
-            except:
-                return '输入数量格式错误。'
-    #做多 金额
-    elif s[:2] == '做多':
-        try:
-            amount = float(s[2:])
-            return long(user,amount,"U")
-        except:
-            try:
-                amount = float(s[2:-1])
-                return long(user,amount,s[-1])
-            except:
-                return '输入金额格式错误。'
-    #做空 数量
-    elif s[:2] == '做空':
-        try:
-            amount = float(s[2:])
-            return short(user,amount,"B")
-        except:
-            try:
-                amount = float(s[2:-1])
-                return short(user,amount,s[-1])
-            except:
-                return '输入数量格式错误。'
     elif s == '比赛结果':
         return show_contest_result()
     else:
-        return '输入"指令"查看可用指令。'
+        side,symbol,amount,unit = get_symbol_amount_unit(s)
+        if not amount:
+            return '输入金额/数量格式错误。'
+        if not side:
+            return '输入"指令"查看可用指令。'
+        if side == '买入':
+            return buy(user,symbol,amount,unit,False)
+        elif side == '卖出':
+            return sell(user,symbol,amount,unit,False)
+        elif side == '做多':
+            return buy(user,symbol,amount,unit,True)
+        elif side == '做空':
+            return sell(user,symbol,amount,unit,True)
+        else:
+            return '输入"指令"查看可用指令。'
+    # #买入 金额
+    # elif s[:2] == '买入':
+    #     side,symbol,amount,unit = get_symbol_amount_unit(s[2:])
+    #     try:
+    #         amount = float(s[2:])
+    #         return buy(user,amount,"U")
+    #     except:
+    #         try:
+    #             amount = float(s[2:-1])
+    #             return buy(user,amount,s[-1])
+    #         except:
+    #             return '输入金额格式错误。'
+    # #卖出 数量
+    # elif s[:2] == '卖出':
+    #     try:
+    #         amount = float(s[2:])
+    #         return sell(user,amount,"B")
+    #     except:
+    #         try:
+    #             amount = float(s[2:-1])
+    #             return sell(user,amount,s[-1])
+    #         except:
+    #             return '输入数量格式错误。'
+    # #做多 金额
+    # elif s[:2] == '做多':
+    #     try:
+    #         amount = float(s[2:])
+    #         return long(user,amount,"U")
+    #     except:
+    #         try:
+    #             amount = float(s[2:-1])
+    #             return long(user,amount,s[-1])
+    #         except:
+    #             return '输入金额格式错误。'
+    # #做空 数量
+    # elif s[:2] == '做空':
+    #     try:
+    #         amount = float(s[2:])
+    #         return short(user,amount,"B")
+    #     except:
+    #         try:
+    #             amount = float(s[2:-1])
+    #             return short(user,amount,s[-1])
+    #         except:
+    #             return '输入数量格式错误。'
+    #else:
+    #    return '输入"指令"查看可用指令。'
 
 def show_contest_result():
     roundx = str(get_current_round() - 1)
