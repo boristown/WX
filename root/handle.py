@@ -213,8 +213,9 @@ def chat_command(s,user,target,ts):
             #如果s格式错误，返回值为(None,None,None,None)
             #注意：side symbol amount unit之间可以有任意多个空格，也可以没有空格
             #可以没有unit：对于买入/做多指令，unit默认为U，对于卖出/做空指令，unit默认为B
+            print(s)
             s = s.upper()
-            s.strip()
+            s = s.strip()
             n = len(s)
             if n<2:
                 return (None,None,None,None)
@@ -222,7 +223,8 @@ def chat_command(s,user,target,ts):
             if side != '买入' and side != '卖出' and side != '做多' and side != '做空':
                 return (None,None,None,None,"无效指令，输入'指令'查看可用指令列表。")
             s = s[2:]
-            s.strip()
+            s = s.strip()
+            print(s)
             symbol = ''
             for i in range(len(s)):
                 if s[i].isalpha():
@@ -230,7 +232,8 @@ def chat_command(s,user,target,ts):
                 else:
                     break
             s = s[len(symbol):]
-            s.strip()
+            s = s.strip()
+            print(s)
             if symbol == '':
                 symbol = 'BTCUSDT'
             curr1,curr2 = split_symbol(symbol)
@@ -241,7 +244,8 @@ def chat_command(s,user,target,ts):
                 else:
                     break
             s = s[len(str(amount)):]
-            s.strip()
+            s = s.strip()
+            print(s)
             if amount == 0:
                 return (None,None,None,None,"数量不能为0")
             unit = ''
