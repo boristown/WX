@@ -170,6 +170,9 @@ def chat_command(s,user,target,ts):
         '【买入/做多 BTCUSDT 数量B】：例如"做多 1B"，表示做多1个BTC。\n' +\
         '【卖出/做空 BTCUSDT 金额U】：例如"卖出 10000U"，表示卖出价值10000USDT的BTC。\n' +\
         '【卖出/做空 BTCUSDT 数量B】：例如"做空 1B"，表示做空1个BTC。（卖出时默认此单位）\n' +\
+        '【买入/做多 ETHBTC 数量ETH】：例如"买入 ETHBTC 100ETH"，表示在ETHBTC市场买入100个ETH。\n' +\
+        '【买入/做多 ETHBTC 数量BTC】或【买入/做多 ETHBTC 数量B】：例如"买入 ETHBTC 1BTC"，表示在ETHBTC市场用1个BTC买入ETH。（买入时默认此单位）\n' +\
+        '【买入/做多 ETHBTC 金额USDT】或【买入/做多 ETHBTC 金额U】：例如"买入 ETHBTC 10000U"，表示在ETHBTC市场买入价值10000USDT的ETH。\n' +\
         '【持仓】或【资金】：查看当前持仓和资金。\n' +\
         '【比赛排名】：查看比赛排名。\n' +\
         '【注册比赛 用户名】：注册比赛或切换用户名。\n' +\
@@ -230,6 +233,8 @@ def chat_command(s,user,target,ts):
             s.strip()
             if symbol == '':
                 symbol = 'BTCUSDT'
+            curr1,curr2 = split_symbol(symbol)
+            curr_usdt = curr1 + 'USDT'
             amount = 0
             for i in range(len(s)):
                 if s[i].isdigit():
@@ -248,11 +253,9 @@ def chat_command(s,user,target,ts):
                     break
             if unit == '':
                 if side == '买入' or side == '做多':
-                    unit = 'U'
+                    unit = curr2
                 else:
-                    unit = 'B'
-            if unit != 'U' and unit != 'B':
-                return (None,None,None,None,"单位只能为U或B")
+                    unit = curr1
             return (side,symbol,amount,unit,"")
 
         side,symbol,amount,unit,msg = get_symbol_amount_unit(s)
@@ -337,7 +340,6 @@ def show_contest_result():
     else:
         print(ch)
         return str(roundx) + '轮比赛尚未结束。'
-
 
 def get_current_round():
     #获取当前轮数
@@ -583,8 +585,27 @@ def show_contest_rank():
         if rank > 10: break
     return res
 
+def split_symbol(symbol):
+    #symbol是一个字符串，以BTC或USDT或ETH或USD结尾，表示交易对
+    #返回交易对的两个币种
+    #例如输入BTCUSDT，返回BTC和USDT
+    #删除字符串中的斜杠和空格
+    symbol = symbol.replace('/','').replace(' ','').upper()
+    if symbol[-3:] == 'BTC':
+        return symbol[:-3],'BTC'
+    elif symbol[-4:] == 'USDT':
+        return symbol[:-4],'USDT'
+    elif symbol[-3:] == 'ETH':
+        return symbol[:-3],'ETH'
+    elif symbol[-3:] == 'USD':
+        return symbol[:-3],'USDT'
+    else:
+        return symbol,''
+    
 def buy(user,symbol,amount,currency,margin):
     currency = currency.upper()
+    curr1,curr2 = split_symbol(symbol)
+    curr_usdt = curr1 + 'USDT'
     #买入amount USDT的BTC
     #返回买入成功或失败的信息
     reg_set = load_reg_set()
@@ -598,13 +619,17 @@ def buy(user,symbol,amount,currency,margin):
     if user_name == "":
         return '您未注册比赛，输入"注册比赛 用户名"注册比赛。'
     user_account = load_user_account(user)
+    price_btc = get_price_btc()
+    price_eth = get_price_eth()
+    price_symbol = get_price_symbol(curr_usdt)
     #格式：{'BTC':0,'USDT':1000}
-    #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
-    if user_account['USDT'] < amount:
-        return '余额不足。(余额：' + str(user_account['USDT']) + ')'
-    price = get_price_btc()
     if currency == 'B':
+        if curr2 == 'BTC':
+            price = price_btc
         amount = amount * price
+    #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
+    if not margin and user_account['USDT'] < amount:
+        return '余额不足。(余额：' + str(user_account['USDT']) + ')'
     fee = amount * 0.001
     act_amount = amount - fee
     #杠杆率不能超过20倍
@@ -617,7 +642,8 @@ def buy(user,symbol,amount,currency,margin):
     user_account['BTC'] += act_amount / price
     save_user_account(user, user_account)
     #update_contest_rank(user_name, user_account, price)
-    return T + '\n买入成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+    op = '做多' if margin else '买入'
+    return T + '\n' + op + '成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
 def long(user,amount,currency):
@@ -689,7 +715,7 @@ def sell(user,symbol,amount,currency,margin):
     user_account = load_user_account(user)
     #格式：{'BTC':0,'USDT':1000}
     #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
-    if user_account['BTC'] < amount:
+    if not margin and user_account['BTC'] < amount:
         return '余额不足。(余额：' + str(user_account['BTC']) + ')'
     price = get_price_btc()
     if currency == 'U':
@@ -706,7 +732,8 @@ def sell(user,symbol,amount,currency,margin):
     user_account['USDT'] += act_amount * price
     save_user_account(user, user_account)
     #update_contest_rank(user_name, user_account, price)
-    return T + '\n卖出成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
+    op = "做空" if margin else "卖出"
+    return T + '\n' + op + '成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
 def short(user,amount,currency):
