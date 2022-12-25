@@ -137,9 +137,18 @@ def chat_register(s,user):
     else:
         return None
 
-def draw_price_chart(user,target,ts):
+def draw_price_chart(user,target,ts,s):
+    #提取symbol
+    symbol = ""
+    n = len(s)
+    for i in range(n):
+        if 'A' <= s[i] <= 'Z':
+            symbol += s[i]
+    if symbol == "":
+        symbol = "BTCUSDT"
+    print(symbol)
     # 绘制BTCUSDT价格走势图(最近三天，1小时K线)，保存到img/btcusdt.png
-    ohlcv_list = get_ohlcv_list()
+    ohlcv_list = get_ohlcv_list(symbol)
     #print(ohlcv_list)
     df = pd.DataFrame(ohlcv_list, columns=['time', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'])
     df['time'] = pd.to_datetime(df['time'], unit='ms')
@@ -150,8 +159,8 @@ def draw_price_chart(user,target,ts):
     df['close'] = df['close'].astype(float)
     #print(df['close'])
     #填充为实心图
-    fig = df['close'].plot.line(figsize=(16, 9), title='BTCUSDT 5 Days\n' +\
-        str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    fig = df['close'].plot.line(figsize=(16, 9), title=symbol+' 5 Days\n' +\
+        str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     ).get_figure()
     filename = 'img/btcusdt.png'
     fig.savefig(filename)
@@ -189,12 +198,12 @@ def chat_command(s,user,target,ts):
                 save_reg_set(reg_set)
                 return '您的参赛账号"' + reg_name + '"已取消注册比赛。'
         return '您未注册比赛。'
-    elif s == '价格':
-        return get_price()
+    elif '价格' in s:
+        return draw_price_chart(user,target,ts,s)
     elif s == '持仓' or s == '资金':
         return get_position(user)
-    elif s == '价格图表' or s == '价格曲线':
-        return draw_price_chart(user,target,ts)
+    #elif s == '价格图表' or s == '价格曲线':
+    #    return draw_price_chart(user,target,ts)
     elif s == '重置比赛':
         return reset_contest(user)
     elif s == '比赛结果':
@@ -213,8 +222,9 @@ def chat_command(s,user,target,ts):
             #如果s格式错误，返回值为(None,None,None,None)
             #注意：side symbol amount unit之间可以有任意多个空格，也可以没有空格
             #可以没有unit：对于买入/做多指令，unit默认为U，对于卖出/做空指令，unit默认为B
+            print(s)
             s = s.upper()
-            s.strip()
+            s = s.strip()
             n = len(s)
             if n<2:
                 return (None,None,None,None)
@@ -222,7 +232,8 @@ def chat_command(s,user,target,ts):
             if side != '买入' and side != '卖出' and side != '做多' and side != '做空':
                 return (None,None,None,None,"无效指令，输入'指令'查看可用指令列表。")
             s = s[2:]
-            s.strip()
+            s = s.strip()
+            print(s)
             symbol = ''
             for i in range(len(s)):
                 if s[i].isalpha():
@@ -230,7 +241,8 @@ def chat_command(s,user,target,ts):
                 else:
                     break
             s = s[len(symbol):]
-            s.strip()
+            s = s.strip()
+            print(s)
             if symbol == '':
                 symbol = 'BTCUSDT'
             curr1,curr2 = split_symbol(symbol)
@@ -241,7 +253,8 @@ def chat_command(s,user,target,ts):
                 else:
                     break
             s = s[len(str(amount)):]
-            s.strip()
+            s = s.strip()
+            print(s)
             if amount == 0:
                 return (None,None,None,None,"数量不能为0")
             unit = ''
@@ -578,28 +591,99 @@ def buy(user,symbol,amount,currency,margin):
     price_eth = get_price_eth()
     price_symbol = get_price_symbol(curr_usdt)
     #格式：{'BTC':0,'USDT':1000}
-    if currency == 'B':
-        if curr2 == 'BTC':
-            price = price_btc
-        amount = amount * price
+    #对于买入操作来说，默认的交易单位是curr2(USDT,BTC,ETH)
+    #用户输入的单位是currency(BTC,USDT,ETH,curr1)
+    #直接枚举所有3*4=12种情况
+    if curr2 == 'BTC':
+        if currency == 'BTC':
+            amount = amount * price_btc / price_btc
+        elif currency == 'ETH':
+            amount = amount * price_eth / price_btc
+        elif currency == 'USDT':
+            amount = amount / price_btc
+        elif currency == curr1:
+            amount = amount * price_symbol / price_btc
+        else:
+            return '输入的单位不正确。'
+    elif curr2 == 'ETH':
+        if currency == 'BTC':
+            amount = amount * price_btc / price_eth
+        elif currency == 'ETH':
+            amount = amount * price_eth / price_eth
+        elif currency == 'USDT':
+            amount = amount / price_eth
+        elif currency == curr1:
+            amount = amount * price_symbol / price_eth
+        else:
+            return '输入的单位不正确。'
+    elif curr2 == 'USDT':
+        if currency == 'BTC':
+            amount = amount * price_btc
+        elif currency == 'ETH':
+            amount = amount * price_eth
+        elif currency == 'USDT':
+            amount = amount
+        elif currency == curr1:
+            amount = amount * price_symbol
+        else:
+            return '输入的单位不正确。'
     #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
     if not margin and user_account.get(curr2,0) < amount:
         return '余额不足。(余额：' + str(user_account.get(curr2,0)) + ')'
     fee = amount * 0.001
     act_amount = amount - fee
+    next_account = user_account.copy()
+    next_account[curr2] = next_account[curr2] - amount if curr2 in next_account else -amount
+    if curr2 == 'BTC':
+        amount_curr1 = act_amount * price_btc / price_symbol
+    elif curr2 == 'ETH':
+        amount_curr1 = act_amount * price_eth / price_symbol
+    elif curr2 == 'USDT':
+        amount_curr1 = act_amount / price_symbol
+    next_account[curr1] = next_account[curr1] + amount_curr1 if curr1 in next_account else amount_curr1
     #杠杆率不能超过20倍
-    if get_leverage({
-        "USDT":user_account['USDT'] - amount,
-        "BTC":user_account['BTC'] + act_amount / price}) > 20:
+    if get_leverage(next_account) > 20:
         return '杠杆率超过20倍，无法买入。'
     #执行交易
-    user_account['USDT'] -= amount
-    user_account['BTC'] += act_amount / price
+    #user_account['USDT'] -= amount
+    #user_account['BTC'] += act_amount / price
+    user_account = next_account
     save_user_account(user, user_account)
     #update_contest_rank(user_name, user_account, price)
     op = '做多' if margin else '买入'
-    return T + '\n' + op + '成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
-        '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
+    bs = get_balance_str(user_account)
+    #计算估值
+    market_cap = get_market_cap(user_account)
+    return T + '\n' + op + '成功，手续费:'+ str(fee) + curr2 + '。\n余额：\n' + bs +\
+        '估值：' + str(market_cap) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
+
+def get_market_cap(user_account):
+    #杠杆率
+    #本金 = USDT余额 + BTC数量*当前价格
+    # 当USDT余额为负数时，杠杆率为:abs(USDT余额)/本金
+    # 当BTC数量为负数时，杠杆率为:abs(BTC数量)*当前价格/本金
+    price_btc = get_price_btc()
+    price_eth = get_price_eth()
+    balance = 0
+    for symbol in user_account:
+        if symbol == 'USDT':
+            delta = user_account[symbol]
+        elif symbol == 'BTC':
+            delta = user_account[symbol] * price_btc
+        elif symbol == 'ETH':
+            delta = user_account[symbol] * price_eth
+        else:
+            curr_usdt = symbol + 'USDT'
+            price_symbol = get_price_symbol(curr_usdt)
+            delta = user_account[symbol] * price_symbol
+        balance += delta
+    return balance
+    
+def get_balance_str(user_account):
+    ans = ""
+    for key in user_account:
+        ans += str(user_account[key]) + key + '\n'
+    return ans
 
 def long(user,amount,currency):
     currency = currency.upper()
@@ -645,22 +729,37 @@ def get_leverage(user_account):
     # 当USDT余额为负数时，杠杆率为:abs(USDT余额)/本金
     # 当BTC数量为负数时，杠杆率为:abs(BTC数量)*当前价格/本金
     leverage = 0
-    price = get_price_btc()
-    balance = user_account['USDT'] + user_account['BTC'] * price
-    if user_account['USDT'] < 0:
-        leverage = abs(user_account['USDT']) / balance
-    elif user_account['BTC'] < 0:
-        leverage = abs(user_account['BTC']) * price / balance
+    price_btc = get_price_btc()
+    price_eth = get_price_eth()
+    #price_symbol = get_price_symbol(curr_usdt)
+    balance = leverage_amount = 0
+    for symbol in user_account:
+        if symbol == 'USDT':
+            delta = user_account[symbol]
+        elif symbol == 'BTC':
+            delta = user_account[symbol] * price_btc
+        elif symbol == 'ETH':
+            delta = user_account[symbol] * price_eth
+        else:
+            curr_usdt = symbol + 'USDT'
+            price_symbol = get_price_symbol(curr_usdt)
+            delta = user_account[symbol] * price_symbol
+        if delta < 0:
+            leverage_amount -= delta
+        balance += delta
+    leverage = leverage_amount / balance
     return leverage
 
 def sell(user,symbol,amount,currency,margin):
     currency = currency.upper()
-    #卖出amount个BTC
-    #返回卖出成功或失败的信息
+    curr1,curr2 = split_symbol(symbol)
+    curr_usdt = curr1 + 'USDT'
+    #买入amount USDT的BTC
+    #返回买入成功或失败的信息
     reg_set = load_reg_set()
     name_dict = load_name_dict()
-    user_name = ""
     T = get_contest_text()
+    user_name = ""
     for reg_name in reg_set:
         if name_dict[reg_name] == user:
             user_name = reg_name
@@ -668,28 +767,52 @@ def sell(user,symbol,amount,currency,margin):
     if user_name == "":
         return '您未注册比赛，输入"注册比赛 用户名"注册比赛。'
     user_account = load_user_account(user)
+    price_btc = get_price_btc()
+    price_eth = get_price_eth()
+    price_symbol = get_price_symbol(curr_usdt)
     #格式：{'BTC':0,'USDT':1000}
+    #对于卖出操作来说，默认的交易单位是curr1(USDT,BTC,ETH)
+    #用户输入的单位是currency(BTC,USDT,ETH,curr1)
+    #直接枚举所有3*4=12种情况
+    if currency == 'BTC':
+        amount = amount * price_btc / price_symbol
+    elif currency == 'ETH':
+        amount = amount * price_eth / price_symbol
+    elif currency == 'USDT':
+        amount = amount / price_symbol
+    elif currency == curr1:
+        amount = amount * price_symbol / price_symbol
+    else:
+        return '输入的单位不正确。'
     #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
-    if not margin and user_account['BTC'] < amount:
-        return '余额不足。(余额：' + str(user_account['BTC']) + ')'
-    price = get_price_btc()
-    if currency == 'U':
-        amount = amount / price
+    if not margin and user_account.get(curr1,0) < amount:
+        return '余额不足。(余额：' + str(user_account.get(curr1,0)) + ')'
     fee = amount * 0.001
     act_amount = amount - fee
+    next_account = user_account.copy()
+    next_account[curr1] = next_account[curr1] - amount if curr1 in next_account else -amount
+    if curr2 == 'BTC':
+        amount_curr2 = act_amount * price_symbol / price_btc
+    elif curr2 == 'ETH':
+        amount_curr2 = act_amount * price_symbol / price_eth
+    elif curr2 == 'USDT':
+        amount_curr2 = act_amount * price_symbol
+    next_account[curr2] = next_account[curr2] + amount_curr2 if curr2 in next_account else amount_curr2
     #杠杆率不能超过20倍
-    if get_leverage({
-        "BTC":user_account['BTC'] - amount,
-        "USDT":user_account['USDT'] + act_amount * price}) > 20:
-        return '杠杆率超过20倍，无法卖出。'
+    if get_leverage(next_account) > 20:
+        return '杠杆率超过20倍，无法买入。'
     #执行交易
-    user_account['BTC'] -= amount
-    user_account['USDT'] += act_amount * price
+    #user_account['USDT'] -= amount
+    #user_account['BTC'] += act_amount / price
+    user_account = next_account
     save_user_account(user, user_account)
     #update_contest_rank(user_name, user_account, price)
-    op = "做空" if margin else "卖出"
-    return T + '\n' + op + '成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
-        '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
+    op = '做空' if margin else '卖出'
+    bs = get_balance_str(user_account)
+    #计算估值
+    market_cap = get_market_cap(user_account)
+    return T + '\n' + op + '成功，手续费:'+ str(fee) + curr2 + '。\n余额：\n' + bs +\
+        '估值：' + str(market_cap) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
 def short(user,amount,currency):
     currency = currency.upper()
