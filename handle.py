@@ -197,11 +197,67 @@ def chat_command(s,user,target,ts):
     elif s == '比赛结果':
         return show_contest_result()
     else:
-        side,symbol,amount,unit = get_symbol_amount_unit(s)
-        if not amount:
-            return '输入金额/数量格式错误。'
+        #字符串分割
+        #字符串格式：side symbol amount unit
+        #其中side为买入/卖出/做多/做空
+        #symbol为字母序列
+        #amount为数字序列
+        #unit为U/B，对于买入/做多指令，unit默认为U，对于卖出/做空指令，unit默认为B
+        #side symbol amount unit之间可以有任意多个空格，也可以没有空格
+        def get_symbol_amount_unit(s):
+            #将字符串s分割为side symbol amount unit
+            #返回值为(side,symbol,amount,unit)
+            #如果s格式错误，返回值为(None,None,None,None)
+            #注意：side symbol amount unit之间可以有任意多个空格，也可以没有空格
+            #可以没有unit：对于买入/做多指令，unit默认为U，对于卖出/做空指令，unit默认为B
+            s = s.upper()
+            s.strip()
+            n = len(s)
+            if n<2:
+                return (None,None,None,None)
+            side = s[:2]
+            if side != '买入' and side != '卖出' and side != '做多' and side != '做空':
+                return (None,None,None,None,"无效指令，输入'指令'查看可用指令列表。")
+            s = s[2:]
+            s.strip()
+            symbol = ''
+            for i in range(len(s)):
+                if s[i].isalpha():
+                    symbol += s[i]
+                else:
+                    break
+            s = s[len(symbol):]
+            s.strip()
+            if symbol == '':
+                symbol = 'BTCUSDT'
+            amount = 0
+            for i in range(len(s)):
+                if s[i].isdigit():
+                    amount = amount*10 + int(s[i])
+                else:
+                    break
+            s = s[len(str(amount)):]
+            s.strip()
+            if amount == 0:
+                return (None,None,None,None,"数量不能为0")
+            unit = ''
+            for i in range(len(s)):
+                if s[i].isalpha():
+                    unit += s[i]
+                else:
+                    break
+            if unit == '':
+                if side == '买入' or side == '做多':
+                    unit = 'U'
+                else:
+                    unit = 'B'
+            if unit != 'U' and unit != 'B':
+                return (None,None,None,None,"单位只能为U或B")
+            return (side,symbol,amount,unit,"")
+
+        side,symbol,amount,unit,msg = get_symbol_amount_unit(s)
         if not side:
-            return '输入"指令"查看可用指令。'
+            return msg
         if side == '买入':
             return buy(user,symbol,amount,unit,False)
         elif side == '卖出':
@@ -527,7 +583,7 @@ def show_contest_rank():
         if rank > 10: break
     return res
 
-def buy(user,amount,currency):
+def buy(user,symbol,amount,currency,margin):
     currency = currency.upper()
     #买入amount USDT的BTC
     #返回买入成功或失败的信息
@@ -616,7 +672,7 @@ def get_leverage(user_account):
         leverage = abs(user_account['BTC']) * price / balance
     return leverage
 
-def sell(user,amount,currency):
+def sell(user,symbol,amount,currency,margin):
     currency = currency.upper()
     #卖出amount个BTC
     #返回卖出成功或失败的信息
