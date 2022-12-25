@@ -137,9 +137,18 @@ def chat_register(s,user):
     else:
         return None
 
-def draw_price_chart(user,target,ts):
+def draw_price_chart(user,target,ts,s):
+    #提取symbol
+    symbol = ""
+    n = len(s)
+    for i in range(n):
+        if 'A' <= s[i] <= 'Z':
+            symbol += s[i]
+    if symbol == "":
+        symbol = "BTCUSDT"
+    print(symbol)
     # 绘制BTCUSDT价格走势图(最近三天，1小时K线)，保存到img/btcusdt.png
-    ohlcv_list = get_ohlcv_list()
+    ohlcv_list = get_ohlcv_list(symbol)
     #print(ohlcv_list)
     df = pd.DataFrame(ohlcv_list, columns=['time', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'])
     df['time'] = pd.to_datetime(df['time'], unit='ms')
@@ -150,8 +159,8 @@ def draw_price_chart(user,target,ts):
     df['close'] = df['close'].astype(float)
     #print(df['close'])
     #填充为实心图
-    fig = df['close'].plot.line(figsize=(16, 9), title='BTCUSDT 5 Days\n' +\
-        str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    fig = df['close'].plot.line(figsize=(16, 9), title=symbol+' 5 Days\n' +\
+        str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     ).get_figure()
     filename = 'img/btcusdt.png'
     fig.savefig(filename)
@@ -189,12 +198,12 @@ def chat_command(s,user,target,ts):
                 save_reg_set(reg_set)
                 return '您的参赛账号"' + reg_name + '"已取消注册比赛。'
         return '您未注册比赛。'
-    elif s == '价格':
-        return get_price()
+    elif '价格' in s:
+        return draw_price_chart(user,target,ts,s)
     elif s == '持仓' or s == '资金':
         return get_position(user)
-    elif s == '价格图表' or s == '价格曲线':
-        return draw_price_chart(user,target,ts)
+    #elif s == '价格图表' or s == '价格曲线':
+    #    return draw_price_chart(user,target,ts)
     elif s == '重置比赛':
         return reset_contest(user)
     elif s == '比赛结果':
