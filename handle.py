@@ -234,7 +234,6 @@ def chat_command(s,user,target,ts):
             if symbol == '':
                 symbol = 'BTCUSDT'
             curr1,curr2 = split_symbol(symbol)
-            curr_usdt = curr1 + 'USDT'
             amount = 0
             for i in range(len(s)):
                 if s[i].isdigit():
@@ -256,6 +255,10 @@ def chat_command(s,user,target,ts):
                     unit = curr2
                 else:
                     unit = curr1
+            if unit == 'U':
+                unit = 'USDT'
+            elif unit == 'B':
+                unit = 'BTC'
             return (side,symbol,amount,unit,"")
 
         side,symbol,amount,unit,msg = get_symbol_amount_unit(s)
@@ -271,53 +274,6 @@ def chat_command(s,user,target,ts):
             return sell(user,symbol,amount,unit,True)
         else:
             return '输入"指令"查看可用指令。'
-    # #买入 金额
-    # elif s[:2] == '买入':
-    #     side,symbol,amount,unit = get_symbol_amount_unit(s[2:])
-    #     try:
-    #         amount = float(s[2:])
-    #         return buy(user,amount,"U")
-    #     except:
-    #         try:
-    #             amount = float(s[2:-1])
-    #             return buy(user,amount,s[-1])
-    #         except:
-    #             return '输入金额格式错误。'
-    # #卖出 数量
-    # elif s[:2] == '卖出':
-    #     try:
-    #         amount = float(s[2:])
-    #         return sell(user,amount,"B")
-    #     except:
-    #         try:
-    #             amount = float(s[2:-1])
-    #             return sell(user,amount,s[-1])
-    #         except:
-    #             return '输入数量格式错误。'
-    # #做多 金额
-    # elif s[:2] == '做多':
-    #     try:
-    #         amount = float(s[2:])
-    #         return long(user,amount,"U")
-    #     except:
-    #         try:
-    #             amount = float(s[2:-1])
-    #             return long(user,amount,s[-1])
-    #         except:
-    #             return '输入金额格式错误。'
-    # #做空 数量
-    # elif s[:2] == '做空':
-    #     try:
-    #         amount = float(s[2:])
-    #         return short(user,amount,"B")
-    #     except:
-    #         try:
-    #             amount = float(s[2:-1])
-    #             return short(user,amount,s[-1])
-    #         except:
-    #             return '输入数量格式错误。'
-    #else:
-    #    return '输入"指令"查看可用指令。'
 
 def show_contest_result():
     roundx = str(get_current_round() - 1)
@@ -338,7 +294,6 @@ def show_contest_result():
             if rank > 10: break
         return res
     else:
-        print(ch)
         return str(roundx) + '轮比赛尚未结束。'
 
 def get_current_round():
@@ -628,8 +583,8 @@ def buy(user,symbol,amount,currency,margin):
             price = price_btc
         amount = amount * price
     #BTC是用户持有的BTC数量，USDT是用户持有的USDT数量
-    if not margin and user_account['USDT'] < amount:
-        return '余额不足。(余额：' + str(user_account['USDT']) + ')'
+    if not margin and user_account.get(curr2,0) < amount:
+        return '余额不足。(余额：' + str(user_account.get(curr2,0)) + ')'
     fee = amount * 0.001
     act_amount = amount - fee
     #杠杆率不能超过20倍
