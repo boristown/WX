@@ -87,7 +87,7 @@ def chat_register(s,user):
         name_dict = load_name_dict()
         elo_dict = load_elo_dict()
         #elo_list = load_elo_list()
-        contest_rank = load_contest_rank()
+        #contest_rank = load_contest_rank()
         username = match.group(1)
         #判断该用户名是否已经被其它用户注册
         if username in name_dict:
@@ -113,8 +113,8 @@ def chat_register(s,user):
         for username in elo_dict:
             elo_list.append(elo_dict[username])
         elo_list.sort()
-        contest_rank.append([username,1000000])
-        save_contest_rank(contest_rank)
+        #contest_rank.append([username,1000000])
+        #save_contest_rank(contest_rank)
         rank = elo_list.bisect_left(elo_dict[username]) + 1
         save_elo_dict(elo_dict)
         #save_elo_list(elo_list)
@@ -249,7 +249,7 @@ def reset_contest(user):
     #抬头信息
     reg_set = load_reg_set()
     name_dict = load_name_dict()
-    contest_rank = load_contest_rank()
+    #contest_rank = load_contest_rank()
     if name_dict["AI纪元"] != user:
         return '您无权使用此指令。'
     for reg_name in reg_set:
@@ -258,10 +258,10 @@ def reset_contest(user):
         user_account['USDT'] = 1000000
         user_account['BTC'] = 0
         save_user_account(user_id,user_account)
-    n = len(contest_rank)
-    for i in range(n):
-        contest_rank[i][1] = 1000000
-    save_contest_rank(contest_rank)
+    #n = len(contest_rank)
+    #for i in range(n):
+    #    contest_rank[i][1] = 1000000
+    #save_contest_rank(contest_rank)
     return '重置成功。'
 
 def get_position(user):
@@ -290,8 +290,13 @@ def get_position(user):
     return res
 
 def get_contest_text():
+    #已知第一场比赛的开始日期是current_contest_start_date，比赛的持续时间是current_contest_duration天
+    #从第二场比赛开始，每场比赛的开始时间是上一场比赛的结束时间，持续时间变为7天
+    #比赛的轮数是从1开始计数的
+
     #返回比赛信息
     #输出格式：第几轮比赛，第几分钟，距离比赛结束还有几分钟
+    status = load_status()
     #抬头信息
     start_date = current_contest_start_date #开始日期UTC时间：格式：'20200101'
     duration = current_contest_duration #天数，格式：'1'
@@ -302,8 +307,13 @@ def get_contest_text():
     now = datetime.datetime.utcnow()
     if now < start_date:
         return '比赛还未开始。'
-    if now > end_date:
-        return '比赛已经结束。'
+    #if now > end_date:
+    #    return '比赛已经结束。'
+    roundx = math.ceil((now - end_date).days/7) + 1
+    if roundx > 1:
+        start_date = end_date + datetime.timedelta(days=(roundx-2)*7)
+    if status["settled"] < roundx - 1:
+        settle_contest(roundx - 1)
     delta = now - start_date
     delta_minutes = delta.days*24*60 + delta.seconds//60
     #计算比赛还有多少分钟
@@ -317,10 +327,50 @@ def get_contest_text():
     delta_hours = (delta_minutes - delta_days*24*60)//60
     delta_minutes = delta_minutes - delta_days*24*60 - delta_hours*60
 
-    contest_text = '第' + str(current_contest) + '轮比赛，第' + str(delta_days) + '天' \
+    contest_text = '第' + str(roundx) + '轮比赛，第' + str(delta_days) + '天' \
     + str(delta_hours) + '小时' + str(delta_minutes) + '分钟，距离比赛结束还有' \
     + str(left_days) + '天' + str(left_hours) + '小时' + str(left_minutes) + '分钟。'
     return contest_text
+
+def settle_contest(roundx):
+    #更新选手的ELO分，然后重置选手的账户
+    reg_set = load_reg_set()
+    name_dict = load_name_dict()
+    #contest_rank = load_contest_rank()
+    elo_dict = load_elo_dict()
+    contest_history = load_contest_history()
+    for reg_name in reg_set:
+        user_id = name_dict[reg_name]
+        user_account = load_user_account(user_id)
+        for currency in user_account:
+            if currency == 'USDT':
+                user_account[currency] = 1000000
+            else:
+                user_account[currency] = 0
+        save_user_account(user_id,user_account)
+    #计算ELO分
+    price = get_price_btc()
+    contest_rank_new = []
+    for name in reg_set:
+        #if name in reg_set:
+        user_account = load_user_account(name_dict[name])
+        score = user_account['BTC']*price + user_account['USDT']
+        rate = elo_dict[name]
+        contest_rank_new.append({'name':name,'rate':rate,'score':score})
+    elo.init_players(contest_rank_new)
+    elo.calc_performance(contest_rank_new)
+
+    for player in contest_rank_new:
+        elo_dict[player['name']] = player['new_rate']
+
+    contest_history[roundx] = contest_rank_new
+    save_contest_history(contest_history)
+
+    save_elo_dict(elo_dict)
+    reset_contest()
+    status = load_status()
+    status["settled"] = roundx
+    save_status(status)
 
 class elo:
     #等级分差 = 对手等级分 - 自己等级分
@@ -352,7 +402,7 @@ class elo:
         n = len(plyers)
         if n == 1:
             n = 2
-            plyers.append({'name': '选手2', 'rate': 1000, 'score': 1000000})
+            plyers.append({'name': '选手2', 'rate': 1500, 'score': 1000000.0})
         plyers.sort(key=lambda x: x['score'], reverse=True)
         lst = float('inf')
         for i in range(n):
@@ -366,10 +416,12 @@ class elo:
         n = len(plyers)
         rate_sum = sum(plyers[i]['rate'] for i in range(n))
         rank_list = [plyers[i]['rank'] for i in range(n)]
+        print(rank_list)
         for i in range(n):
             rate_other_avg = (rate_sum - plyers[i]['rate']) / (n - 1)
             p1 = bisect.bisect_left(rank_list, plyers[i]['rank'])
             p2 = bisect.bisect_right(rank_list, plyers[i]['rank'])
+            print(p1,p2,plyers[i]['rank'])
             win_cnt = n-p2
             draw_cnt = p2-p1-1
             win_rate = (win_cnt+0.5*draw_cnt)/(n-1)
@@ -380,7 +432,7 @@ class elo:
             plyers[i]["performance"] = round(plyers[i]["performance"],2)
 
 def show_contest_rank():
-    contest_rank = load_contest_rank()
+    #contest_rank = load_contest_rank()
     reg_set = load_reg_set()
     name_dict = load_name_dict()
     rate_dict = load_elo_dict()
@@ -393,7 +445,7 @@ def show_contest_rank():
     #抬头信息
     res += '排名' + ' ' + '账号' + ' ' + '余额' + ' ' + '表现分' + ' ' + 'ELO分' + '\n'
     contest_rank_new = []
-    for name,profit in contest_rank:
+    for name in reg_set:
         #if name in reg_set:
         user_account = load_user_account(name_dict[name])
         score = user_account['BTC']*price + user_account['USDT']
@@ -405,7 +457,7 @@ def show_contest_rank():
     elo.init_players(contest_rank_new)
     elo.calc_performance(contest_rank_new)
     #contest_rank_new.sort(key=lambda x:x[1],reverse=True)
-    save_contest_rank([[plyer["name"],plyer["score"]] for plyer in contest_rank_new])
+    #save_contest_rank([[plyer["name"],plyer["score"]] for plyer in contest_rank_new])
     for plyer in contest_rank_new:
         if plyer['name'] in reg_set:
             delta = plyer['new_rate'] - plyer['rate']
@@ -447,7 +499,7 @@ def buy(user,amount,currency):
     user_account['USDT'] -= amount
     user_account['BTC'] += act_amount / price
     save_user_account(user, user_account)
-    update_contest_rank(user_name, user_account, price)
+    #update_contest_rank(user_name, user_account, price)
     return '买入成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
@@ -484,7 +536,7 @@ def long(user,amount,currency):
     user_account['USDT'] -= amount
     user_account['BTC'] += act_amount / price
     save_user_account(user, user_account)
-    update_contest_rank(user_name, user_account, price)
+    #update_contest_rank(user_name, user_account, price)
     return '做多成功，手续费:'+ str(fee) +'USDT。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
@@ -534,7 +586,7 @@ def sell(user,amount,currency):
     user_account['BTC'] -= amount
     user_account['USDT'] += act_amount * price
     save_user_account(user, user_account)
-    update_contest_rank(user_name, user_account, price)
+    #update_contest_rank(user_name, user_account, price)
     return '卖出成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
@@ -571,21 +623,21 @@ def short(user,amount,currency):
     user_account['BTC'] -= amount
     user_account['USDT'] += act_amount * price
     save_user_account(user, user_account)
-    update_contest_rank(user_name, user_account, price)
+    #update_contest_rank(user_name, user_account, price)
     return '做空成功，手续费:'+ str(fee) +'BTC。\n余额：\n' + str(user_account['USDT']) + 'USDT,\n'+ str(user_account['BTC']) + 'BTC\n' +\
         '估值：' + str(user_account['USDT'] + user_account['BTC'] * price) + 'USDT。\n杠杆率：' + str(get_leverage(user_account)) + '倍。'
 
-def update_contest_rank(user_name, user_account, price):
-    #更新比赛排名
-    #contest_rank是一个list，每个元素是一个tuple，tuple的第一个元素是账号，第二个元素是余额
-    value = user_account['USDT'] + user_account['BTC'] * price
-    contest_rank = load_contest_rank()
-    for i in range(len(contest_rank)):
-        if contest_rank[i][0] == user_name:
-            contest_rank[i][1] = value
-            break
-    contest_rank.sort(key=lambda x:x[1],reverse=True)
-    save_contest_rank(contest_rank)
+# def update_contest_rank(user_name, user_account, price):
+#     #更新比赛排名
+#     #contest_rank是一个list，每个元素是一个tuple，tuple的第一个元素是账号，第二个元素是余额
+#     value = user_account['USDT'] + user_account['BTC'] * price
+#     contest_rank = load_contest_rank()
+#     for i in range(len(contest_rank)):
+#         if contest_rank[i][0] == user_name:
+#             contest_rank[i][1] = value
+#             break
+#     contest_rank.sort(key=lambda x:x[1],reverse=True)
+#     save_contest_rank(contest_rank)
 
 def chat(s,user,target,ts):
     res = chat_register(s,user)
