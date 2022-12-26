@@ -27,6 +27,10 @@ from files import *
 from Binance import *
 from elo import *
 import math
+import pyecharts.options as opts
+from pyecharts.charts import Kline, Candlestick
+from pyecharts.render import make_snapshot
+from snapshot_selenium import snapshot
 
 pic_url = ""
 
@@ -137,6 +141,9 @@ def chat_register(s,user):
     else:
         return None
 
+def ts2datetime(ts):
+    return datetime.datetime.fromtimestamp(ts/1000).strftime('%Y-%m-%d %H:%M:%S')
+
 def draw_price_chart(user,target,ts,s):
     #提取symbol
     symbol = ""
@@ -149,25 +156,37 @@ def draw_price_chart(user,target,ts,s):
     print(symbol)
     # 绘制BTCUSDT价格走势图(最近三天，1小时K线)，保存到img/btcusdt.png
     ohlcv_list = get_ohlcv_list(symbol)
-    #print(ohlcv_list)
-    df = pd.DataFrame(ohlcv_list, columns=['time', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'])
-    df['time'] = pd.to_datetime(df['time'], unit='ms')
-    df['close_time'] = pd.to_datetime(df['close_time'], unit='ms')
-    df = df.set_index('time')
-    df = df[['open', 'high', 'low', 'close', 'volume']]
-    df = df.iloc[:]
-    df['close'] = df['close'].astype(float)
-    #print(df['close'])
-    #填充为实心图
-    fig = df['close'].plot.line(figsize=(16, 9), title=symbol+' 5 Days\n' +\
-        str(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
-    ).get_figure()
-    filename = 'img/btcusdt.png'
-    fig.savefig(filename)
-    pic_url = picture_url(filename)
+    x_data = []
+    y_data = []
+    for i in range(len(ohlcv_list)):
+        x_data.append(ts2datetime(ohlcv_list[i][0]))
+        y_data.append([ohlcv_list[i][1],ohlcv_list[i][2],ohlcv_list[i][3],ohlcv_list[i][4]])
+    c=Candlestick(init_opts=opts.InitOpts(width="500px", height="300px")).add_xaxis(xaxis_data=x_data).add_yaxis(
+        series_name="",
+        y_axis=y_data,
+        itemstyle_opts=opts.ItemStyleOpts(
+            color="#ec0000",
+            color0="#00da3c",
+            border_color="#8A0000",
+            border_color0="#008F28",
+        ),
+    ).add_xaxis(xaxis_data=x_data
+    ).set_global_opts(
+        xaxis_opts=opts.AxisOpts(is_scale=True),
+        yaxis_opts=opts.AxisOpts(
+            is_scale=True,
+            splitarea_opts=opts.SplitAreaOpts(
+                is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
+            ),
+        ),
+        datazoom_opts=[opts.DataZoomOpts(pos_bottom="-2%")],
+        title_opts=opts.TitleOpts(title=symbol, pos_left="0"),
+    )
+    c.render("img/btcusdt.html")
+    
+    make_snapshot(snapshot, c.render(), "img/btcusdt.png")
+    pic_url = picture_url("img/btcusdt.png")
     #清空变量
-    df = None
-    fig = None
     ohlcv_list = None
     return werobot.replies.ImageReply(media_id=pic_url,target=user,source=target,time=ts)
 
