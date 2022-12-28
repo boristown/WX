@@ -21,12 +21,29 @@ def save_reg_set(reg_set):
     with open(fname, 'w+') as f:
         json.dump(list(reg_set), f)
 
+def load_orders():
+    fname = 'data/orders.json'
+    fexist = os.path.exists(fname)
+    if fexist:
+        with open(fname, 'r+') as f:
+            #如果文件f不为空，则载入到orders中，否则新建一个list
+            orders = json.load(f)
+    else:
+        orders = []
+    return orders
+
+def save_orders(orders):
+    fname = 'data/orders.json'
+    with open(fname, 'w+') as f:
+        json.dump(orders, f)
+
+
 # def load_contest_rank():
 #     fname = 'data/contest_rank'+str(current_contest)+'.json'
 #     fexist = os.path.exists(fname)
 #     if fexist:
 #         with open(fname, 'r+') as f:
-#             #如果文件f不为空，则载入到contest_rank中，否则新建一个dict
+#             #如果 文件f不为空，则载入到contest_rank中，否则新建一个dict
 #             contest_rank = json.load(f)
 #     else:
 #         contest_rank = []
