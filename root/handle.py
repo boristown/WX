@@ -147,6 +147,7 @@ def ts2datetime(ts):
 def draw_price_chart(user,target,ts,s):
     #提取symbol
     symbol = ""
+    s = s.upper()
     n = len(s)
     for i in range(n):
         if 'A' <= s[i] <= 'Z':
@@ -156,12 +157,26 @@ def draw_price_chart(user,target,ts,s):
     print(symbol)
     # 绘制BTCUSDT价格走势图(最近三天，1小时K线)，保存到img/btcusdt.png
     ohlcv_list = get_ohlcv_list(symbol)
+    last_price = ohlcv_list[-1][4]
     x_data = []
     y_data = []
+    filename_html = "img/" + symbol + str(ts) + ".html"
+    filename_png = "img/" + symbol + str(ts) + ".png"
+    for t in range(60):
+        ts_from = str(int(ts)-t)
+        filename_from = "img/" + symbol + ts_from + ".png"
+        print(filename_from)
+        if os.path.exists(filename_from):
+            break
+    if os.path.exists(filename_from):
+        pic_url = picture_url(filename_from)
+        return werobot.replies.ImageReply(media_id=pic_url,target=user,source=target,time=ts)
+    print(filename_html)
+    current_utc_yyyymmddhhmmss = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     for i in range(len(ohlcv_list)):
         x_data.append(ts2datetime(ohlcv_list[i][0]))
-        y_data.append([ohlcv_list[i][1],ohlcv_list[i][2],ohlcv_list[i][3],ohlcv_list[i][4]])
-    c=Candlestick(init_opts=opts.InitOpts(width="500px", height="300px")).add_xaxis(xaxis_data=x_data).add_yaxis(
+        y_data.append([ohlcv_list[i][1],ohlcv_list[i][4],ohlcv_list[i][2],ohlcv_list[i][3]])
+    c=Candlestick(init_opts=opts.InitOpts(width="1000px", height="600px")).add_xaxis(xaxis_data=x_data).add_yaxis(
         series_name="",
         y_axis=y_data,
         itemstyle_opts=opts.ItemStyleOpts(
@@ -179,29 +194,30 @@ def draw_price_chart(user,target,ts,s):
                 is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
             ),
         ),
-        datazoom_opts=[opts.DataZoomOpts(pos_bottom="-2%")],
-        title_opts=opts.TitleOpts(title=symbol, pos_left="0"),
+        #datazoom_opts=[opts.DataZoomOpts(pos_bottom="-2%")],by AI纪元 
+        title_opts=opts.TitleOpts(title=symbol+":"+str(last_price) + "\n"+current_utc_yyyymmddhhmmss+" UTC\nby AI纪元", pos_left="0"),
     )
-    c.render("img/btcusdt.html")
+    c.render(filename_html)
     
-    make_snapshot(snapshot, c.render(), "img/btcusdt.png")
-    pic_url = picture_url("img/btcusdt.png")
-    #清空变量
-    ohlcv_list = None
+    make_snapshot(snapshot, c.render(), filename_png)
+    pic_url = picture_url(filename_png)
     return werobot.replies.ImageReply(media_id=pic_url,target=user,source=target,time=ts)
 
 def chat_command(s,user,target,ts):
     if s == '指令':
         return '可用指令：\n' +\
         '【BTCUSDT价格】：查询BTCUSDT市场最近五天的价格曲线。\n' +\
-        '【买入/做多 BTCUSDT 金额U】：例如"买入 10000U"，表示买入价值10000USDT的BTC（买入时默认此单位）。\n' +\
-        '【买入/做多 BTCUSDT 数量B】：例如"做多 1B"，表示做多1个BTC。\n' +\
-        '【卖出/做空 BTCUSDT 金额U】：例如"卖出 10000U"，表示卖出价值10000USDT的BTC。\n' +\
-        '【卖出/做空 BTCUSDT 数量B】：例如"做空 1B"，表示做空1个BTC。（卖出时默认此单位）\n' +\
+        '【买入/做多 BTCUSDT 金额U ±x%】：例如"买入 10000U -1%"，表示以比市场价低1%的价格，买入价值10000USDT的BTC（买入时默认此单位）。\n' +\
+        '【买入/做多 BTCUSDT 数量B ±x%】：例如"做多 1B +5.5%"，表示当市场价上涨5.5%时，顺势做多1个BTC。\n' +\
+        '【卖出/做空 BTCUSDT 金额U ±x%】：例如"卖出 10000U"，表示卖出价值10000USDT的BTC。\n' +\
+        '【卖出/做空 BTCUSDT 数量B ±x%】：例如"做空 1B"，表示做空1个BTC。（卖出时默认此单位）\n' +\
         '【买入/做多 ETHBTC 数量ETH】：例如"买入 ETHBTC 100ETH"，表示在ETHBTC市场买入100个ETH。\n' +\
         '【买入/做多 ETHBTC 数量BTC】或【买入/做多 ETHBTC 数量B】：例如"买入 ETHBTC 1BTC"，表示在ETHBTC市场用1个BTC买入ETH。（买入时默认此单位）\n' +\
         '【买入/做多 ETHBTC 金额USDT】或【买入/做多 ETHBTC 金额U】：例如"买入 ETHBTC 10000U"，表示在ETHBTC市场买入价值10000USDT的ETH。\n' +\
-        '【持仓】或【资金】：查看当前持仓和资金。\n' +\
+        '【网格 BTCUSDT 金额U 间隔% x单数】:例如"网格 10000U 1% x5"，表示在BTCUSDT市场，以10000U为总金额，每单间隔1%， 买卖方向各挂出5单。\n' +\
+        '【持仓】或【资金】或【挂单】：查看当前持仓/资金和挂单。\n' +\
+        '【取消挂单 id】：取消指定id的挂单。\n' +\
+        '【取消所有挂单】：取消所有挂单。\n' +\
         '【比赛排名】：查看比赛排名。\n' +\
         '【注册比赛 用户名】：注册比赛或切换用户名。\n' +\
         '【取消注册比赛】：取消注册比赛。\n' +\
